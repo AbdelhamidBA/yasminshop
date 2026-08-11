@@ -1,5 +1,5 @@
 import {describe, expect, test} from 'vitest';
-import {effectivePriceMillimes, formatMillimes} from './money';
+import {effectivePriceMillimes, formatMillimes, millimesToInput, parseDinarsToMillimes} from './money';
 
 describe('effectivePriceMillimes', () => {
   test('no discount returns price unchanged', () => {
@@ -35,5 +35,32 @@ describe('formatMillimes', () => {
 
   test('formats zero', () => {
     expect(formatMillimes(0)).toBe('0.000');
+  });
+});
+
+describe('parseDinarsToMillimes', () => {
+  test('parses whole dinars', () => {
+    expect(parseDinarsToMillimes('12')).toBe(12_000);
+  });
+  test('parses dot decimals up to 3 places', () => {
+    expect(parseDinarsToMillimes('12.5')).toBe(12_500);
+    expect(parseDinarsToMillimes('0.05')).toBe(50);
+    expect(parseDinarsToMillimes('89.000')).toBe(89_000);
+  });
+  test('accepts comma as decimal separator', () => {
+    expect(parseDinarsToMillimes('7,250')).toBe(7_250);
+  });
+  test('rejects more than 3 decimals, negatives, and garbage', () => {
+    expect(parseDinarsToMillimes('1.2345')).toBeNull();
+    expect(parseDinarsToMillimes('-1')).toBeNull();
+    expect(parseDinarsToMillimes('abc')).toBeNull();
+    expect(parseDinarsToMillimes('')).toBeNull();
+  });
+});
+
+describe('millimesToInput', () => {
+  test('renders plain 3-decimal form values', () => {
+    expect(millimesToInput(89_000)).toBe('89.000');
+    expect(millimesToInput(50)).toBe('0.050');
   });
 });
