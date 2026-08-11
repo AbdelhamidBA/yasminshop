@@ -8,7 +8,9 @@
     "welcome": "مرحبا",
     "theme": {
       "toggle": "تغيير المظهر"
-    }
+    },
+    "languageFr": "Français",
+    "languageAr": "العربية"
   },
   "nav": {
     "home": "الرئيسية",
