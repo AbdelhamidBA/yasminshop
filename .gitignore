@@ -43,3 +43,6 @@ next-env.d.ts
 
 # SDD scratch workspace (never commit)
 .superpowers/
+
+# runtime image uploads (served via /api/uploads)
+/uploads/
