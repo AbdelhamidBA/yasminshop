@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useId, useState} from 'react';
+import {useEffect, useId, useRef, useState} from 'react';
 import {useTranslations} from 'next-intl';
 import {Input} from '@/components/ui/input';
 import {useRouter} from '@/i18n/navigation';
@@ -46,6 +46,11 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  // Focus tracked in a ref so the async response handler below can read the
+  // CURRENT focus state: a late response arriving after blur must not reopen
+  // the panel (the header survives client navigation, so a resurrected panel
+  // would linger over the next page with no outside-click dismissal).
+  const focusedRef = useRef(false);
 
   useEffect(() => {
     const q = query.trim();
@@ -61,14 +66,25 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
           `/api/search-suggestions?q=${encodeURIComponent(q)}`,
           {signal: controller.signal}
         );
-        if (!response.ok) return;
+        if (!response.ok) {
+          // Don't leave a previous query's suggestions on screen.
+          setSuggestions(null);
+          setActiveIndex(-1);
+          return;
+        }
         const data: {suggestions?: Suggestion[]} = await response.json();
         setSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
         setActiveIndex(-1);
-        setOpen(true);
+        // Only (re)open while the input still has focus — see focusedRef.
+        if (focusedRef.current) setOpen(true);
       } catch {
-        // Aborted (query changed / unmount) or network failure: a typeahead
-        // degrades silently rather than surfacing an error.
+        // Abort (query changed / unmount) is expected — leave state alone.
+        // Any other failure (network, bad JSON) clears stale suggestions; a
+        // typeahead degrades silently rather than surfacing an error.
+        if (!controller.signal.aborted) {
+          setSuggestions(null);
+          setActiveIndex(-1);
+        }
       }
     }, DEBOUNCE_MS);
     return () => {
@@ -134,8 +150,14 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         onKeyDown={onKeyDown}
-        onFocus={() => suggestions !== null && setOpen(true)}
-        onBlur={() => setOpen(false)}
+        onFocus={() => {
+          focusedRef.current = true;
+          if (suggestions !== null) setOpen(true);
+        }}
+        onBlur={() => {
+          focusedRef.current = false;
+          setOpen(false);
+        }}
         aria-label={t('common.search')}
         placeholder={t('common.search')}
         role="combobox"
@@ -155,9 +177,9 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
           onMouseDown={(event) => event.preventDefault()}
           className="absolute start-0 end-0 top-full z-50 mt-1 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
         >
-          {suggestions.length > 0 ? (
-            <ul role="listbox" id={listboxId} aria-label={t('common.search')}>
-              {suggestions.map((suggestion, index) => (
+          <ul role="listbox" id={listboxId} aria-label={t('common.search')}>
+            {suggestions.length > 0 ? (
+              suggestions.map((suggestion, index) => (
                 <li
                   key={suggestion.id}
                   id={`${id}-option-${index}`}
@@ -182,13 +204,20 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
                   </span>
                   <span className="shrink-0 text-sm font-medium">{price(suggestion)}</span>
                 </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="px-3 py-2 text-sm text-muted-foreground">
-              {t('search.noResults')}
-            </p>
-          )}
+              ))
+            ) : (
+              // Non-selectable empty row INSIDE the listbox, so aria-controls
+              // always references a rendered element while the panel is open.
+              <li
+                role="option"
+                aria-disabled="true"
+                aria-selected={false}
+                className="px-3 py-2 text-sm text-muted-foreground"
+              >
+                {t('search.noResults')}
+              </li>
+            )}
+          </ul>
         </div>
       )}
     </div>
