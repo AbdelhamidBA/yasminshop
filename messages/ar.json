@@ -19,7 +19,17 @@
   },
   "home": {
     "heroTitle": "اكتشف منتجات ستحبها",
-    "heroSubtitle": "منتجات محلية ومستوردة تصل إلى باب منزلك."
+    "heroSubtitle": "منتجات محلية ومستوردة تصل إلى باب منزلك.",
+    "cta": "عرض جميع المنتجات",
+    "sections": {
+      "newest": "وصل حديثاً",
+      "featured": "مميزة",
+      "lastChance": "فرصة أخيرة",
+      "mostSearched": "الأكثر بحثاً"
+    }
+  },
+  "storefront": {
+    "outOfStock": "نفد المخزون"
   },
   "footer": {
     "copyright": "جميع الحقوق محفوظة."

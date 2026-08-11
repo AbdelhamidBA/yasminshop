@@ -19,7 +19,17 @@
   },
   "home": {
     "heroTitle": "Découvrez des produits que vous allez adorer",
-    "heroSubtitle": "Produits locaux et importés, livrés chez vous."
+    "heroSubtitle": "Produits locaux et importés, livrés chez vous.",
+    "cta": "Voir tous les produits",
+    "sections": {
+      "newest": "Nouveautés",
+      "featured": "En vedette",
+      "lastChance": "Dernière chance",
+      "mostSearched": "Les plus recherchés"
+    }
+  },
+  "storefront": {
+    "outOfStock": "Rupture de stock"
   },
   "footer": {
     "copyright": "Tous droits réservés."
