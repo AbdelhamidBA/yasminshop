@@ -55,6 +55,18 @@
     "prev": "السابق",
     "next": "التالي"
   },
+  "product": {
+    "inStock": "متوفر",
+    "lowStock": "لم يتبق سوى {count} في المخزون!",
+    "outOfStock": "نفد المخزون",
+    "addToCart": "أضف إلى السلة",
+    "addedToCart": "تمت الإضافة إلى السلة.",
+    "related": "منتجات مشابهة",
+    "quantity": "الكمية"
+  },
+  "breadcrumb": {
+    "home": "الرئيسية"
+  },
   "footer": {
     "copyright": "جميع الحقوق محفوظة."
   },

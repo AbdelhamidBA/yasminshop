@@ -55,6 +55,18 @@
     "prev": "Précédent",
     "next": "Suivant"
   },
+  "product": {
+    "inStock": "En stock",
+    "lowStock": "Plus que {count} en stock !",
+    "outOfStock": "Rupture de stock",
+    "addToCart": "Ajouter au panier",
+    "addedToCart": "Ajouté au panier.",
+    "related": "Produits similaires",
+    "quantity": "Quantité"
+  },
+  "breadcrumb": {
+    "home": "Accueil"
+  },
   "footer": {
     "copyright": "Tous droits réservés."
   },
