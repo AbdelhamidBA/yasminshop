@@ -138,7 +138,11 @@ export function ProductsTable({
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <QuantityCell productId={product.id} quantity={product.quantity} />
+                        <QuantityCell
+                          key={`${product.id}:${product.quantity}`}
+                          productId={product.id}
+                          quantity={product.quantity}
+                        />
                         {product.quantity === 0 ? (
                           <Badge variant="destructive">{t('outOfStock')}</Badge>
                         ) : (

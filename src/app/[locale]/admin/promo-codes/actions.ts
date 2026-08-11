@@ -75,6 +75,8 @@ export async function updatePromoCode(id: string, formData: FormData): Promise<A
 export async function togglePromoCode(id: string, active: boolean): Promise<ActionResult> {
   try {
     await requireAdmin();
+    if (typeof id !== 'string' || id.length === 0) return failure('notFound');
+    if (typeof active !== 'boolean') return failure('validation');
     const updated = await prisma.promoCode.updateMany({where: {id}, data: {active}});
     if (updated.count === 0) return failure('notFound');
     revalidatePath(PATH, 'page');

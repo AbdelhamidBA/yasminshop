@@ -125,6 +125,7 @@ export async function updateProduct(id: string, formData: FormData): Promise<Act
 export async function updateProductQuantity(id: string, quantity: number): Promise<ActionResult> {
   try {
     await requireStaff();
+    if (typeof id !== 'string' || id.length === 0) return failure('notFound');
     const parsed = quantitySchema.safeParse({quantity});
     if (!parsed.success) return failure('validation', {quantity: 'invalidQuantity'});
     const updated = await prisma.product.updateMany({
