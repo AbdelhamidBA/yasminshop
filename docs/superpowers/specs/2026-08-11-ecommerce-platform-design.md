@@ -123,6 +123,18 @@ Too large for one plan — six sequential sub-projects, each getting its own imp
 - Checkout and status-change stock mutations run in Prisma transactions.
 - **Tests:** Vitest unit tests for the money/stock/promo domain logic (effective price, delivery threshold, status transitions); Playwright smoke tests for the two critical journeys (client checkout; admin order confirmation). TDD during implementation per superpowers workflow.
 
+## 6b. Phase 1 carry-forward constraints (from the 2026-08-11 final branch review)
+
+Phase 1 (Foundation) merged clean — 17 commits, all task-reviewed, final 3-lens review + browser QA passed. These review findings are **binding on later phases** (copy the relevant ones into each phase plan's Global Constraints):
+
+- **Phase 2+ (every phase):** A layout `redirect()` does NOT stop page components from executing — every data-bearing admin page, server action, and API route must repeat its own server-side role check (`sub-admins/page.tsx` models the pattern). The middleware matcher skips dotted URLs and all of `/api/*`, so it is never the only guard.
+- **Phase 2 (first migration):** add `@@index` on all hot FK columns — `Product.categoryId/subCategoryId`, `ProductImage.productId`, `OrderItem.orderId/productId`, `Order.clientId`, `Category.parentId`, `PushSubscription.userId` (Postgres does not auto-index FKs).
+- **Phase 2 (before adding shadcn components):** `components.json` has `"rtl": false`; vendored primitives (`dropdown-menu`, `button`) carry physical `pl-/pr-` classes that will look wrong in Arabic — enable RTL generation or audit/override vendored primitives used in AR-facing UI.
+- **Phase 3:** the language switcher drops query strings (`usePathname` excludes search params) — append `useSearchParams()` when filtered listings land. Storefront pages render dynamically because the header calls `auth()`; consider PPR/Suspense split if performance matters.
+- **Phase 4/5 (before archive/role-management UI ships):** JWT-only sessions (30-day) have no revocation — an archived/demoted admin keeps access until token expiry. Decide: DB re-check in admin layout, tokenVersion claim, or short maxAge + rolling refresh. Also make login/logout redirects locale-aware (currently drop `/ar` to `/fr`; NEXT_LOCALE cookie partially mitigates).
+- **Phase 6 (hardening):** credentials rate limiting + dummy-hash on unknown email (timing oracle); `AUTH_TRUST_HOST`/`AUTH_URL` env documentation for the VPS reverse-proxy deploy; RTL icon mirroring (`PanelLeft*` don't flip); fonts (Geist was dropped); per-locale `metadata`/SEO (no `<title>` today); derive middleware locale regex from `routing.locales`.
+- Cosmetic riders: role string-union duplicated across next-auth types/auth.config/Prisma enum; welcome-heading `", "` separator (Arabic comma); `AGENTS.md`/`CLAUDE.md` are scaffold-generated; package name `ecom-platrome`.
+
 ## 7. Owner decisions (resolved 2026-08-11)
 
 1. **Guest checkout** — ✅ allowed (name/phone/address; account optional).
