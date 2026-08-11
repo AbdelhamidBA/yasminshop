@@ -51,6 +51,12 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
   // the panel (the header survives client navigation, so a resurrected panel
   // would linger over the next page with no outside-click dismissal).
   const focusedRef = useRef(false);
+  // Explicit dismissals (Escape, Enter in either mode, option click) must
+  // also outlive the render cycle: the input can stay focused after any of
+  // them, so a late response gated on focus alone would still reopen the
+  // panel against the user's intent. Lifted on re-engagement: a keystroke,
+  // (re)focus, or arrow keys.
+  const dismissedRef = useRef(false);
 
   useEffect(() => {
     const q = query.trim();
@@ -75,8 +81,10 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
         const data: {suggestions?: Suggestion[]} = await response.json();
         setSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
         setActiveIndex(-1);
-        // Only (re)open while the input still has focus — see focusedRef.
-        if (focusedRef.current) setOpen(true);
+        // Only (re)open while the input still has focus AND the user has not
+        // explicitly dismissed the panel since last engaging with it — see
+        // focusedRef / dismissedRef above.
+        if (focusedRef.current && !dismissedRef.current) setOpen(true);
       } catch {
         // Abort (query changed / unmount) is expected — leave state alone.
         // Any other failure (network, bad JSON) clears stale suggestions; a
@@ -99,6 +107,10 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
     `${formatMillimes(effectivePriceMillimes(s.priceMillimes, s.discountPct, massDiscountPct))} ${currencyLabel}`;
 
   function select(suggestion: Suggestion) {
+    // Covers Enter-select AND option click: the mousedown preventDefault
+    // keeps the input focused through the navigation, so a late response
+    // must see this as a dismissal.
+    dismissedRef.current = true;
     setOpen(false);
     // Fire-and-forget hit counter; keepalive lets the request outlive the
     // navigation that follows.
@@ -113,12 +125,18 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
 
   function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Escape') {
+      // Escape does not blur a plain input: without this flag a response
+      // already in flight would reopen the panel the user just closed.
+      dismissedRef.current = true;
       setOpen(false);
       return;
     }
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       if (!suggestions || suggestions.length === 0) return;
       event.preventDefault();
+      // Arrows explicitly (re)open the panel — re-engagement lifts a prior
+      // dismissal.
+      dismissedRef.current = false;
       setOpen(true);
       const count = suggestions.length;
       setActiveIndex((prev) =>
@@ -137,6 +155,9 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
         return;
       }
       const q = query.trim();
+      // Full-search Enter is a dismissal too: the header (and this input's
+      // focus) survives the client navigation to /products.
+      dismissedRef.current = true;
       setOpen(false);
       router.push(q ? `/products?q=${encodeURIComponent(q)}` : '/products');
     }
@@ -148,10 +169,18 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
     <div className="relative w-full">
       <Input
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event) => {
+          // A new keystroke is fresh engagement: lift any prior dismissal so
+          // the upcoming query's response may open the panel again.
+          dismissedRef.current = false;
+          setQuery(event.target.value);
+        }}
         onKeyDown={onKeyDown}
         onFocus={() => {
           focusedRef.current = true;
+          // Refocusing is fresh engagement; it deliberately reopens a cached
+          // panel below, so the dismissal flag must not outlive it.
+          dismissedRef.current = false;
           if (suggestions !== null) setOpen(true);
         }}
         onBlur={() => {
@@ -209,6 +238,7 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
               // Non-selectable empty row INSIDE the listbox, so aria-controls
               // always references a rendered element while the panel is open.
               <li
+                id={`${id}-option-empty`}
                 role="option"
                 aria-disabled="true"
                 aria-selected={false}
