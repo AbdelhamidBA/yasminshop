@@ -26,6 +26,18 @@ export async function getParameters(): Promise<AppParameters> {
   return parsed.success ? parsed.data : DEFAULT_PARAMETERS;
 }
 
+// Reads the storefront mass-discount percentage directly from its Setting row.
+// Deliberately excluded from getParameters (admin screens keep passing null);
+// seeded null, Phase 5 adds its admin control.
+export async function getMassDiscountPct(): Promise<number | null> {
+  const row = await prisma.setting.findUnique({where: {key: 'massDiscountPct'}});
+  if (!row) return null;
+  const value = row.value;
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 100
+    ? value
+    : null;
+}
+
 export async function saveParameters(input: AppParameters): Promise<void> {
   const entries = Object.entries(input) as Array<[string, unknown]>;
   await prisma.$transaction(
