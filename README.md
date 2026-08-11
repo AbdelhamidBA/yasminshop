@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# E-Commerce Platform
 
-## Getting Started
+Bilingual (FR/AR + RTL) e-commerce platform — Next.js App Router, Prisma + PostgreSQL, Auth.js.
+Spec: `docs/superpowers/specs/2026-08-11-ecommerce-platform-design.md`.
 
-First, run the development server:
+## Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node 20+ and npm
+- Docker Desktop (for the dev database)
+
+## Quickstart
+
+```powershell
+npm install
+docker compose up -d          # PostgreSQL 17 on localhost:5432
+copy .env.example .env        # then fill AUTH_SECRET — generate with `openssl rand -base64 33` (Git Bash)
+npx prisma migrate dev        # apply schema
+npx prisma db seed            # seed users, settings, demo catalog
+npm run dev                   # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Prisma 7 note: the seed command is registered in `prisma.config.ts`, and the client connects through the `pg` driver adapter (`@prisma/adapter-pg`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Seeded accounts (dev only)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Role      | Email               | Password     |
+| --------- | ------------------- | ------------ |
+| Admin     | admin@local.test    | admin123!    |
+| Sub-admin | subadmin@local.test | subadmin123! |
+| Client    | client@local.test   | client123!   |
 
-## Learn More
+## Commands
 
-To learn more about Next.js, take a look at the following resources:
+- `npm run dev` — dev server (Turbopack)
+- `npm test` — unit tests (Vitest)
+- `npm run build` — production build
+- `npx prisma studio` — browse the database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Conventions
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Money is integer **millimes** (1 TND = 1000); fields end in `Millimes`.
+- All UI strings live in `messages/fr.json` + `messages/ar.json` (keys must match — enforced by test).
+- Tailwind **logical** utilities only (`ms-`, `me-`, `ps-`, `pe-`) so RTL works.
+- Soft delete via `archivedAt` — no hard deletes.
