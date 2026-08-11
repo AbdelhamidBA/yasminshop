@@ -25,6 +25,12 @@ const USERS = [
 ] as const;
 
 async function main() {
+  if (process.env.NODE_ENV === 'production' && process.env.FORCE_SEED !== '1') {
+    console.error('Refusing to seed a production database (set FORCE_SEED=1 to override).');
+    process.exitCode = 1;
+    return;
+  }
+
   for (const u of USERS) {
     await prisma.user.upsert({
       where: {email: u.email},
