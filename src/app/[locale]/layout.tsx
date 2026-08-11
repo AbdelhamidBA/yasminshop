@@ -4,6 +4,7 @@ import {hasLocale, NextIntlClientProvider} from 'next-intl';
 import {getMessages, setRequestLocale} from 'next-intl/server';
 import {routing} from '@/i18n/routing';
 import {ThemeProvider} from '@/components/theme-provider';
+import {Toaster} from '@/components/ui/sonner';
 import '../globals.css';
 
 export function generateStaticParams() {
@@ -28,6 +29,7 @@ export default async function LocaleLayout({
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
             {children}
+            <Toaster dir={locale === 'ar' ? 'rtl' : 'ltr'} position="bottom-center" />
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

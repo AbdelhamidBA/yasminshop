@@ -45,6 +45,8 @@ model Category {
   archivedAt  DateTime?
   products    Product[]  @relation("ProductCategory")
   subProducts Product[]  @relation("ProductSubCategory")
+
+  @@index([parentId])
 }
 
 model Product {
@@ -67,6 +69,9 @@ model Product {
   orderItems    OrderItem[]
   archivedAt    DateTime?
   createdAt     DateTime       @default(now())
+
+  @@index([categoryId])
+  @@index([subCategoryId])
 }
 
 model ProductImage {
@@ -75,6 +80,8 @@ model ProductImage {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   url       String
   sortOrder Int     @default(0)
+
+  @@index([productId])
 }
 
 model Order {
@@ -95,6 +102,8 @@ model Order {
   archivedAt            DateTime?
   createdAt             DateTime    @default(now())
   items                 OrderItem[]
+
+  @@index([clientId])
 }
 
 model OrderItem {
@@ -107,6 +116,9 @@ model OrderItem {
   unitPriceMillimes Int
   qty               Int
   lineTotalMillimes Int
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model PromoCode {
@@ -137,4 +149,6 @@ model PushSubscription {
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   endpoint String @unique
   keysJson Json
+
+  @@index([userId])
 }
