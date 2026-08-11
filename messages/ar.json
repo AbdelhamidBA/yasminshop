@@ -1,0 +1,49 @@
+{
+  "common": {
+    "siteName": "متجري",
+    "currency": "د.ت",
+    "cart": "السلة",
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "welcome": "مرحبا",
+    "theme": {
+      "toggle": "تغيير المظهر"
+    }
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "products": "المنتجات",
+    "categories": "الفئات"
+  },
+  "home": {
+    "heroTitle": "اكتشف منتجات ستحبها",
+    "heroSubtitle": "منتجات محلية ومستوردة تصل إلى باب منزلك."
+  },
+  "footer": {
+    "copyright": "جميع الحقوق محفوظة."
+  },
+  "auth": {
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "signIn": "تسجيل الدخول",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة."
+  },
+  "admin": {
+    "blocks": {
+      "dashboard": "لوحة التحكم",
+      "settings": "الإعدادات"
+    },
+    "nav": {
+      "overview": "نظرة عامة",
+      "clients": "العملاء",
+      "products": "المنتجات",
+      "orders": "الطلبات",
+      "categories": "الفئات",
+      "promoCodes": "أكواد التخفيض",
+      "subAdmins": "المشرفون الفرعيون",
+      "parameters": "الإعدادات العامة"
+    },
+    "collapse": "طي القائمة",
+    "notifications": "الإشعارات"
+  }
+}

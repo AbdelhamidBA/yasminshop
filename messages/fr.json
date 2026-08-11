@@ -1,0 +1,49 @@
+{
+  "common": {
+    "siteName": "Ma Boutique",
+    "currency": "DT",
+    "cart": "Panier",
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "welcome": "Bienvenue",
+    "theme": {
+      "toggle": "Changer le thème"
+    }
+  },
+  "nav": {
+    "home": "Accueil",
+    "products": "Produits",
+    "categories": "Catégories"
+  },
+  "home": {
+    "heroTitle": "Découvrez des produits que vous allez adorer",
+    "heroSubtitle": "Produits locaux et importés, livrés chez vous."
+  },
+  "footer": {
+    "copyright": "Tous droits réservés."
+  },
+  "auth": {
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "signIn": "Se connecter",
+    "invalidCredentials": "E-mail ou mot de passe incorrect."
+  },
+  "admin": {
+    "blocks": {
+      "dashboard": "Tableau de bord",
+      "settings": "Paramètres"
+    },
+    "nav": {
+      "overview": "Vue d'ensemble",
+      "clients": "Clients",
+      "products": "Produits",
+      "orders": "Commandes",
+      "categories": "Catégories",
+      "promoCodes": "Codes promo",
+      "subAdmins": "Sous-admins",
+      "parameters": "Paramètres généraux"
+    },
+    "collapse": "Réduire le menu",
+    "notifications": "Notifications"
+  }
+}
