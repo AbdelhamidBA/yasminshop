@@ -67,6 +67,51 @@
   "breadcrumb": {
     "home": "الرئيسية"
   },
+  "cart": {
+    "title": "السلة",
+    "empty": "سلتك فارغة.",
+    "browse": "تصفح المنتجات",
+    "unitPrice": "السعر",
+    "lineTotal": "المجموع",
+    "remove": "إزالة",
+    "promoLabel": "كود التخفيض",
+    "promoApply": "تطبيق",
+    "promoApplied": "تم تطبيق الكود {code} (−{pct}%).",
+    "promoInvalid": "كود غير صالح.",
+    "subtotal": "المجموع الفرعي",
+    "promoDiscount": "التخفيض",
+    "delivery": "التوصيل",
+    "deliveryFree": "مجاني",
+    "freeDeliveryHint": "أضف {amount} {currency} للحصول على توصيل مجاني!",
+    "total": "المجموع الكلي",
+    "checkout": "إتمام الطلب"
+  },
+  "checkout": {
+    "title": "إتمام الطلب",
+    "name": "الاسم الكامل",
+    "phone": "الهاتف",
+    "address": "العنوان",
+    "city": "المدينة",
+    "notes": "ملاحظات (اختياري)",
+    "payOnDelivery": "الدفع عند الاستلام",
+    "placeOrder": "تأكيد الطلب",
+    "summary": "ملخص الطلب",
+    "errors": {
+      "required": "حقل مطلوب.",
+      "invalidPhone": "رقم هاتف غير صالح.",
+      "tooShort": "قصير جداً.",
+      "tooLong": "طويل جداً.",
+      "invalidPromo": "كود غير صالح.",
+      "cartChanged": "تغيّرت سلتك (المخزون أو المنتجات). راجعها ثم أعد المحاولة.",
+      "validation": "يرجى تصحيح الحقول المحددة بالأحمر."
+    }
+  },
+  "confirmation": {
+    "title": "شكراً لطلبك!",
+    "number": "طلب رقم {number}",
+    "codNote": "ستدفع عند الاستلام. سنتصل بك للتأكيد.",
+    "backHome": "العودة إلى الرئيسية"
+  },
   "footer": {
     "copyright": "جميع الحقوق محفوظة."
   },

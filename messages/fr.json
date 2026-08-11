@@ -67,6 +67,51 @@
   "breadcrumb": {
     "home": "Accueil"
   },
+  "cart": {
+    "title": "Panier",
+    "empty": "Votre panier est vide.",
+    "browse": "Voir les produits",
+    "unitPrice": "Prix",
+    "lineTotal": "Total",
+    "remove": "Retirer",
+    "promoLabel": "Code promo",
+    "promoApply": "Appliquer",
+    "promoApplied": "Code {code} appliqué (−{pct}%).",
+    "promoInvalid": "Code promo invalide.",
+    "subtotal": "Sous-total",
+    "promoDiscount": "Remise",
+    "delivery": "Livraison",
+    "deliveryFree": "Gratuite",
+    "freeDeliveryHint": "Plus que {amount} {currency} pour la livraison gratuite !",
+    "total": "Total",
+    "checkout": "Passer la commande"
+  },
+  "checkout": {
+    "title": "Commande",
+    "name": "Nom complet",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "city": "Ville",
+    "notes": "Remarques (optionnel)",
+    "payOnDelivery": "Paiement à la livraison",
+    "placeOrder": "Confirmer la commande",
+    "summary": "Récapitulatif",
+    "errors": {
+      "required": "Champ requis.",
+      "invalidPhone": "Numéro de téléphone invalide.",
+      "tooShort": "Trop court.",
+      "tooLong": "Trop long.",
+      "invalidPromo": "Code promo invalide.",
+      "cartChanged": "Votre panier a changé (stock ou produits). Vérifiez-le puis réessayez.",
+      "validation": "Veuillez corriger les champs en rouge."
+    }
+  },
+  "confirmation": {
+    "title": "Merci pour votre commande !",
+    "number": "Commande n° {number}",
+    "codNote": "Vous paierez à la livraison. Nous vous contacterons pour confirmer.",
+    "backHome": "Retour à l'accueil"
+  },
   "footer": {
     "copyright": "Tous droits réservés."
   },
