@@ -144,6 +144,12 @@ export async function placeOrder(formData: FormData): Promise<ActionResult<{orde
     deliveryCostMillimes: parameters.deliveryCostMillimes,
     freeDeliveryThresholdMillimes: parameters.freeDeliveryThresholdMillimes
   });
+  // Bound guards come as a PAIR: the total check alone is insufficient — a
+  // percentage promo shrinks the total, so subtotals up to ~2.22e9 could pass
+  // it while still overflowing Int4 (2.147e9) in the subtotalMillimes write.
+  // Bounding the subtotal also bounds every lineTotal and promoDiscount,
+  // since each is ≤ subtotal.
+  if (totals.subtotalMillimes > MAX_MILLIMES) return failure('cartChanged');
   if (totals.totalMillimes > MAX_MILLIMES) return failure('cartChanged');
 
   // ── Step 7: optional session — any role may order (a staff member placing
