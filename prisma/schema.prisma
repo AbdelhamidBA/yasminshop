@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  SUB_ADMIN
+  CLIENT
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  DELIVERED
+  CANCELED
+}
+
+model User {
+  id                String             @id @default(cuid())
+  name              String
+  email             String             @unique
+  phone             String?
+  passwordHash      String
+  role              Role               @default(CLIENT)
+  address           String?
+  city              String?
+  archivedAt        DateTime?
+  createdAt         DateTime           @default(now())
+  orders            Order[]
+  pushSubscriptions PushSubscription[]
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  nameFr      String
+  nameAr      String
+  slug        String     @unique
+  parentId    String?
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryTree")
+  archivedAt  DateTime?
+  products    Product[]  @relation("ProductCategory")
+  subProducts Product[]  @relation("ProductSubCategory")
+}
+
+model Product {
+  id            String         @id @default(cuid())
+  reference     String         @unique
+  nameFr        String
+  nameAr        String
+  descriptionFr String
+  descriptionAr String
+  priceMillimes Int
+  discountPct   Int            @default(0)
+  quantity      Int            @default(0)
+  featured      Boolean        @default(false)
+  searchHits    Int            @default(0)
+  categoryId    String
+  category      Category       @relation("ProductCategory", fields: [categoryId], references: [id])
+  subCategoryId String?
+  subCategory   Category?      @relation("ProductSubCategory", fields: [subCategoryId], references: [id])
+  images        ProductImage[]
+  orderItems    OrderItem[]
+  archivedAt    DateTime?
+  createdAt     DateTime       @default(now())
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  sortOrder Int     @default(0)
+}
+
+model Order {
+  id                    String      @id @default(cuid())
+  number                Int         @unique @default(autoincrement())
+  clientId              String?
+  client                User?       @relation(fields: [clientId], references: [id])
+  customerName          String
+  customerPhone         String
+  customerAddress       String
+  status                OrderStatus @default(PENDING)
+  subtotalMillimes      Int
+  promoCode             String?
+  promoDiscountMillimes Int         @default(0)
+  deliveryCostMillimes  Int
+  totalMillimes         Int
+  notes                 String?
+  archivedAt            DateTime?
+  createdAt             DateTime    @default(now())
+  items                 OrderItem[]
+}
+
+model OrderItem {
+  id                String  @id @default(cuid())
+  orderId           String
+  order             Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId         String
+  product           Product @relation(fields: [productId], references: [id])
+  nameSnapshot      String
+  unitPriceMillimes Int
+  qty               Int
+  lineTotalMillimes Int
+}
+
+model PromoCode {
+  id         String    @id @default(cuid())
+  code       String    @unique
+  percentOff Int
+  active     Boolean   @default(true)
+  expiresAt  DateTime?
+  archivedAt DateTime?
+}
+
+model Setting {
+  key   String @id
+  value Json
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  type      String
+  payload   Json
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model PushSubscription {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint String @unique
+  keysJson Json
+}
