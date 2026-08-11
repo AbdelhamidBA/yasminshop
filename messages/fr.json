@@ -46,6 +46,37 @@
       "parameters": "Paramètres généraux"
     },
     "collapse": "Réduire le menu",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "categories": {
+      "title": "Catégories",
+      "add": "Ajouter une catégorie",
+      "edit": "Modifier la catégorie",
+      "nameFr": "Nom (français)",
+      "nameAr": "Nom (arabe)",
+      "parent": "Catégorie parente",
+      "noParent": "Aucune (catégorie racine)",
+      "slug": "Slug",
+      "products": "Produits",
+      "actions": "Actions",
+      "archive": "Archiver",
+      "restore": "Restaurer",
+      "archived": "Archivée",
+      "showArchived": "Afficher les archivées",
+      "confirmArchiveTitle": "Archiver cette catégorie ?",
+      "confirmArchiveBody": "La catégorie et ses sous-catégories seront masquées de la boutique.",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saved": "Catégorie enregistrée.",
+      "archivedToast": "Catégorie archivée.",
+      "restoredToast": "Catégorie restaurée.",
+      "empty": "Aucune catégorie pour le moment.",
+      "errors": {
+        "validation": "Veuillez corriger les champs en rouge.",
+        "invalidParent": "Catégorie parente invalide.",
+        "hasChildren": "Une catégorie avec des sous-catégories ne peut pas avoir de parent.",
+        "notFound": "Catégorie introuvable.",
+        "forbidden": "Action non autorisée."
+      }
+    }
   }
 }

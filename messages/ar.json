@@ -46,6 +46,37 @@
       "parameters": "الإعدادات العامة"
     },
     "collapse": "طي القائمة",
-    "notifications": "الإشعارات"
+    "notifications": "الإشعارات",
+    "categories": {
+      "title": "الفئات",
+      "add": "إضافة فئة",
+      "edit": "تعديل الفئة",
+      "nameFr": "الاسم (بالفرنسية)",
+      "nameAr": "الاسم (بالعربية)",
+      "parent": "الفئة الأم",
+      "noParent": "بدون (فئة رئيسية)",
+      "slug": "المعرّف",
+      "products": "المنتجات",
+      "actions": "إجراءات",
+      "archive": "أرشفة",
+      "restore": "استعادة",
+      "archived": "مؤرشفة",
+      "showArchived": "عرض المؤرشفة",
+      "confirmArchiveTitle": "أرشفة هذه الفئة؟",
+      "confirmArchiveBody": "سيتم إخفاء الفئة وفئاتها الفرعية من المتجر.",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "saved": "تم حفظ الفئة.",
+      "archivedToast": "تمت أرشفة الفئة.",
+      "restoredToast": "تمت استعادة الفئة.",
+      "empty": "لا توجد فئات بعد.",
+      "errors": {
+        "validation": "يرجى تصحيح الحقول المحددة بالأحمر.",
+        "invalidParent": "الفئة الأم غير صالحة.",
+        "hasChildren": "فئة تحتوي على فئات فرعية لا يمكن أن تكون لها فئة أم.",
+        "notFound": "الفئة غير موجودة.",
+        "forbidden": "إجراء غير مسموح به."
+      }
+    }
   }
 }
