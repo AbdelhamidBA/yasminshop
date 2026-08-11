@@ -1,7 +1,11 @@
 import {NextResponse} from 'next/server';
 import {prisma} from '@/lib/db';
 
-const MAX_PRODUCT_ID_LENGTH = 40;
+// Charset allowlist: product ids are cuids (lowercase alphanumeric); the
+// hyphen is tolerated for slug-shaped values. This kills NUL bytes and
+// lone-surrogate JSON strings — both crash PostgreSQL text parameters and
+// would otherwise 500 inside Prisma — without creating an existence oracle.
+const PRODUCT_ID_PATTERN = /^[a-z0-9-]{1,40}$/i;
 
 // Public fire-and-forget counter behind the home page's "most searched"
 // section. Abuse note: this endpoint is unauthenticated, so counter inflation
@@ -22,18 +26,21 @@ export async function POST(request: Request) {
   // fix-wave idiom): object-shaped payloads like {productId: {not: ''}} must
   // 400 here and never reach the query below.
   const productId = (body as Record<string, unknown>).productId;
-  if (
-    typeof productId !== 'string' ||
-    productId.length === 0 ||
-    productId.length > MAX_PRODUCT_ID_LENGTH
-  ) {
+  if (typeof productId !== 'string' || !PRODUCT_ID_PATTERN.test(productId)) {
     return NextResponse.json({error: 'invalidProductId'}, {status: 400});
   }
 
-  await prisma.product.updateMany({
-    where: {id: productId, archivedAt: null},
-    data: {searchHits: {increment: 1}}
-  });
+  // Defense-in-depth (uploads-route idiom): the guard above should make this
+  // unreachable, but an unexpected Prisma failure must not 500 a public
+  // fire-and-forget endpoint — the contract is {ok: true} on any valid shape.
+  try {
+    await prisma.product.updateMany({
+      where: {id: productId, archivedAt: null},
+      data: {searchHits: {increment: 1}}
+    });
+  } catch {
+    // Swallowed deliberately: heuristic counter, no caller acts on failure.
+  }
 
   // Always ok on a valid shape — even when no row matched — so the endpoint
   // is not an existence oracle for product ids.
