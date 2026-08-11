@@ -77,6 +77,30 @@
         "notFound": "الفئة غير موجودة.",
         "forbidden": "إجراء غير مسموح به."
       }
+    },
+    "parameters": {
+      "title": "الإعدادات العامة",
+      "delivery": "التوصيل",
+      "deliveryCost": "تكلفة التوصيل (د.ت)",
+      "freeDeliveryThreshold": "توصيل مجاني ابتداءً من (د.ت)",
+      "currency": "العملة",
+      "lastChanceThreshold": "حد فرصة أخيرة (المخزون)",
+      "site": "الموقع",
+      "copyright": "حقوق النشر",
+      "siteDescription": "وصف الموقع",
+      "keywords": "كلمات مفتاحية",
+      "social": "شبكات التواصل",
+      "facebook": "فيسبوك",
+      "instagram": "إنستغرام",
+      "tiktok": "تيك توك",
+      "save": "حفظ",
+      "saved": "تم حفظ الإعدادات.",
+      "readOnly": "للعرض فقط — يمكن للمدير فقط التعديل.",
+      "errors": {
+        "validation": "يرجى تصحيح الحقول المحددة بالأحمر.",
+        "invalidAmount": "مبلغ غير صالح (مثال 7.500).",
+        "forbidden": "إجراء غير مسموح به."
+      }
     }
   }
 }

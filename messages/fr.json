@@ -77,6 +77,30 @@
         "notFound": "Catégorie introuvable.",
         "forbidden": "Action non autorisée."
       }
+    },
+    "parameters": {
+      "title": "Paramètres généraux",
+      "delivery": "Livraison",
+      "deliveryCost": "Coût de livraison (DT)",
+      "freeDeliveryThreshold": "Livraison gratuite à partir de (DT)",
+      "currency": "Devise",
+      "lastChanceThreshold": "Seuil dernière chance (stock)",
+      "site": "Site",
+      "copyright": "Copyright",
+      "siteDescription": "Description du site",
+      "keywords": "Mots-clés",
+      "social": "Réseaux sociaux",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "save": "Enregistrer",
+      "saved": "Paramètres enregistrés.",
+      "readOnly": "Lecture seule — seul l'administrateur peut modifier.",
+      "errors": {
+        "validation": "Veuillez corriger les champs en rouge.",
+        "invalidAmount": "Montant invalide (ex. 7.500).",
+        "forbidden": "Action non autorisée."
+      }
     }
   }
 }
