@@ -147,6 +147,38 @@
         "imagesRequired": "مطلوب صورة صالحة واحدة على الأقل."
       }
     },
+    "promoCodesPage": {
+      "title": "أكواد التخفيض",
+      "add": "إضافة كود",
+      "edit": "تعديل الكود",
+      "code": "الكود",
+      "percentOff": "التخفيض (%)",
+      "active": "مفعّل",
+      "expiresAt": "ينتهي في",
+      "noExpiry": "بدون انتهاء",
+      "archived": "مؤرشف",
+      "showArchived": "عرض المؤرشفة",
+      "actions": "إجراءات",
+      "archive": "أرشفة",
+      "restore": "استعادة",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "saved": "تم حفظ الكود.",
+      "toggledOn": "تم تفعيل الكود.",
+      "toggledOff": "تم تعطيل الكود.",
+      "archivedToast": "تمت أرشفة الكود.",
+      "restoredToast": "تمت استعادة الكود.",
+      "empty": "لا توجد أكواد.",
+      "confirmArchiveTitle": "أرشفة هذا الكود؟",
+      "confirmArchiveBody": "لن يعود بالإمكان استعمال هذا الكود في السلة.",
+      "errors": {
+        "validation": "يرجى تصحيح الحقول المحددة بالأحمر.",
+        "codeTaken": "هذا الكود موجود من قبل.",
+        "invalidDate": "تاريخ غير صالح.",
+        "forbidden": "إجراء غير مسموح به.",
+        "notFound": "الكود غير موجود."
+      }
+    },
     "parameters": {
       "title": "الإعدادات العامة",
       "delivery": "التوصيل",

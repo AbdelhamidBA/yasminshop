@@ -147,6 +147,38 @@
         "imagesRequired": "Au moins une image valide est requise."
       }
     },
+    "promoCodesPage": {
+      "title": "Codes promo",
+      "add": "Ajouter un code",
+      "edit": "Modifier le code",
+      "code": "Code",
+      "percentOff": "Remise (%)",
+      "active": "Actif",
+      "expiresAt": "Expire le",
+      "noExpiry": "Sans expiration",
+      "archived": "Archivé",
+      "showArchived": "Afficher les archivés",
+      "actions": "Actions",
+      "archive": "Archiver",
+      "restore": "Restaurer",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saved": "Code promo enregistré.",
+      "toggledOn": "Code activé.",
+      "toggledOff": "Code désactivé.",
+      "archivedToast": "Code archivé.",
+      "restoredToast": "Code restauré.",
+      "empty": "Aucun code promo.",
+      "confirmArchiveTitle": "Archiver ce code ?",
+      "confirmArchiveBody": "Le code ne pourra plus être utilisé au panier.",
+      "errors": {
+        "validation": "Veuillez corriger les champs en rouge.",
+        "codeTaken": "Ce code existe déjà.",
+        "invalidDate": "Date invalide.",
+        "forbidden": "Action non autorisée.",
+        "notFound": "Code introuvable."
+      }
+    },
     "parameters": {
       "title": "Paramètres généraux",
       "delivery": "Livraison",

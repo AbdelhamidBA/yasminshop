@@ -1,7 +1,27 @@
 import {getTranslations} from 'next-intl/server';
+import {requirePageStaff} from '@/server/authz';
+import {listPromoCodes} from '@/server/promo-codes';
+import {PromoCodesTable} from './promo-codes-table';
 
-export default async function PromoCodesPage() {
-  const t = await getTranslations('admin.nav');
+export default async function PromoCodesPage({
+  searchParams
+}: {
+  searchParams: Promise<{archived?: string}>;
+}) {
+  const session = await requirePageStaff();
+  const {archived} = await searchParams;
+  const includeArchived = archived === '1';
+  const t = await getTranslations('admin.promoCodesPage');
+  const promoCodes = await listPromoCodes(includeArchived);
 
-  return <h1 className="text-2xl font-semibold">{t('promoCodes')}</h1>;
+  return (
+    <div className="flex flex-col gap-6">
+      <h1 className="text-2xl font-semibold">{t('title')}</h1>
+      <PromoCodesTable
+        promoCodes={promoCodes}
+        isAdmin={session.user.role === 'ADMIN'}
+        includeArchived={includeArchived}
+      />
+    </div>
+  );
 }
