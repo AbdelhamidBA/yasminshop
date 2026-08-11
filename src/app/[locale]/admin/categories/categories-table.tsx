@@ -81,7 +81,7 @@ export function CategoriesTable({
               />
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
-                  onSelect={() =>
+                  onClick={() =>
                     setEditing({
                       id: row.id,
                       nameFr: row.nameFr,
@@ -93,9 +93,9 @@ export function CategoriesTable({
                   {t('edit')}
                 </DropdownMenuItem>
                 {archived ? (
-                  <DropdownMenuItem onSelect={() => runRestore(row.id)}>{t('restore')}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => runRestore(row.id)}>{t('restore')}</DropdownMenuItem>
                 ) : (
-                  <DropdownMenuItem onSelect={() => setConfirmArchiveId(row.id)}>{t('archive')}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setConfirmArchiveId(row.id)}>{t('archive')}</DropdownMenuItem>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>

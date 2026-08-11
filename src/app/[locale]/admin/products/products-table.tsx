@@ -166,11 +166,11 @@ export function ProductsTable({
                               {t('edit')}
                             </DropdownMenuItem>
                             {archived ? (
-                              <DropdownMenuItem onSelect={() => runRestore(product.id)}>
+                              <DropdownMenuItem onClick={() => runRestore(product.id)}>
                                 {t('restore')}
                               </DropdownMenuItem>
                             ) : (
-                              <DropdownMenuItem onSelect={() => setConfirmArchiveId(product.id)}>
+                              <DropdownMenuItem onClick={() => setConfirmArchiveId(product.id)}>
                                 {t('archive')}
                               </DropdownMenuItem>
                             )}

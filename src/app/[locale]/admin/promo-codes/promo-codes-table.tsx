@@ -131,7 +131,7 @@ export function PromoCodesTable({
                           />
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onSelect={() =>
+                              onClick={() =>
                                 setEditing({
                                   id: row.id,
                                   code: row.code,
@@ -144,11 +144,11 @@ export function PromoCodesTable({
                               {t('edit')}
                             </DropdownMenuItem>
                             {archived ? (
-                              <DropdownMenuItem onSelect={() => runRestore(row.id)}>
+                              <DropdownMenuItem onClick={() => runRestore(row.id)}>
                                 {t('restore')}
                               </DropdownMenuItem>
                             ) : (
-                              <DropdownMenuItem onSelect={() => setConfirmArchiveId(row.id)}>
+                              <DropdownMenuItem onClick={() => setConfirmArchiveId(row.id)}>
                                 {t('archive')}
                               </DropdownMenuItem>
                             )}
