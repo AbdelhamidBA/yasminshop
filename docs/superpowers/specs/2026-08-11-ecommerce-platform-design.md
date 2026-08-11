@@ -144,6 +144,14 @@ Phase 2 (Admin Catalog) merged clean — 16 commits, 13 tasks, all panel-reviewe
 - **Phase 5:** massDiscountPct admin control (Setting row exists, structurally isolated from Phase 2 parameters).
 - **Phase 6 (hardening batch, all ledgered):** localized zod error map project-wide; upload hardening (content-length precheck, `.webp` + nosniff on GET, explicit `limitInputPixels`); P2025→notFound mapping on archive/restore; P2002 catch on slug/code creates; settings per-key salvage + structuredClone + fixed key-list; parseDinars safe-integer guard; slug loop cap + œ/æ mapping; category-dialog locale-aware parent labels; a11y (featured icon sr-only, Base UI Select label association); RTL leftovers (submenu side, sr-only "Close" i18n); 4× set-state-in-effect lint cleanup; expiresAt timezone pinning; e2e polish (uploads webp cleanup, expect timeout 10s, combobox aria-labels).
 
+## 6d. Phase 3 carry-forward constraints (from the 2026-08-12 final branch review)
+
+Phase 3 (Storefront & Checkout) merged clean — 16 commits, 11 tasks panel-reviewed, e2e 8/8 twice, fix wave applied (subtotal MAX_MILLIMES bound). Binding on later phases:
+
+- **Phase 4 (BINDING):** the order-CONFIRM action must re-check stock (`qty ≤ quantity`, VISIBLE) **inside the decrement transaction** — Phase 3's PENDING orders deliberately reserve nothing; confirm-time resolves the accepted TOCTOU. Decide promo policy at confirm (re-validate vs honor snapshot) explicitly. `nameSnapshot` is French-only — add `nameArSnapshot` in Phase 4's migration or formally accept French names in Arabic order views. Admin order views label snapshotted totals with the live currency setting — snapshot or accept. Add a money-value assertion to the storefront e2e when touched; future notification types need cleanup coverage. `clients`/`orders` admin stubs still lack their own role check — add `requirePageStaff()` when they become data-bearing (§6c reminder).
+- **Phase 5:** when the massDiscountPct control lands, cart lines hold add-time effective prices — re-price cart display or surface a notice on toggle. Delivery-cost-0 setting contradicts the free-delivery hint. UI polish batch needing catalog keys: stepper/breadcrumb/gallery aria labels, cart-stepper aria idiom, alt dedupe, pagination windowing/cap clamp, over-long-q behavior, stale promoInvalid message, silent invalid ?promo drop.
+- **Phase 6 (hardening):** rate limiting family — `checkPromo` (promo enumeration oracle) AND unauthenticated `placeOrder` (guest order/notification flooding); body-size caps on public POSTs; `Object.freeze(VISIBLE)`; cart-revival integer≥0 price + length caps; `isUniqueViolationOn` string-branch; searchHits inflation acceptance review.
+
 ## 7. Owner decisions (resolved 2026-08-11)
 
 1. **Guest checkout** — ✅ allowed (name/phone/address; account optional).
