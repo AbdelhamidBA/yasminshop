@@ -31,6 +31,26 @@
   "storefront": {
     "outOfStock": "نفد المخزون"
   },
+  "catalog": {
+    "title": "جميع المنتجات",
+    "results": "{count} منتج(ات)",
+    "filters": "تصفية",
+    "categories": "الفئات",
+    "allCategories": "الكل",
+    "price": "السعر (د.ت)",
+    "min": "الأدنى",
+    "max": "الأقصى",
+    "apply": "تطبيق",
+    "inStockOnly": "المتوفر فقط",
+    "sort": "ترتيب",
+    "sortNew": "الأحدث",
+    "sortPriceAsc": "السعر تصاعدياً",
+    "sortPriceDesc": "السعر تنازلياً",
+    "clear": "مسح التصفية",
+    "empty": "لا توجد منتجات مطابقة.",
+    "prev": "السابق",
+    "next": "التالي"
+  },
   "footer": {
     "copyright": "جميع الحقوق محفوظة."
   },

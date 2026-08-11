@@ -1,6 +1,7 @@
 import 'server-only';
 import type {Prisma} from '@prisma/client';
 import {prisma} from '@/lib/db';
+import {MAX_MILLIMES} from '@/lib/money';
 
 // Binding storefront visibility filter (spec §6c): the product itself is not
 // archived, its category is not archived, and — when a subcategory is set —
@@ -91,15 +92,30 @@ function cleanSlug(value: string | undefined): string | null {
 }
 
 function cleanMillimes(value: number | undefined): number | null {
-  return typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : null;
+  // Bounded to MAX_MILLIMES: a typed max-price like 3 000 000 DT parses to
+  // more than Int4 max and would otherwise 500 the listing inside Prisma —
+  // out-of-bounds values are ignored like any other invalid filter.
+  return typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value <= MAX_MILLIMES
+    ? value
+    : null;
 }
+
+// Hard cap on ?page= so skip = (page - 1) * pageSize can never overflow or
+// force Postgres into absurd offsets; anything above falls back to page 1.
+const MAX_PAGE = 10_000;
 
 export async function listStorefrontProducts(
   params: StorefrontListParams
 ): Promise<{products: ProductCardData[]; total: number}> {
-  // page must be an int ≥ 1 (URL-sourced); pageSize is fixed by the caller but
-  // still sanity-clamped to an int in 1..100.
-  const page = Number.isInteger(params.page) && params.page >= 1 ? params.page : 1;
+  // page must be a safe int in 1..MAX_PAGE (URL-sourced); pageSize is fixed by
+  // the caller but still sanity-clamped to an int in 1..100.
+  const page =
+    Number.isSafeInteger(params.page) && params.page >= 1 && params.page <= MAX_PAGE
+      ? params.page
+      : 1;
   const pageSize =
     Number.isInteger(params.pageSize) && params.pageSize >= 1 && params.pageSize <= 100
       ? params.pageSize

@@ -31,6 +31,26 @@
   "storefront": {
     "outOfStock": "Rupture de stock"
   },
+  "catalog": {
+    "title": "Tous les produits",
+    "results": "{count} produit(s)",
+    "filters": "Filtres",
+    "categories": "Catégories",
+    "allCategories": "Toutes",
+    "price": "Prix (DT)",
+    "min": "Min",
+    "max": "Max",
+    "apply": "Appliquer",
+    "inStockOnly": "En stock uniquement",
+    "sort": "Trier",
+    "sortNew": "Nouveautés",
+    "sortPriceAsc": "Prix croissant",
+    "sortPriceDesc": "Prix décroissant",
+    "clear": "Effacer les filtres",
+    "empty": "Aucun produit ne correspond.",
+    "prev": "Précédent",
+    "next": "Suivant"
+  },
   "footer": {
     "copyright": "Tous droits réservés."
   },

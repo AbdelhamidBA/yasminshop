@@ -20,6 +20,9 @@ export async function SiteHeader() {
           <Link href="/" className="hover:underline">
             {t('nav.home')}
           </Link>
+          <Link href="/products" className="hover:underline">
+            {t('nav.products')}
+          </Link>
         </nav>
         <div className="ms-auto flex items-center gap-2">
           <LanguageSwitcher />
