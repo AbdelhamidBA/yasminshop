@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-11
 **Source:** `ECommWebsite.md` + 3 reference images (admin dashboard, storefront home, product page)
-**Status:** Draft — awaiting owner review
+**Status:** Approved 2026-08-11 (owner resolved open decisions — see §7)
 
 ---
 
@@ -42,7 +42,8 @@ Visual direction from the reference images: clean, airy, card-based admin (green
 ```
 app/[locale]/
   (storefront)/            home, products, products/[slug], categories/[slug],
-                           cart, checkout, order-confirmation/[id]
+                           cart, checkout, order-confirmation/[id],
+                           account/orders (logged-in clients)
   (auth)/                  login, register, reset-password
   admin/                   dashboard (stats), clients, products, orders,
                            categories, promo-codes, sub-admins, parameters,
@@ -85,6 +86,7 @@ PushSubscription id, userId, endpoint, keysJson
 - **Home sections:** New = latest by `createdAt`; Featured = `featured` flag; Last Chance = `0 < quantity ≤ lastChanceThreshold`; Most Searched = top `searchHits` (incremented when a product is opened from search suggestions/results).
 - **Sub-admin enforcement is server-side:** product mutations from a `SUB_ADMIN` accept only `quantity`; order mutations accept only `status`. Everything else is read-only for them; Sub Admins section invisible to them.
 - **Cart** lives client-side (localStorage + context) — no DB cart. Checkout re-validates prices, stock, and promo server-side and creates the order. Pay on delivery is the single payment method.
+- **Guest checkout is allowed:** a guest orders with name/phone/address only (`Order.clientId` null, customer fields filled). Logged-in clients get those fields prefilled and the order linked to their account. Accounts still exist (login/register/reset per spec) and unlock the **My Orders** page (`account/orders`) listing the client's own orders with status.
 - **Invoice:** print-ready order view (browser print dialog) with shop info from Parameters.
 - **New-order flow:** order created → Notification row + web push to subscribed admin/sub-admin browsers → bell badge in admin header.
 
@@ -94,7 +96,7 @@ These are things `ECommWebsite.md` doesn't specify. Each has a default chosen; o
 
 1. **Product has no Name field in the spec** (only reference/description/…), yet search is "by name". → Added `nameFr`/`nameAr`.
 2. **Bilingual content:** admin enters product & category names/descriptions in both FR and AR (two fields). UI chrome comes from translation files.
-3. **Checkout requires a client account** (spec lists Login/Register and admin manages Clients). Guest checkout is a common COD pattern — flagged as an open decision.
+3. **Guest checkout is allowed** (owner decision): orders can be placed with just name/phone/address; accounts remain available and link orders when logged in.
 4. **Promo codes have no admin screen in the spec.** Added a minimal Promo Codes management (admin-only) — a code the cart accepts must be defined somewhere.
 5. **Order statuses:** spec names Canceled/Pending/Confirmed "etc." → flow is `PENDING → CONFIRMED → DELIVERED`, `CANCELED` from Pending/Confirmed. Finance stats count Confirmed + Delivered.
 6. **"Last Chance"** = low stock, threshold configurable in Parameters (default 5).
@@ -111,7 +113,7 @@ Too large for one plan — six sequential sub-projects, each getting its own imp
 1. **Foundation** — scaffold, Tailwind/shadcn, next-intl FR/AR + RTL, dark mode, Prisma schema + seed, Auth.js with roles, base layouts (storefront shell, admin sidebar with 2 blocks + collapsed state).
 2. **Admin catalog** — Categories CRUD (with subcategories), Products CRUD (multi-image upload, discount, archive), Parameters screen, promo codes.
 3. **Storefront catalog & checkout** — home sections, product listing + filters (price/category/subcategory/availability), search with suggestions, product page, cart + promo, COD checkout with delivery-cost logic.
-4. **Orders & clients** — admin orders (list, manual add, details, status flow with stock effects, update, archive, printable invoice), clients management, client auth pages wired to checkout.
+4. **Orders & clients** — admin orders (list, manual add, details, status flow with stock effects, update, archive, printable invoice), clients management, client auth pages wired to checkout, client My Orders page.
 5. **Dashboard & notifications** — stats + charts (day/week/month/year), finances, orders-by-status; in-app notifications + web push; Sub Admins management; mass discount control.
 6. **Hardening** — responsive/RTL/dark-mode QA pass on every screen, SEO meta from Parameters, empty/error states, performance.
 
@@ -121,10 +123,10 @@ Too large for one plan — six sequential sub-projects, each getting its own imp
 - Checkout and status-change stock mutations run in Prisma transactions.
 - **Tests:** Vitest unit tests for the money/stock/promo domain logic (effective price, delivery threshold, status transitions); Playwright smoke tests for the two critical journeys (client checkout; admin order confirmation). TDD during implementation per superpowers workflow.
 
-## 7. Open decisions for the owner
+## 7. Owner decisions (resolved 2026-08-11)
 
-1. **Guest checkout** — require login (current default) or allow ordering with just name/phone/address?
-2. **Currency & market** — TND default correct?
-3. **Hosting target** — VPS/Node (current assumption, local uploads) or Vercel/serverless (needs S3-compatible storage)?
-4. **Client order history** — spec doesn't mention a "my orders" page for clients; include it or not? (Currently excluded — YAGNI.)
-5. **SMTP provider** for password-reset emails in production.
+1. **Guest checkout** — ✅ allowed (name/phone/address; account optional).
+2. **Currency** — ✅ TND.
+3. **Hosting** — ✅ VPS/Node with persistent disk; images stored locally under `uploads/`.
+4. **Client order history** — ✅ include a My Orders page for logged-in clients.
+5. **SMTP provider** for password-reset emails — still needed before production launch; dev logs the reset link. Not blocking implementation.
