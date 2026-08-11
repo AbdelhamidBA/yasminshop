@@ -135,6 +135,15 @@ Phase 1 (Foundation) merged clean — 17 commits, all task-reviewed, final 3-len
 - **Phase 6 (hardening):** credentials rate limiting + dummy-hash on unknown email (timing oracle); `AUTH_TRUST_HOST`/`AUTH_URL` env documentation for the VPS reverse-proxy deploy; RTL icon mirroring (`PanelLeft*` don't flip); fonts (Geist was dropped); per-locale `metadata`/SEO (no `<title>` today); derive middleware locale regex from `routing.locales`.
 - Cosmetic riders: role string-union duplicated across next-auth types/auth.config/Prisma enum; welcome-heading `", "` separator (Arabic comma); `AGENTS.md`/`CLAUDE.md` are scaffold-generated; package name `ecom-platrome`.
 
+## 6c. Phase 2 carry-forward constraints (from the 2026-08-11 final branch review)
+
+Phase 2 (Admin Catalog) merged clean — 16 commits, 13 tasks, all panel-reviewed; e2e suite (4 journeys) green 3×; fix wave applied (raw-id guards on bulk mutations, QuantityCell re-sync). Binding on later phases:
+
+- **Phase 3 (storefront):** cart promo validation MUST check `archivedAt` AND `active` AND `expiresAt` (an archived code can currently still be toggled active). Storefront product queries must define archived-category semantics (filter products whose category/parent is archived). Add `.max()` bounds to millimes params/prices before checkout snapshots them into `Order` Int4 columns. Regenerate the seed with a real uploaded webp (DEMO-001's `/placeholder-product.svg` fails the upload-prefix rule on edit-save). Client-facing zod schemas must use localized message keys from day one (admin's raw-English-zod-messages rider is deferred to Phase 6 — do not inherit it client-side). A root category with products can be demoted to child via the UI — storefront filters must tolerate or Phase 3 adds a products-count guard.
+- **Phase 4 (orders/clients):** `clients` and `orders` admin pages are still Phase 1 stubs with no own role check — add `requirePageStaff()` the moment they become data-bearing. The sub-admin order-status action must copy the guarded `updateProductQuantity` idiom (scalar id guard + single-field data object). Consider `updatedAt` optimistic concurrency before stock-affecting status changes (admin full-edit currently clobbers concurrent quantity edits).
+- **Phase 5:** massDiscountPct admin control (Setting row exists, structurally isolated from Phase 2 parameters).
+- **Phase 6 (hardening batch, all ledgered):** localized zod error map project-wide; upload hardening (content-length precheck, `.webp` + nosniff on GET, explicit `limitInputPixels`); P2025→notFound mapping on archive/restore; P2002 catch on slug/code creates; settings per-key salvage + structuredClone + fixed key-list; parseDinars safe-integer guard; slug loop cap + œ/æ mapping; category-dialog locale-aware parent labels; a11y (featured icon sr-only, Base UI Select label association); RTL leftovers (submenu side, sr-only "Close" i18n); 4× set-state-in-effect lint cleanup; expiresAt timezone pinning; e2e polish (uploads webp cleanup, expect timeout 10s, combobox aria-labels).
+
 ## 7. Owner decisions (resolved 2026-08-11)
 
 1. **Guest checkout** — ✅ allowed (name/phone/address; account optional).
