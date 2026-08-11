@@ -2,6 +2,7 @@
   "common": {
     "siteName": "متجري",
     "currency": "د.ت",
+    "search": "بحث",
     "cart": "السلة",
     "login": "تسجيل الدخول",
     "logout": "تسجيل الخروج",
@@ -30,6 +31,9 @@
   },
   "storefront": {
     "outOfStock": "نفد المخزون"
+  },
+  "search": {
+    "noResults": "لا نتائج"
   },
   "catalog": {
     "title": "جميع المنتجات",

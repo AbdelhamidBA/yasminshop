@@ -2,6 +2,7 @@
   "common": {
     "siteName": "Ma Boutique",
     "currency": "DT",
+    "search": "Rechercher",
     "cart": "Panier",
     "login": "Se connecter",
     "logout": "Se déconnecter",
@@ -30,6 +31,9 @@
   },
   "storefront": {
     "outOfStock": "Rupture de stock"
+  },
+  "search": {
+    "noResults": "Aucun résultat"
   },
   "catalog": {
     "title": "Tous les produits",
