@@ -132,11 +132,12 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
       return;
     }
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      // Arrows are re-engagement even before anything is fetched: lift a
+      // prior dismissal BEFORE the empty guard, so Escape+ArrowDown racing
+      // ahead of the first response doesn't leave the panel suppressed.
+      dismissedRef.current = false;
       if (!suggestions || suggestions.length === 0) return;
       event.preventDefault();
-      // Arrows explicitly (re)open the panel — re-engagement lifts a prior
-      // dismissal.
-      dismissedRef.current = false;
       setOpen(true);
       const count = suggestions.length;
       setActiveIndex((prev) =>
