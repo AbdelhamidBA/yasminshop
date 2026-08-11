@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {MAX_MILLIMES} from '../money';
 
 const optionalId = z
   .string()
@@ -37,7 +38,7 @@ export const productSchema = z.object({
   nameAr: z.string().trim().min(1),
   descriptionFr: z.string().trim().min(1),
   descriptionAr: z.string().trim().min(1),
-  priceMillimes: z.number().int().min(0),
+  priceMillimes: z.number().int().min(0).max(MAX_MILLIMES),
   discountPct: z.number().int().min(0).max(100),
   quantity: z.number().int().min(0),
   featured: z.boolean(),
@@ -52,8 +53,8 @@ export const quantitySchema = z.object({
 });
 
 export const parametersSchema = z.object({
-  deliveryCostMillimes: z.number().int().min(0),
-  freeDeliveryThresholdMillimes: z.number().int().min(0),
+  deliveryCostMillimes: z.number().int().min(0).max(MAX_MILLIMES),
+  freeDeliveryThresholdMillimes: z.number().int().min(0).max(MAX_MILLIMES),
   currency: z.string().trim().min(1).max(8),
   lastChanceThreshold: z.number().int().min(0),
   copyright: z.string().trim(),

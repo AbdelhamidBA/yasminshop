@@ -52,6 +52,7 @@ model Category {
 model Product {
   id            String         @id @default(cuid())
   reference     String         @unique
+  slug          String         @unique
   nameFr        String
   nameAr        String
   descriptionFr String

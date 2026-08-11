@@ -1,5 +1,6 @@
 import {describe, expect, test} from 'vitest';
-import {categorySchema, productSchema, promoCodeSchema} from './catalog';
+import {MAX_MILLIMES} from '../money';
+import {categorySchema, parametersSchema, productSchema, promoCodeSchema} from './catalog';
 
 describe('categorySchema', () => {
   test('empty parentId becomes null', () => {
@@ -46,5 +47,40 @@ describe('productSchema', () => {
   });
   test('rejects discount above 100', () => {
     expect(productSchema.safeParse({...valid, discountPct: 101}).success).toBe(false);
+  });
+  test('accepts priceMillimes at MAX_MILLIMES and rejects above', () => {
+    expect(productSchema.safeParse({...valid, priceMillimes: MAX_MILLIMES}).success).toBe(true);
+    expect(productSchema.safeParse({...valid, priceMillimes: MAX_MILLIMES + 1}).success).toBe(false);
+  });
+});
+
+describe('parametersSchema', () => {
+  const valid = {
+    deliveryCostMillimes: 7_000,
+    freeDeliveryThresholdMillimes: 100_000,
+    currency: 'TND',
+    lastChanceThreshold: 5,
+    copyright: '',
+    siteDescription: '',
+    keywords: '',
+    socialLinks: {facebook: '', instagram: '', tiktok: ''}
+  };
+  test('accepts millimes fields at MAX_MILLIMES', () => {
+    const bounded = {
+      ...valid,
+      deliveryCostMillimes: MAX_MILLIMES,
+      freeDeliveryThresholdMillimes: MAX_MILLIMES
+    };
+    expect(parametersSchema.safeParse(bounded).success).toBe(true);
+  });
+  test('rejects deliveryCostMillimes above MAX_MILLIMES', () => {
+    expect(
+      parametersSchema.safeParse({...valid, deliveryCostMillimes: MAX_MILLIMES + 1000}).success
+    ).toBe(false);
+  });
+  test('rejects freeDeliveryThresholdMillimes above MAX_MILLIMES', () => {
+    expect(
+      parametersSchema.safeParse({...valid, freeDeliveryThresholdMillimes: MAX_MILLIMES + 1}).success
+    ).toBe(false);
   });
 });

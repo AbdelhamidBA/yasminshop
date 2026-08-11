@@ -1,5 +1,18 @@
 import {describe, expect, test} from 'vitest';
-import {effectivePriceMillimes, formatMillimes, millimesToInput, parseDinarsToMillimes} from './money';
+import {
+  effectivePriceMillimes,
+  formatMillimes,
+  MAX_MILLIMES,
+  millimesToInput,
+  parseDinarsToMillimes
+} from './money';
+
+describe('MAX_MILLIMES', () => {
+  test('is 2 billion millimes, safely under the Int4 max', () => {
+    expect(MAX_MILLIMES).toBe(2_000_000_000);
+    expect(MAX_MILLIMES).toBeLessThan(2_147_483_647);
+  });
+});
 
 describe('effectivePriceMillimes', () => {
   test('no discount returns price unchanged', () => {

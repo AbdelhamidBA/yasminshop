@@ -1,6 +1,10 @@
 // All monetary amounts in this codebase are integer millimes (1 TND = 1000 millimes).
 // Amounts are non-negative.
 
+// Upper bound for any millimes amount (2,000,000 DT) — safely under the
+// Postgres Int4 max (2,147,483,647) so bounded inputs can never overflow.
+export const MAX_MILLIMES = 2_000_000_000;
+
 export function effectivePriceMillimes(
   priceMillimes: number,
   discountPct: number,

@@ -8,6 +8,7 @@ import {requireAdmin, requireStaff} from '@/server/authz';
 import {prisma} from '@/lib/db';
 import {parseDinarsToMillimes} from '@/lib/money';
 import {productSchema, quantitySchema} from '@/lib/schemas/catalog';
+import {ensureUniqueSlug, slugify} from '@/lib/slugify';
 
 const PATH = '/[locale]/admin/products';
 
@@ -62,6 +63,23 @@ function validateImageUrls(images: RawImages): boolean {
   return images.every((image) => image.url.startsWith('/api/uploads/'));
 }
 
+function generateProductSlug(nameFr: string): Promise<string> {
+  return ensureUniqueSlug(
+    slugify(nameFr) || 'produit',
+    async (s) => (await prisma.product.count({where: {slug: s}})) > 0
+  );
+}
+
+// P2002 can fire on Product.reference or Product.slug — discriminate by the
+// violated constraint's target column.
+function isUniqueViolationOn(error: unknown, column: string): boolean {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') {
+    return false;
+  }
+  const target = error.meta?.target;
+  return Array.isArray(target) ? target.includes(column) : String(target ?? '').includes(column);
+}
+
 export async function createProduct(formData: FormData): Promise<ActionResult<{id: string}>> {
   try {
     await requireAdmin();
@@ -75,14 +93,26 @@ export async function createProduct(formData: FormData): Promise<ActionResult<{i
     if (categoryError) return failure(categoryError);
 
     const {images, ...fields} = parsed.data;
-    const created = await prisma.product.create({
-      data: {...fields, images: {create: images}}
-    });
+    let created;
+    try {
+      const slug = await generateProductSlug(fields.nameFr);
+      created = await prisma.product.create({
+        data: {...fields, slug, images: {create: images}}
+      });
+    } catch (error) {
+      // Concurrent create can race ensureUniqueSlug; retry once with a fresh
+      // slug, then rethrow.
+      if (!isUniqueViolationOn(error, 'slug')) throw error;
+      const slug = await generateProductSlug(fields.nameFr);
+      created = await prisma.product.create({
+        data: {...fields, slug, images: {create: images}}
+      });
+    }
     revalidatePath(PATH, 'page');
     return success({id: created.id});
   } catch (error) {
     if (error instanceof AuthzError) return failure('forbidden');
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    if (isUniqueViolationOn(error, 'reference')) {
       return failure('validation', {reference: 'referenceTaken'});
     }
     throw error;
@@ -115,7 +145,7 @@ export async function updateProduct(id: string, formData: FormData): Promise<Act
     return success(undefined);
   } catch (error) {
     if (error instanceof AuthzError) return failure('forbidden');
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    if (isUniqueViolationOn(error, 'reference')) {
       return failure('validation', {reference: 'referenceTaken'});
     }
     throw error;
