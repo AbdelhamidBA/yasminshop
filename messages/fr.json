@@ -78,6 +78,42 @@
         "forbidden": "Action non autorisée."
       }
     },
+    "products": {
+      "title": "Produits",
+      "add": "Ajouter un produit",
+      "search": "Rechercher par nom ou référence...",
+      "reference": "Référence",
+      "name": "Nom",
+      "category": "Catégorie",
+      "price": "Prix",
+      "discount": "Remise",
+      "quantity": "Quantité",
+      "featured": "En vedette",
+      "lowStock": "Stock bas",
+      "outOfStock": "Rupture",
+      "archived": "Archivé",
+      "showArchived": "Afficher les archivés",
+      "actions": "Actions",
+      "edit": "Modifier",
+      "archive": "Archiver",
+      "restore": "Restaurer",
+      "save": "Enregistrer",
+      "quantitySaved": "Quantité mise à jour.",
+      "archivedToast": "Produit archivé.",
+      "restoredToast": "Produit restauré.",
+      "empty": "Aucun produit trouvé.",
+      "confirmArchiveTitle": "Archiver ce produit ?",
+      "confirmArchiveBody": "Le produit sera masqué de la boutique.",
+      "cancel": "Annuler",
+      "errors": {
+        "validation": "Veuillez corriger les champs en rouge.",
+        "invalidQuantity": "Quantité invalide.",
+        "notFound": "Produit introuvable.",
+        "forbidden": "Action non autorisée.",
+        "invalidCategory": "Catégorie invalide.",
+        "invalidSubCategory": "Sous-catégorie invalide."
+      }
+    },
     "parameters": {
       "title": "Paramètres généraux",
       "delivery": "Livraison",

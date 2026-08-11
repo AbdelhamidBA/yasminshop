@@ -78,6 +78,42 @@
         "forbidden": "إجراء غير مسموح به."
       }
     },
+    "products": {
+      "title": "المنتجات",
+      "add": "إضافة منتج",
+      "search": "ابحث بالاسم أو المرجع...",
+      "reference": "المرجع",
+      "name": "الاسم",
+      "category": "الفئة",
+      "price": "السعر",
+      "discount": "التخفيض",
+      "quantity": "الكمية",
+      "featured": "مميز",
+      "lowStock": "مخزون منخفض",
+      "outOfStock": "نفد المخزون",
+      "archived": "مؤرشف",
+      "showArchived": "عرض المؤرشفة",
+      "actions": "إجراءات",
+      "edit": "تعديل",
+      "archive": "أرشفة",
+      "restore": "استعادة",
+      "save": "حفظ",
+      "quantitySaved": "تم تحديث الكمية.",
+      "archivedToast": "تمت أرشفة المنتج.",
+      "restoredToast": "تمت استعادة المنتج.",
+      "empty": "لا توجد منتجات.",
+      "confirmArchiveTitle": "أرشفة هذا المنتج؟",
+      "confirmArchiveBody": "سيتم إخفاء المنتج من المتجر.",
+      "cancel": "إلغاء",
+      "errors": {
+        "validation": "يرجى تصحيح الحقول المحددة بالأحمر.",
+        "invalidQuantity": "كمية غير صالحة.",
+        "notFound": "المنتج غير موجود.",
+        "forbidden": "إجراء غير مسموح به.",
+        "invalidCategory": "فئة غير صالحة.",
+        "invalidSubCategory": "فئة فرعية غير صالحة."
+      }
+    },
     "parameters": {
       "title": "الإعدادات العامة",
       "delivery": "التوصيل",
