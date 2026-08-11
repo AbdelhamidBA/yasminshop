@@ -114,6 +114,39 @@
         "invalidSubCategory": "Sous-catégorie invalide."
       }
     },
+    "productForm": {
+      "createTitle": "Nouveau produit",
+      "editTitle": "Modifier le produit",
+      "reference": "Référence",
+      "nameFr": "Nom (français)",
+      "nameAr": "Nom (arabe)",
+      "descriptionFr": "Description (français)",
+      "descriptionAr": "Description (arabe)",
+      "price": "Prix (DT)",
+      "discountPct": "Remise (%)",
+      "quantity": "Quantité",
+      "featured": "Produit en vedette",
+      "category": "Catégorie",
+      "subCategory": "Sous-catégorie",
+      "noSubCategory": "Aucune",
+      "images": "Images",
+      "addImage": "Ajouter une image",
+      "removeImage": "Retirer",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "uploading": "Téléversement...",
+      "uploadFailed": "Échec du téléversement.",
+      "minOneImage": "Ajoutez au moins une image.",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "saved": "Produit enregistré.",
+      "readOnly": "Lecture seule — vous pouvez uniquement modifier la quantité depuis la liste.",
+      "errors": {
+        "invalidAmount": "Prix invalide (ex. 89.000).",
+        "referenceTaken": "Cette référence existe déjà.",
+        "imagesRequired": "Au moins une image valide est requise."
+      }
+    },
     "parameters": {
       "title": "Paramètres généraux",
       "delivery": "Livraison",

@@ -114,6 +114,39 @@
         "invalidSubCategory": "فئة فرعية غير صالحة."
       }
     },
+    "productForm": {
+      "createTitle": "منتج جديد",
+      "editTitle": "تعديل المنتج",
+      "reference": "المرجع",
+      "nameFr": "الاسم (بالفرنسية)",
+      "nameAr": "الاسم (بالعربية)",
+      "descriptionFr": "الوصف (بالفرنسية)",
+      "descriptionAr": "الوصف (بالعربية)",
+      "price": "السعر (د.ت)",
+      "discountPct": "التخفيض (%)",
+      "quantity": "الكمية",
+      "featured": "منتج مميز",
+      "category": "الفئة",
+      "subCategory": "الفئة الفرعية",
+      "noSubCategory": "بدون",
+      "images": "الصور",
+      "addImage": "إضافة صورة",
+      "removeImage": "إزالة",
+      "moveUp": "تقديم",
+      "moveDown": "تأخير",
+      "uploading": "جارٍ الرفع...",
+      "uploadFailed": "فشل رفع الصورة.",
+      "minOneImage": "أضف صورة واحدة على الأقل.",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "saved": "تم حفظ المنتج.",
+      "readOnly": "للعرض فقط — يمكنك تعديل الكمية فقط من القائمة.",
+      "errors": {
+        "invalidAmount": "سعر غير صالح (مثال 89.000).",
+        "referenceTaken": "هذا المرجع مستعمل من قبل.",
+        "imagesRequired": "مطلوب صورة صالحة واحدة على الأقل."
+      }
+    },
     "parameters": {
       "title": "الإعدادات العامة",
       "delivery": "التوصيل",
