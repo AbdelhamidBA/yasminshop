@@ -1,7 +1,7 @@
-import {ShoppingCart} from 'lucide-react';
 import {getLocale, getTranslations} from 'next-intl/server';
 import {auth} from '@/auth';
 import {Link} from '@/i18n/navigation';
+import {CartBadge} from '@/components/cart/cart-badge';
 import {LanguageSwitcher} from '@/components/language-switcher';
 import {LogoutButton} from '@/components/logout-button';
 import {SearchBox} from '@/components/storefront/search-box';
@@ -44,12 +44,8 @@ export async function SiteHeader() {
         <div className="ms-auto flex items-center gap-2">
           <LanguageSwitcher />
           <ThemeToggle />
-          <span
-            aria-label={t('common.cart')}
-            className="flex size-9 items-center justify-center rounded-md border"
-          >
-            <ShoppingCart className="size-4" />
-          </span>
+          {/* Client leaf — the header stays a server component. */}
+          <CartBadge />
           {session ? (
             <LogoutButton />
           ) : (
