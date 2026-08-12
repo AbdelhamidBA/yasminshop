@@ -105,7 +105,9 @@
     "quantity": "Quantité",
     "decreaseQuantity": "Diminuer la quantité",
     "increaseQuantity": "Augmenter la quantité",
-    "description": "Description"
+    "description": "Description",
+    "galleryLabel": "Images du produit {name}",
+    "galleryThumb": "{name} — image {index} sur {count}"
   },
   "breadcrumb": {
     "home": "Accueil",

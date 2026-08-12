@@ -105,7 +105,9 @@
     "quantity": "الكمية",
     "decreaseQuantity": "إنقاص الكمية",
     "increaseQuantity": "زيادة الكمية",
-    "description": "الوصف"
+    "description": "الوصف",
+    "galleryLabel": "صور المنتج {name}",
+    "galleryThumb": "{name} — الصورة {index} من {count}"
   },
   "breadcrumb": {
     "home": "الرئيسية",

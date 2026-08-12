@@ -51,10 +51,13 @@ export function AddToCart({
       <span id={labelId} className="text-sm font-medium">
         {t('quantity')}
       </span>
+      {/* Karina-soft stepper: pill outline, roomier hit targets. Locator
+          surfaces preserved exactly — +/− button text, their aria-labels and
+          the aria-live qty span (Phase 6 a11y). */}
       <div
         role="group"
         aria-labelledby={labelId}
-        className="flex items-center rounded-lg border bg-card"
+        className="flex h-12 items-center rounded-full border bg-card px-1"
       >
         <Button
           type="button"
@@ -63,10 +66,11 @@ export function AddToCart({
           aria-label={t('decreaseQuantity')}
           disabled={outOfStock || qty <= 1}
           onClick={() => setQty((prev) => Math.max(1, prev - 1))}
+          className="rounded-full"
         >
           −
         </Button>
-        <span aria-live="polite" className="w-10 text-center text-sm font-medium tabular-nums">
+        <span aria-live="polite" className="w-10 text-center text-base font-semibold tabular-nums">
           {outOfStock ? 0 : qty}
         </span>
         <Button
@@ -76,16 +80,19 @@ export function AddToCart({
           aria-label={t('increaseQuantity')}
           disabled={outOfStock || qty >= maxQty}
           onClick={() => setQty((prev) => Math.min(maxQty, prev + 1))}
+          className="rounded-full"
         >
           +
         </Button>
       </div>
+      {/* Confident CTA: taller rounded-full pill; text node stays t('addToCart')
+          ('Ajouter au panier') and onAdd still ends in openDrawer(). */}
       <Button
         type="button"
         size="lg"
         disabled={outOfStock}
         onClick={onAdd}
-        className="h-11 w-full px-8 text-sm font-semibold tracking-wide uppercase sm:w-auto"
+        className="h-12 w-full rounded-full px-10 text-sm font-semibold tracking-wide uppercase shadow-sm sm:w-auto"
       >
         {outOfStock ? t('outOfStock') : t('addToCart')}
       </Button>

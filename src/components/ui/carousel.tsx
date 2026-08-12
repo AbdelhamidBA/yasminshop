@@ -35,6 +35,9 @@ type CarouselContextValue = {
 
 const CarouselContext = React.createContext<CarouselContextValue | null>(null);
 
+// Exported for callers that render custom synced controls inside <Carousel>
+// (e.g. the product gallery's thumbnail strip: click → scrollTo, active thumb
+// highlighted from selectedIndex).
 function useCarousel() {
   const context = React.useContext(CarouselContext);
   if (!context) throw new Error('useCarousel must be used within <Carousel>');
@@ -225,5 +228,6 @@ export {
   CarouselPrevious,
   CarouselNext,
   CarouselDots,
+  useCarousel,
   type CarouselApi
 };
