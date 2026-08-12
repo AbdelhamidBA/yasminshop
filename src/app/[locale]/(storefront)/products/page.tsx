@@ -82,11 +82,13 @@ export default async function CatalogPage({
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
-      <h1 className="text-2xl font-bold">{t('title')}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{t('results', {count: total})}</p>
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1 border-b pb-4">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('results', {count: total})}</p>
+      </div>
 
       {/* Mobile: collapsible filters via a plain <details> (no extra deps). */}
-      <details className="mt-4 rounded-lg border p-4 lg:hidden">
+      <details className="mt-4 rounded-2xl border bg-card p-4 lg:hidden">
         <summary className="cursor-pointer select-none text-sm font-medium">
           {t('filters')}
         </summary>
@@ -94,10 +96,14 @@ export default async function CatalogPage({
       </details>
 
       <div className="mt-6 flex items-start gap-8">
-        <aside className="hidden w-64 shrink-0 lg:block">{filters}</aside>
+        <aside className="hidden w-64 shrink-0 lg:block">
+          <div className="rounded-2xl border bg-card p-5">{filters}</div>
+        </aside>
         <div className="min-w-0 flex-1">
           {products.length === 0 ? (
-            <p className="py-12 text-center text-muted-foreground">{t('empty')}</p>
+            <div className="rounded-2xl border border-dashed py-16 text-center text-sm text-muted-foreground">
+              {t('empty')}
+            </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {products.map((product) => (

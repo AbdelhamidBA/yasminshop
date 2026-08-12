@@ -19,6 +19,16 @@ export async function POST(request: Request) {
     throw error;
   }
 
+  // Content-Length precheck: reject an oversized body BEFORE buffering the whole
+  // multipart payload into memory via formData(). The per-file size is still
+  // re-checked below (Content-Length is client-supplied and covers the whole
+  // multipart envelope, not just the file), so this is a cheap early-out, not the
+  // authoritative limit.
+  const contentLength = Number(request.headers.get('content-length'));
+  if (Number.isFinite(contentLength) && contentLength > MAX_UPLOAD_BYTES) {
+    return NextResponse.json({error: 'tooLarge'}, {status: 413});
+  }
+
   const formData = await request.formData();
   const file = formData.get('file');
   if (!(file instanceof File)) {
@@ -34,7 +44,10 @@ export async function POST(request: Request) {
   const source = Buffer.from(await file.arrayBuffer());
   let processed: Buffer;
   try {
-    processed = await sharp(source)
+    // limitInputPixels caps the decoded dimensions (a small compressed file can
+    // decode to a huge bitmap — a decompression-bomb DoS). 64MP is well above any
+    // legitimate product photo but bounds the worst case.
+    processed = await sharp(source, {limitInputPixels: 64_000_000})
       .rotate()
       .resize({width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true})
       .webp({quality: 82})

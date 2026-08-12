@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
+import {fieldErrorText} from '@/lib/field-error';
 import {updateSubAdmin} from './actions';
 
 export type EditableSubAdmin = {
@@ -38,15 +39,10 @@ export function SubAdminEditDialog({
     if (open) setFieldErrors({});
   }, [open]);
 
-  function errorText(code: string): string {
-    if (t.has(`errors.${code}` as never)) return t(`errors.${code}` as never);
-    return code;
-  }
-
   function errorLine(key: string) {
     const message = fieldErrors[key];
     if (!message) return null;
-    return <p className="text-sm text-destructive">{errorText(message)}</p>;
+    return <p className="text-sm text-destructive">{fieldErrorText(message, t)}</p>;
   }
 
   function submit(formData: FormData) {

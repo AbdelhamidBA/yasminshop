@@ -1,8 +1,10 @@
 'use server';
 
+import {headers} from 'next/headers';
 import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/action-result';
 import {prisma} from '@/lib/db';
 import {hashPassword} from '@/lib/password';
+import {RATE_LIMITS, clientIpFromHeaders, enforceRateLimit} from '@/lib/rate-limit';
 import {
   RESET_TOKEN_PATTERN,
   RESET_TOKEN_TTL_MS,
@@ -32,6 +34,20 @@ export async function requestPasswordReset(
   _prevState: ActionResult | undefined,
   formData: FormData
 ): Promise<ActionResult> {
+  // Rate-limit by client IP BEFORE any DB work — this is an unauthenticated
+  // public write (it mints a token + logs a link). Over-limit collapses to a
+  // typed failure; the form treats it like any other non-field error.
+  const ip = clientIpFromHeaders(await headers());
+  if (
+    !enforceRateLimit(
+      `password-reset:${ip}`,
+      RATE_LIMITS.passwordReset.limit,
+      RATE_LIMITS.passwordReset.windowMs
+    ).allowed
+  ) {
+    return failure('rateLimited');
+  }
+
   const email = String(formData.get('email') ?? '').trim();
   // Scalar-guarded locale for the URL prefix only — allowlist, fallback 'fr'.
   const locale = formData.get('locale') === 'ar' ? 'ar' : 'fr';
@@ -98,7 +114,24 @@ export async function resetPassword(token: string, formData: FormData): Promise<
         data: {usedAt: now}
       });
       if (updated.count === 0) throw new ResetAbort();
-      await tx.user.update({where: {id: row.user.id}, data: {passwordHash}});
+      // Rotate the password AND bump tokenVersion in the same tx: a live JWT
+      // session for this user (issued before the reset) no longer matches the
+      // DB version, so it is revoked on the next protected navigation — the
+      // §6b/§6e session-revocation rider. A stolen credential's session dies
+      // the instant the owner resets.
+      await tx.user.update({
+        where: {id: row.user.id},
+        data: {passwordHash, tokenVersion: {increment: 1}}
+      });
+      // OWASP rider: a completed reset invalidates the user's OTHER outstanding
+      // reset tokens too. Any still-unused token (the just-burned one already has
+      // usedAt set, so `usedAt: null` excludes it) is stamped used in the SAME
+      // transaction — an attacker holding a second, concurrently-issued link can
+      // no longer replay it after the password has changed.
+      await tx.passwordResetToken.updateMany({
+        where: {userId: row.user.id, usedAt: null},
+        data: {usedAt: now}
+      });
     });
   } catch (error) {
     if (error instanceof ResetAbort) return failure('invalidToken');

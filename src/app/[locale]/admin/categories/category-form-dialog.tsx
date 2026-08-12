@@ -12,6 +12,7 @@ import {Label} from '@/components/ui/label';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
+import {fieldErrorText} from '@/lib/field-error';
 import {createCategory, updateCategory} from './actions';
 
 export type EditableCategory = {
@@ -46,6 +47,12 @@ export function CategoryFormDialog({
     }
   }, [open, category]);
 
+  function errorLine(key: string) {
+    const message = fieldErrors[key];
+    if (!message) return null;
+    return <p className="text-sm text-destructive">{fieldErrorText(message, t)}</p>;
+  }
+
   function submit(formData: FormData) {
     formData.set('parentId', parentId === NO_PARENT ? '' : parentId);
     startTransition(async () => {
@@ -72,12 +79,12 @@ export function CategoryFormDialog({
           <div className="flex flex-col gap-2">
             <Label htmlFor="nameFr">{t('nameFr')}</Label>
             <Input id="nameFr" name="nameFr" defaultValue={category?.nameFr ?? ''} required />
-            {fieldErrors.nameFr && <p className="text-sm text-destructive">{fieldErrors.nameFr}</p>}
+            {errorLine('nameFr')}
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="nameAr">{t('nameAr')}</Label>
             <Input id="nameAr" name="nameAr" dir="rtl" defaultValue={category?.nameAr ?? ''} required />
-            {fieldErrors.nameAr && <p className="text-sm text-destructive">{fieldErrors.nameAr}</p>}
+            {errorLine('nameAr')}
           </div>
           <div className="flex flex-col gap-2">
             <Label>{t('parent')}</Label>

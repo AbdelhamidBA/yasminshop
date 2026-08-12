@@ -98,10 +98,13 @@ export async function archiveClient(id: string): Promise<ActionResult> {
     await requireAdmin();
     if (typeof id !== 'string' || !ID_PATTERN.test(id)) return failure('notFound');
     // Archiving also blocks login: authorize() rejects users with a non-null
-    // archivedAt (enforced in src/auth.ts since Phase 1).
+    // archivedAt (enforced in src/auth.ts since Phase 1). The tokenVersion bump
+    // additionally KILLS any already-live session — archiving is the security
+    // event, so a signed-in client is revoked on their next protected access
+    // (My Orders / account) rather than lingering until token expiry.
     const updated = await prisma.user.updateMany({
       where: {id, role: 'CLIENT'},
-      data: {archivedAt: new Date()}
+      data: {archivedAt: new Date(), tokenVersion: {increment: 1}}
     });
     if (updated.count === 0) return failure('notFound');
     revalidatePath(PATH, 'page');
@@ -116,9 +119,12 @@ export async function restoreClient(id: string): Promise<ActionResult> {
   try {
     await requireAdmin();
     if (typeof id !== 'string' || !ID_PATTERN.test(id)) return failure('notFound');
+    // Restore also bumps tokenVersion — belt-and-braces (an archived user has no
+    // live session to begin with), keeping every archive/restore edge a clean
+    // version boundary.
     const updated = await prisma.user.updateMany({
       where: {id, role: 'CLIENT'},
-      data: {archivedAt: null}
+      data: {archivedAt: null, tokenVersion: {increment: 1}}
     });
     if (updated.count === 0) return failure('notFound');
     revalidatePath(PATH, 'page');

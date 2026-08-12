@@ -98,7 +98,7 @@ export default async function InvoicePage({
           </thead>
           <tbody>
             {order.items.map((item) => (
-              <tr key={item.id} className="border-b border-neutral-200">
+              <tr key={item.id} className="border-b border-neutral-200 break-inside-avoid">
                 <td className="py-2 pe-4">
                   {/* Snapshot names — Arabic invoices prefer the Arabic
                       snapshot, || falls back for pre-Phase-4 items. */}

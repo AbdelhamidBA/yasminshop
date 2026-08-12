@@ -21,7 +21,11 @@ export function LoginForm() {
         <Label htmlFor="password">{t('password')}</Label>
         <Input id="password" name="password" type="password" autoComplete="current-password" required dir="ltr" />
       </div>
-      {error && <p className="text-sm text-destructive">{t('invalidCredentials')}</p>}
+      {error && (
+        <p className="text-sm text-destructive">
+          {t(error === 'rateLimited' ? 'tooManyAttempts' : 'invalidCredentials')}
+        </p>
+      )}
       <Button type="submit" disabled={pending}>
         {t('signIn')}
       </Button>

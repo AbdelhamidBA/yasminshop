@@ -1,7 +1,9 @@
 'use server';
 
+import {headers} from 'next/headers';
 import {auth} from '@/auth';
 import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/action-result';
+import {RATE_LIMITS, clientIpFromHeaders, enforceRateLimit} from '@/lib/rate-limit';
 import {checkoutSchema} from '@/lib/schemas/checkout';
 import {createOrderCore, parseOrderLines} from '@/server/create-order';
 import {validatePromoCode} from '@/server/promo';
@@ -12,6 +14,14 @@ import {validatePromoCode} from '@/server/promo';
 export async function checkPromo(
   code: string
 ): Promise<ActionResult<{code: string; percentOff: number}>> {
+  // Public unauthenticated write surface — rate-limit by IP before the lookup.
+  const ip = clientIpFromHeaders(await headers());
+  if (
+    !enforceRateLimit(`promo:${ip}`, RATE_LIMITS.checkPromo.limit, RATE_LIMITS.checkPromo.windowMs)
+      .allowed
+  ) {
+    return failure('rateLimited');
+  }
   const promo = await validatePromoCode(code);
   return promo === null ? failure('invalidPromo') : success(promo);
 }
@@ -22,6 +32,20 @@ export async function checkPromo(
 // triple-check, bounded totals, snapshot transaction — live in the shared
 // createOrderCore, which admin manual creation reuses verbatim.
 export async function placeOrder(formData: FormData): Promise<ActionResult<{orderId: string}>> {
+  // Rate-limit by IP before any parsing or DB work — placing an order is an
+  // unauthenticated public write. Over-limit → typed 'rateLimited' failure the
+  // checkout form surfaces as a toast.
+  const ip = clientIpFromHeaders(await headers());
+  if (
+    !enforceRateLimit(
+      `order:${ip}`,
+      RATE_LIMITS.placeOrder.limit,
+      RATE_LIMITS.placeOrder.windowMs
+    ).allowed
+  ) {
+    return failure('rateLimited');
+  }
+
   // ── Step 1: guarded items JSON + customer fields via checkoutSchema ──
   const lines = parseOrderLines(formData.get('items'));
   if (lines === null) return failure('cartChanged');

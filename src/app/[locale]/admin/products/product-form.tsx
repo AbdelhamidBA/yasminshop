@@ -12,6 +12,7 @@ import {
 import {Switch} from '@/components/ui/switch';
 import {Textarea} from '@/components/ui/textarea';
 import {Link, useRouter} from '@/i18n/navigation';
+import {fieldErrorText} from '@/lib/field-error';
 import {millimesToInput} from '@/lib/money';
 import type {CategoryTreeNode} from '@/server/categories';
 import type {ProductDetail} from '@/server/products';
@@ -30,7 +31,6 @@ export function ProductForm({
   readOnly: boolean;
 }) {
   const t = useTranslations('admin.productForm');
-  const tAdmin = useTranslations('admin');
   const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -50,16 +50,7 @@ export function ProductForm({
   const subCategories = categories.find((category) => category.id === categoryId)?.children ?? [];
 
   function errorText(code: string): string {
-    if (tAdmin.has(`productForm.errors.${code}` as never)) {
-      return tAdmin(`productForm.errors.${code}` as never);
-    }
-    if (tAdmin.has(`products.errors.${code}` as never)) {
-      return tAdmin(`products.errors.${code}` as never);
-    }
-    if (tAdmin.has(`productForm.${code}` as never)) {
-      return tAdmin(`productForm.${code}` as never);
-    }
-    return code;
+    return fieldErrorText(code, t);
   }
 
   function errorLine(key: string) {

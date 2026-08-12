@@ -33,16 +33,19 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     self.clients.matchAll({type: 'window', includeUncontrolled: true}).then((clientList) => {
-      // Reuse an already-open admin tab when possible; otherwise open a new one.
-      for (const client of clientList) {
-        if ('focus' in client) {
-          return client.focus().then((focused) => {
-            if (focused && typeof focused.navigate === 'function') {
-              return focused.navigate(url).catch(() => undefined);
-            }
-            return undefined;
-          });
-        }
+      // Prefer an already-open ADMIN tab (matching /admin in its URL): focus it
+      // and route it to the order. A non-admin storefront tab is NOT hijacked —
+      // if no admin tab exists we open a fresh window instead.
+      const adminClient = clientList.find(
+        (client) => 'focus' in client && (client.url || '').includes('/admin')
+      );
+      if (adminClient) {
+        return adminClient.focus().then((focused) => {
+          if (focused && typeof focused.navigate === 'function') {
+            return focused.navigate(url).catch(() => undefined);
+          }
+          return undefined;
+        });
       }
       return self.clients.openWindow(url);
     })

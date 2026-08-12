@@ -18,6 +18,10 @@ import {cartReducer, MAX_QTY, type CartAction, type CartItem, type CartState} fr
 
 const STORAGE_KEY = 'cart-v1';
 
+// Upper bound on how many distinct lines a persisted cart may revive into
+// memory — defensive cap against a tampered/oversized localStorage payload.
+const MAX_REVIVED_ITEMS = 200;
+
 type CartContextValue = {
   state: CartState;
   // False until the localStorage read has run on the client; consumers that
@@ -49,6 +53,9 @@ function reviveStoredState(raw: string): CartState {
   if (!Array.isArray(items)) return {items: []};
   const revived: CartItem[] = [];
   for (const entry of items) {
+    // Cap the number of revived lines: a tampered/bloated localStorage payload
+    // must not be able to hydrate an unbounded cart into memory.
+    if (revived.length >= MAX_REVIVED_ITEMS) break;
     if (typeof entry !== 'object' || entry === null) continue;
     const line = entry as Record<string, unknown>;
     if (
@@ -57,8 +64,11 @@ function reviveStoredState(raw: string): CartState {
       typeof line.slug !== 'string' ||
       typeof line.nameFr !== 'string' ||
       typeof line.nameAr !== 'string' ||
+      // Price is millimes (integer minor unit) and can never be negative —
+      // reject non-integer/negative values rather than reviving a corrupt line.
       typeof line.unitPriceMillimes !== 'number' ||
-      !Number.isFinite(line.unitPriceMillimes) ||
+      !Number.isInteger(line.unitPriceMillimes) ||
+      line.unitPriceMillimes < 0 ||
       !(typeof line.imageUrl === 'string' || line.imageUrl === null) ||
       typeof line.qty !== 'number' ||
       !Number.isInteger(line.qty) ||

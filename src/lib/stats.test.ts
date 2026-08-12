@@ -3,6 +3,8 @@ import type {OrderStatus} from '@prisma/client';
 import {
   bucketOrders,
   bucketWindowStart,
+  computeDelta,
+  previousRangeStart,
   rangeStart,
   type Range,
   type StatsOrder
@@ -34,6 +36,59 @@ describe('rangeStart', () => {
 
   test('year → Jan 1 of the current UTC year', () => {
     expect(rangeStart('year', now).toISOString()).toBe('2026-01-01T00:00:00.000Z');
+  });
+});
+
+describe('previousRangeStart (start of the prior equal-length comparison window)', () => {
+  const now = iso('2026-08-12T13:30:00.000Z');
+
+  test('day → the prior UTC day (window [prev, rangeStart) is 24h)', () => {
+    expect(previousRangeStart('day', now).toISOString()).toBe('2026-08-11T00:00:00.000Z');
+    // The prior window ends exactly where the current one starts.
+    expect(rangeStart('day', now).toISOString()).toBe('2026-08-12T00:00:00.000Z');
+  });
+
+  test('week → 7 days before the trailing-7 window start', () => {
+    // rangeStart('week') is 2026-08-06; the prior 7-day window starts a week earlier.
+    expect(previousRangeStart('week', now).toISOString()).toBe('2026-07-30T00:00:00.000Z');
+  });
+
+  test('month → the first of the previous calendar month', () => {
+    expect(previousRangeStart('month', now).toISOString()).toBe('2026-07-01T00:00:00.000Z');
+  });
+
+  test('month → underflows across the year boundary via Date.UTC', () => {
+    const jan = iso('2026-01-15T10:00:00.000Z');
+    expect(previousRangeStart('month', jan).toISOString()).toBe('2025-12-01T00:00:00.000Z');
+  });
+
+  test('year → Jan 1 of the previous UTC year', () => {
+    expect(previousRangeStart('year', now).toISOString()).toBe('2025-01-01T00:00:00.000Z');
+  });
+});
+
+describe('computeDelta (period-over-period % change, one decimal)', () => {
+  test('returns null when the prior base is zero or negative (no comparison)', () => {
+    expect(computeDelta(10, 0)).toBeNull();
+    expect(computeDelta(0, 0)).toBeNull();
+  });
+
+  test('increase → positive pct with up direction', () => {
+    expect(computeDelta(120, 100)).toEqual({pct: 20, direction: 'up'});
+  });
+
+  test('decrease → negative pct with down direction', () => {
+    expect(computeDelta(80, 100)).toEqual({pct: -20, direction: 'down'});
+  });
+
+  test('no change → zero pct with flat direction', () => {
+    expect(computeDelta(100, 100)).toEqual({pct: 0, direction: 'flat'});
+  });
+
+  test('rounds to a single decimal place', () => {
+    expect(computeDelta(1186, 1000)).toEqual({pct: 18.6, direction: 'up'});
+    // 1/3 → 33.33% rounds to 33.3.
+    expect(computeDelta(4, 3)).toEqual({pct: 33.3, direction: 'up'});
   });
 });
 

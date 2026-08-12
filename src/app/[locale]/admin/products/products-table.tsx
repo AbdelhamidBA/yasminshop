@@ -17,6 +17,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
+import {AdminEmptyState} from '@/components/admin/empty-state';
 import {Link} from '@/i18n/navigation';
 import {effectivePriceMillimes, formatMillimes} from '@/lib/money';
 import type {ProductRow} from '@/server/products';
@@ -80,7 +81,7 @@ export function ProductsTable({
       </div>
 
       {products.length === 0 ? (
-        <p className="text-muted-foreground">{t('empty')}</p>
+        <AdminEmptyState>{t('empty')}</AdminEmptyState>
       ) : (
         <div className="rounded-md border">
           <Table>

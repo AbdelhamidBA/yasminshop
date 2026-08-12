@@ -12,6 +12,12 @@ export type StatsOrder = {createdAt: Date; totalMillimes: number; status: OrderS
 
 export type SalesBucket = {label: string; revenueMillimes: number; count: number};
 
+// A period-over-period change surfaced on the KPI tiles (reference-image
+// alignment). `pct` is the signed percentage rounded to one decimal; `direction`
+// drives the up/down/flat arrow + colour. Purely derived from two real figures —
+// see computeDelta — so no delta is ever fabricated.
+export type Delta = {pct: number; direction: 'up' | 'down' | 'flat'};
+
 const HOUR_MS = 3_600_000;
 const DAY_MS = 86_400_000;
 
@@ -62,6 +68,40 @@ export function rangeStart(range: Range, now: Date): Date {
       return new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
     }
   }
+}
+
+// The start of the equal-length period immediately preceding rangeStart, so the
+// window [previousRangeStart, rangeStart) is the honest comparison basis for the
+// KPI deltas. day → the prior UTC day; week → the 7 days before the trailing-7
+// window; month/year → the previous calendar month/year (Date.UTC normalises the
+// month/year underflow). UTC throughout, matching rangeStart.
+export function previousRangeStart(range: Range, now: Date): Date {
+  const startMs = rangeStart(range, now).getTime();
+  switch (range) {
+    case 'day':
+      return new Date(startMs - DAY_MS);
+    case 'week':
+      return new Date(startMs - 7 * DAY_MS);
+    case 'month': {
+      const d = new Date(startMs);
+      return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1));
+    }
+    case 'year': {
+      const d = new Date(startMs);
+      return new Date(Date.UTC(d.getUTCFullYear() - 1, 0, 1));
+    }
+  }
+}
+
+// Percentage change of `current` vs `previous`, rounded to one decimal. Returns
+// null when there is no comparable prior figure (previous <= 0): a % change from
+// zero is undefined, so the tile honestly shows no delta rather than a fake
+// +100%/∞. Never invents data — both inputs are real aggregates.
+export function computeDelta(current: number, previous: number): Delta | null {
+  if (previous <= 0) return null;
+  const pct = Math.round(((current - previous) / previous) * 1000) / 10;
+  const direction = pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat';
+  return {pct, direction};
 }
 
 // The sales-chart x-axis span: the start of the earliest bucket. The server

@@ -17,6 +17,7 @@ import {Switch} from '@/components/ui/switch';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
+import {AdminEmptyState} from '@/components/admin/empty-state';
 import {Link} from '@/i18n/navigation';
 import type {PromoCodeRow} from '@/server/promo-codes';
 import {archivePromoCode, restorePromoCode, togglePromoCode} from './actions';
@@ -83,7 +84,7 @@ export function PromoCodesTable({
       </div>
 
       {promoCodes.length === 0 ? (
-        <p className="text-muted-foreground">{t('empty')}</p>
+        <AdminEmptyState>{t('empty')}</AdminEmptyState>
       ) : (
         <div className="rounded-md border">
           <Table>

@@ -124,6 +124,9 @@ export async function updateSubAdmin(id: string, formData: FormData): Promise<Ac
     // The WHERE re-states role + archived (updateClient TOCTOU-pin idiom): a
     // concurrent archive between the read above and this write makes count 0
     // instead of editing an archived row.
+    // NO tokenVersion bump: this edits name/phone only — neither role, email,
+    // nor password changes here, so live sessions stay valid (no revocation
+    // event). Credential/role changes route through reset / archive, which bump.
     const updated = await prisma.user.updateMany({
       where: {id, role: 'SUB_ADMIN', archivedAt: null},
       data: {
@@ -145,10 +148,12 @@ export async function archiveSubAdmin(id: string): Promise<ActionResult> {
     await requireAdmin();
     if (typeof id !== 'string' || !ID_PATTERN.test(id)) return failure('notFound');
     // Archiving also blocks login: authorize() rejects users with a non-null
-    // archivedAt (enforced in src/auth.ts since Phase 1).
+    // archivedAt (enforced in src/auth.ts since Phase 1). The tokenVersion bump
+    // additionally KILLS any already-live staff session — archiving a sub-admin
+    // revokes their access on the next protected page/action, not at expiry.
     const updated = await prisma.user.updateMany({
       where: {id, role: 'SUB_ADMIN'},
-      data: {archivedAt: new Date()}
+      data: {archivedAt: new Date(), tokenVersion: {increment: 1}}
     });
     if (updated.count === 0) return failure('notFound');
     revalidatePath(PATH, 'page');
@@ -163,9 +168,11 @@ export async function restoreSubAdmin(id: string): Promise<ActionResult> {
   try {
     await requireAdmin();
     if (typeof id !== 'string' || !ID_PATTERN.test(id)) return failure('notFound');
+    // Restore also bumps tokenVersion (belt-and-braces; an archived sub-admin
+    // has no live session), keeping every archive/restore a clean boundary.
     const updated = await prisma.user.updateMany({
       where: {id, role: 'SUB_ADMIN'},
-      data: {archivedAt: null}
+      data: {archivedAt: null, tokenVersion: {increment: 1}}
     });
     if (updated.count === 0) return failure('notFound');
     revalidatePath(PATH, 'page');
