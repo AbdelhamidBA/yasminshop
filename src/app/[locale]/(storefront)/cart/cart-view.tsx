@@ -17,9 +17,10 @@ type CartViewProps = {
   deliveryCostMillimes: number;
   freeDeliveryThresholdMillimes: number;
   currencyLabel: string;
-  // Reserved (plan interface): cart lines already carry the EFFECTIVE price
-  // captured at add-time, so no client-side re-pricing happens here —
-  // checkout re-prices every line server-side from the DB.
+  // Cart lines carry the EFFECTIVE price captured at add-time, so no client-side
+  // re-pricing happens here — checkout re-prices every line server-side from the
+  // DB. When a global mass discount is active this prop is non-null and drives
+  // the §6e "prices updated at checkout" notice (add-time prices may be stale).
   massDiscountPct: number | null;
 };
 
@@ -32,7 +33,8 @@ export function CartView({
   locale,
   deliveryCostMillimes,
   freeDeliveryThresholdMillimes,
-  currencyLabel
+  currencyLabel,
+  massDiscountPct
 }: CartViewProps) {
   const t = useTranslations('cart');
   const {state, hydrated, setQty, remove} = useCart();
@@ -83,8 +85,14 @@ export function CartView({
   }
 
   return (
-    <div className="mt-6 flex flex-col items-start gap-8 lg:flex-row">
-      {/* Lines */}
+    <>
+      {massDiscountPct !== null && (
+        <p className="mt-6 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-primary">
+          {t('pricesUpdatedNotice')}
+        </p>
+      )}
+      <div className="mt-6 flex flex-col items-start gap-8 lg:flex-row">
+        {/* Lines */}
       <ul className="w-full min-w-0 flex-1 divide-y rounded-lg border bg-card">
         {state.items.map((line) => {
           const name = locale === 'ar' ? line.nameAr : line.nameFr;
@@ -231,6 +239,7 @@ export function CartView({
           </Button>
         </div>
       </aside>
-    </div>
+      </div>
+    </>
   );
 }

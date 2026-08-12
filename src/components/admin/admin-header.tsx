@@ -1,21 +1,32 @@
-import {Bell} from 'lucide-react';
-import {getTranslations} from 'next-intl/server';
 import {LanguageSwitcher} from '@/components/language-switcher';
 import {LogoutButton} from '@/components/logout-button';
 import {ThemeToggle} from '@/components/theme-toggle';
+import {NotificationBell} from '@/components/admin/notification-bell';
+import {PushToggle} from '@/components/admin/push-toggle';
+import {listNotifications, unreadCount} from '@/server/notifications';
+import {getParameters} from '@/server/settings';
+
+// Recent items surfaced in the bell popover; the full feed lives at
+// /admin/notifications. Server component — it fetches the staff-shared feed and
+// hands serializable props to the NotificationBell client leaf.
+const BELL_LIMIT = 8;
 
 export async function AdminHeader({userName}: {userName: string}) {
-  const t = await getTranslations('admin');
+  const [unread, items, parameters] = await Promise.all([
+    unreadCount(),
+    listNotifications(BELL_LIMIT),
+    getParameters()
+  ]);
 
   return (
     <header className="flex h-16 items-center gap-2 border-b px-6">
       <div className="ms-auto flex items-center gap-2">
-        <span
-          aria-label={t('notifications')}
-          className="flex size-9 items-center justify-center rounded-md border"
-        >
-          <Bell className="size-4" />
-        </span>
+        <NotificationBell
+          unreadCount={unread}
+          items={items}
+          currencyLabel={parameters.currency}
+        />
+        <PushToggle />
         <LanguageSwitcher />
         <ThemeToggle />
         <span className="ms-2 text-sm font-medium">{userName}</span>

@@ -84,7 +84,8 @@
     "deliveryFree": "Gratuite",
     "freeDeliveryHint": "Plus que {amount} {currency} pour la livraison gratuite !",
     "total": "Total",
-    "checkout": "Passer la commande"
+    "checkout": "Passer la commande",
+    "pricesUpdatedNotice": "Une remise globale est active — les prix sont recalculés au paiement."
   },
   "checkout": {
     "title": "Commande",
@@ -343,6 +344,21 @@
         "invalidAmount": "Montant invalide (ex. 7.500).",
         "forbidden": "Action non autorisée."
       }
+    },
+    "massDiscount": {
+      "title": "Remise globale",
+      "description": "Appliquez une remise unique à tous les produits de la boutique. Tant qu'elle est active, elle remplace les remises par produit.",
+      "label": "Pourcentage (0–100)",
+      "apply": "Appliquer à tout",
+      "remove": "Retirer de tout",
+      "active": "Remise globale active : −{pct}%.",
+      "inactive": "Aucune remise globale active.",
+      "applied": "Remise globale appliquée.",
+      "removed": "Remise globale retirée.",
+      "errors": {
+        "invalidPct": "Pourcentage invalide (entier de 0 à 100).",
+        "forbidden": "Action non autorisée."
+      }
     }
   },
   "adminOrders": {
@@ -492,6 +508,51 @@
       "tooLong": "Trop long."
     }
   },
+  "subAdmins": {
+    "title": "Sous-admins",
+    "search": "Rechercher par nom, e-mail ou téléphone...",
+    "name": "Nom",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "joined": "Ajouté le",
+    "actions": "Actions",
+    "add": "Ajouter un sous-admin",
+    "addTitle": "Ajouter un sous-admin",
+    "edit": "Modifier",
+    "editTitle": "Modifier le sous-admin",
+    "emailReadOnly": "L'e-mail n'est pas modifiable.",
+    "password": "Mot de passe",
+    "passwordHint": "8 caractères minimum.",
+    "create": "Créer",
+    "createdToast": "Sous-admin créé.",
+    "archive": "Archiver",
+    "restore": "Restaurer",
+    "archived": "Archivé",
+    "showArchived": "Afficher les archivés",
+    "empty": "Aucun sous-admin trouvé.",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "archivedToast": "Sous-admin archivé.",
+    "restoredToast": "Sous-admin restauré.",
+    "saved": "Sous-admin mis à jour.",
+    "confirmArchiveTitle": "Archiver ce sous-admin ?",
+    "confirmArchiveBody": "Le sous-admin ne pourra plus se connecter et sera masqué de la liste par défaut.",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "errors": {
+      "validation": "Veuillez corriger les champs en rouge.",
+      "notFound": "Sous-admin introuvable.",
+      "forbidden": "Action non autorisée.",
+      "subAdminArchived": "Sous-admin archivé — modification impossible.",
+      "required": "Champ requis.",
+      "invalidEmail": "Adresse e-mail invalide.",
+      "invalidPhone": "Numéro de téléphone invalide.",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères.",
+      "tooShort": "Trop court.",
+      "tooLong": "Trop long.",
+      "emailTaken": "Un compte existe déjà avec cet e-mail."
+    }
+  },
   "invoice": {
     "title": "Facture",
     "orderNumber": "Commande n° {number}",
@@ -510,5 +571,75 @@
     "total": "Total",
     "codNote": "Paiement à la livraison — le montant total est à régler à la réception de la commande.",
     "print": "Imprimer"
+  },
+  "dashboard": {
+    "hero": {
+      "welcome": "Bienvenue, {name}",
+      "subtitle": "Voici un aperçu de votre boutique."
+    },
+    "rangeLabel": "Période",
+    "range": {
+      "day": "Journalier",
+      "week": "Hebdomadaire",
+      "month": "Mensuel",
+      "year": "Annuel"
+    },
+    "tiles": {
+      "revenue": "Chiffre d'affaires",
+      "orders": "Commandes",
+      "clients": "Clients",
+      "pending": "En attente"
+    },
+    "sales": {
+      "title": "Aperçu des ventes",
+      "subtitle": "{count} commandes sur la période",
+      "seriesLabel": "Commandes"
+    },
+    "empty": "Aucune donnée sur cette période.",
+    "status": {
+      "title": "Commandes par statut",
+      "total": "Total"
+    },
+    "recent": {
+      "title": "Commandes récentes",
+      "viewAll": "Tout voir",
+      "number": "N°",
+      "customer": "Client",
+      "date": "Date",
+      "amount": "Montant",
+      "status": "Statut",
+      "empty": "Aucune commande pour le moment."
+    },
+    "top": {
+      "title": "Meilleurs produits",
+      "viewAll": "Tout voir",
+      "sold": "{count} vendus",
+      "empty": "Aucune vente pour le moment."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "open": "Ouvrir les notifications",
+    "heading": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "markedAllReadToast": "Toutes les notifications ont été marquées comme lues.",
+    "viewAll": "Voir toutes les notifications",
+    "empty": "Aucune notification.",
+    "newOrder": "Nouvelle commande #{number} — {total}",
+    "generic": "Nouvelle notification",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "errors": {
+      "forbidden": "Action non autorisée.",
+      "notFound": "Notification introuvable."
+    }
+  },
+  "push": {
+    "enable": "Activer les notifications push",
+    "disable": "Désactiver les notifications push",
+    "enabled": "Notifications push activées.",
+    "disabled": "Notifications push désactivées.",
+    "denied": "Notifications bloquées dans les réglages du navigateur.",
+    "error": "Impossible d'activer les notifications push."
   }
 }
