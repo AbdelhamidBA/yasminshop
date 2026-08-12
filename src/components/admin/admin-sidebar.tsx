@@ -73,14 +73,17 @@ export function AdminSidebar({isAdmin}: {isAdmin: boolean}) {
                 <Link
                   href={item.href}
                   title={t(`nav.${item.labelKey}`)}
+                  aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent',
-                    active && 'bg-accent font-medium',
+                    'flex items-center gap-3 rounded-md px-2 py-2 text-sm transition-colors',
+                    active
+                      ? 'bg-primary/10 font-medium text-primary'
+                      : 'text-foreground hover:bg-accent',
                     collapsed && 'justify-center'
                   )}
                 >
                   <Icon className="size-4 shrink-0" />
-                  {!collapsed && <span>{t(`nav.${item.labelKey}`)}</span>}
+                  {!collapsed && <span className="truncate">{t(`nav.${item.labelKey}`)}</span>}
                 </Link>
               </li>
             );
@@ -97,12 +100,25 @@ export function AdminSidebar({isAdmin}: {isAdmin: boolean}) {
         collapsed ? 'w-16' : 'w-64'
       )}
     >
-      <div className={cn('flex h-16 items-center px-4', collapsed ? 'justify-center' : 'justify-end')}>
+      <div
+        className={cn(
+          'flex h-16 items-center gap-2 border-b px-3',
+          collapsed ? 'justify-center' : 'justify-between'
+        )}
+      >
+        {!collapsed && (
+          <Link href="/admin" title={t('brand')} className="flex min-w-0 items-center gap-2">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <ShoppingBag className="size-4" />
+            </span>
+            <span className="truncate font-heading text-base font-semibold">{t('brand')}</span>
+          </Link>
+        )}
         <button
           type="button"
           aria-label={t('collapse')}
           onClick={toggle}
-          className="flex size-8 items-center justify-center rounded-md hover:bg-accent"
+          className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-accent"
         >
           {collapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
         </button>

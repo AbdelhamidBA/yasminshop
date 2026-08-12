@@ -193,6 +193,7 @@
     }
   },
   "admin": {
+    "brand": "Boutique",
     "blocks": {
       "dashboard": "Tableau de bord",
       "settings": "Paramètres"
@@ -639,6 +640,11 @@
       "orders": "Commandes",
       "clients": "Clients",
       "pending": "En attente"
+    },
+    "delta": {
+      "increase": "En hausse de {value}% sur la période précédente",
+      "decrease": "En baisse de {value}% sur la période précédente",
+      "unchanged": "Stable sur la période précédente"
     },
     "sales": {
       "title": "Aperçu des ventes",

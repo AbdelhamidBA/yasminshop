@@ -1,4 +1,12 @@
-import {Clock, ShoppingBag, Users, Wallet} from 'lucide-react';
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  Clock,
+  Minus,
+  ShoppingBag,
+  Users,
+  Wallet
+} from 'lucide-react';
 import {getLocale, getTranslations} from 'next-intl/server';
 import {
   Card,
@@ -22,7 +30,7 @@ import {Link} from '@/i18n/navigation';
 import {prisma} from '@/lib/db';
 import {formatMillimes} from '@/lib/money';
 import type {OrderStatus} from '@/lib/orders';
-import type {Range} from '@/lib/stats';
+import type {Delta, Range} from '@/lib/stats';
 import {cn} from '@/lib/utils';
 import {requirePageStaff} from '@/server/authz';
 import {getParameters} from '@/server/settings';
@@ -107,30 +115,67 @@ export default async function AdminOverviewPage({
       label: t('tiles.revenue'),
       value: `${formatMillimes(stats.revenueMillimes)} ${currency}`,
       icon: Wallet,
-      chip: 'bg-green-500/10 text-green-600 dark:text-green-400'
+      chip: 'bg-green-500/10 text-green-600 dark:text-green-400',
+      delta: stats.deltas.revenue
     },
     {
       key: 'orders',
       label: t('tiles.orders'),
       value: nf.format(stats.ordersTotal),
       icon: ShoppingBag,
-      chip: 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+      chip: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+      delta: stats.deltas.orders
     },
     {
       key: 'clients',
       label: t('tiles.clients'),
       value: nf.format(stats.clientsTotal),
       icon: Users,
-      chip: 'bg-violet-500/10 text-violet-600 dark:text-violet-400'
+      chip: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+      delta: stats.deltas.clients
     },
     {
       key: 'pending',
       label: t('tiles.pending'),
       value: nf.format(stats.pendingCount),
       icon: Clock,
-      chip: 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+      chip: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+      // Pending is a pipeline snapshot, not a good/bad flow — no coloured delta.
+      delta: null as Delta | null
     }
   ];
+
+  // Period-over-period delta line: an up/down/flat arrow + the absolute % change,
+  // coloured green (up) / red (down). The full "vs previous period" phrasing rides
+  // on title/aria so the narrow tile stays uncluttered. Rendered as a <div> (not a
+  // <span>) so the revenue tile's label→sibling-span value locator is unaffected.
+  const renderDelta = (delta: Delta) => {
+    const Icon =
+      delta.direction === 'up' ? ArrowUpRight : delta.direction === 'down' ? ArrowDownRight : Minus;
+    const tone =
+      delta.direction === 'up'
+        ? 'text-green-600 dark:text-green-400'
+        : delta.direction === 'down'
+          ? 'text-red-600 dark:text-red-400'
+          : 'text-muted-foreground';
+    const pctText = nf.format(Math.abs(delta.pct));
+    const aria =
+      delta.direction === 'up'
+        ? t('delta.increase', {value: pctText})
+        : delta.direction === 'down'
+          ? t('delta.decrease', {value: pctText})
+          : t('delta.unchanged');
+    return (
+      <div
+        className={cn('mt-1 flex items-center gap-1 text-xs font-medium', tone)}
+        title={aria}
+        aria-label={aria}
+      >
+        <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+        <span className="tabular-nums">{pctText}%</span>
+      </div>
+    );
+  };
 
   const donutData = STATUS_ORDER.map((s) => ({
     status: s,
@@ -175,7 +220,7 @@ export default async function AdminOverviewPage({
         {tiles.map((tile) => {
           const Icon = tile.icon;
           return (
-            <Card key={tile.key}>
+            <Card key={tile.key} className="transition-shadow hover:shadow-md">
               <CardContent className="flex items-center gap-4">
                 <span
                   className={cn(
@@ -188,6 +233,7 @@ export default async function AdminOverviewPage({
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm text-muted-foreground">{tile.label}</span>
                   <span className="text-2xl font-semibold tabular-nums">{tile.value}</span>
+                  {tile.delta && renderDelta(tile.delta)}
                 </div>
               </CardContent>
             </Card>
@@ -295,7 +341,17 @@ export default async function AdminOverviewPage({
                           #{order.number}
                         </Link>
                       </TableCell>
-                      <TableCell className="max-w-40 truncate">{order.customerName}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary"
+                            aria-hidden="true"
+                          >
+                            {order.customerName.trim().charAt(0).toUpperCase() || '?'}
+                          </span>
+                          <span className="max-w-40 truncate">{order.customerName}</span>
+                        </div>
+                      </TableCell>
                       <TableCell className="text-muted-foreground">
                         {dateFormatter.format(order.createdAt)}
                       </TableCell>

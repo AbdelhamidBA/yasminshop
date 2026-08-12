@@ -17,6 +17,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
+import {AdminEmptyState} from '@/components/admin/empty-state';
 import {Link} from '@/i18n/navigation';
 import type {ClientRow} from '@/server/clients';
 import {archiveClient, restoreClient} from './actions';
@@ -74,7 +75,7 @@ export function ClientsTable({
       </div>
 
       {clients.length === 0 ? (
-        <p className="text-muted-foreground">{t('empty')}</p>
+        <AdminEmptyState>{t('empty')}</AdminEmptyState>
       ) : (
         <div className="rounded-md border">
           <Table>
