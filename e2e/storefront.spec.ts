@@ -27,11 +27,22 @@ const cartBadge = () => page.getByLabel('Panier', {exact: true});
 
 test('guest browses home to a product and adds it to the cart twice', async () => {
   await page.goto('/fr');
-  await expect(page.getByRole('heading', {name: 'Nouveautés'})).toBeVisible();
+  // Phase 8 grid sections: "Meilleures ventes" (real best-sellers, topped up
+  // with featured products while the seed DB has few sales) leads, then
+  // "Nouveaux produits" (renamed from "Nouveautés"). Titles are uppercased by
+  // CSS only — getByRole name matching is case-insensitive.
+  await expect(page.getByRole('heading', {name: 'Meilleures ventes'})).toBeVisible();
+  await expect(page.getByRole('heading', {name: 'Nouveaux produits'})).toBeVisible();
 
-  // All seed products appear in "Nouveautés"; pick a known IN-STOCK one by
-  // name (a card link's accessible name includes the product name). It may
-  // also sit in "En vedette" / "Les plus recherchés" — first() stays stable.
+  // Card quick-add is present (aria-label interpolates the product name, so
+  // it can never collide with the product page's exact 'Ajouter au panier').
+  await expect(
+    page.getByRole('button', {name: 'Ajouter Casque sans fil au panier'}).first()
+  ).toBeVisible();
+
+  // All seed products appear in "Nouveaux produits"; pick a known IN-STOCK
+  // one by name (a card link's accessible name includes the product name).
+  // It may also sit in other sections — first() stays stable.
   await page.getByRole('link', {name: 'Casque sans fil'}).first().click();
   await page.waitForURL('**/fr/products/casque-sans-fil');
   await expect(page.getByRole('heading', {name: 'Casque sans fil'})).toBeVisible();

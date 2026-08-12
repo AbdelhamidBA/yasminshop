@@ -1,6 +1,6 @@
 {
   "common": {
-    "siteName": "Ma Boutique",
+    "siteName": "Yasmine Shop",
     "currency": "DT",
     "search": "Rechercher",
     "cart": "Panier",
@@ -24,8 +24,9 @@
     "viewAll": "Voir tout"
   },
   "announcement": {
-    "freeDeliveryFrom": "Livraison gratuite dès {amount} {currency} — Paiement à la livraison",
-    "generic": "Livraison partout en Tunisie — Paiement à la livraison"
+    "delivery": "Livraison partout en Tunisie",
+    "cod": "Paiement à la livraison",
+    "freeDeliveryFrom": "Livraison gratuite dès {amount} {currency}"
   },
   "cartDrawer": {
     "title": "Votre panier",
@@ -41,22 +42,17 @@
     "goToSlide": "Aller à la diapositive {index}"
   },
   "home": {
-    "heroEyebrow": "Tendances du moment",
-    "heroTitle": "Découvrez des produits que vous allez adorer",
-    "heroSubtitle": "Produits locaux et importés, livrés chez vous.",
-    "heroCarouselLabel": "À la une",
-    "heroSelection": "Notre sélection",
-    "heroViewProduct": "Découvrir le produit",
-    "cta": "Voir tous les produits",
-    "viewAll": "Tout voir",
-    "categoriesTitle": "Achetez par catégorie",
-    "categoriesSubtitle": "Parcourez nos rayons et trouvez ce qu'il vous faut.",
-    "shopNow": "Découvrir",
+    "heroTitle": "Des produits uniques venus du monde entier",
+    "heroSubtitle": "Découvrez une sélection soigneusement choisie pour votre quotidien.",
+    "cta": "Découvrir la boutique",
+    "viewAll": "Voir tout",
+    "categoriesTitle": "Parcourir par catégories",
+    "allCategories": "Toutes",
     "sections": {
-      "newest": "Nouveautés",
-      "featured": "En vedette",
+      "bestSellers": "Meilleures ventes",
+      "newest": "Nouveaux produits",
       "lastChance": "Dernière chance",
-      "mostSearched": "Les plus recherchés"
+      "mostSearched": "Le plus recherché"
     }
   },
   "storefront": {
@@ -101,6 +97,8 @@
     "outOfStock": "Rupture de stock",
     "addToCart": "Ajouter au panier",
     "addedToCart": "Ajouté au panier.",
+    "quickAdd": "Ajouter",
+    "quickAddLabel": "Ajouter {name} au panier",
     "related": "Produits similaires",
     "quantity": "Quantité",
     "decreaseQuantity": "Diminuer la quantité",

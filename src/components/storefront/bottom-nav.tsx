@@ -25,10 +25,12 @@ export function BottomNav({isAuthenticated}: BottomNavProps) {
   const itemCls =
     'flex flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground';
 
+  // theme-yasmine: rendered outside the storefront layout wrapper (next to
+  // the portal-based drawer), so it carries the brand token scope itself.
   return (
     <nav
       aria-label={t('nav.bottomNav')}
-      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      className="theme-yasmine fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
       <div className="grid grid-cols-4">
         <Link href="/" className={itemCls}>

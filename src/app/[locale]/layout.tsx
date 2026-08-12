@@ -5,6 +5,7 @@ import {getMessages, setRequestLocale} from 'next-intl/server';
 import {routing} from '@/i18n/routing';
 import {ThemeProvider} from '@/components/theme-provider';
 import {Toaster} from '@/components/ui/sonner';
+import {baloo} from '../fonts';
 import '../globals.css';
 
 export function generateStaticParams() {
@@ -25,7 +26,10 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
-      <body className="antialiased">
+      {/* baloo.variable only DEFINES --font-baloo (usable by portalled
+          storefront surfaces); the family is applied inside .theme-yasmine,
+          so admin/auth keep the default font stack. */}
+      <body className={`${baloo.variable} antialiased`}>
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
             {children}
