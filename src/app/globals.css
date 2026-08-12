@@ -125,9 +125,15 @@
    CTAs / hover / active / badges. */
 .theme-yasmine {
   /* Baloo 2 (user-supplied brand font; variable defined on <body> via
-     next/font so portalled surfaces resolve it). Baloo 2 carries no Arabic
-     glyphs — Arabic text falls through to the system stack per glyph. */
+     next/font so portalled surfaces resolve it). Redefining --font-sans and
+     --font-serif here makes every font-sans/font-serif utility in the
+     storefront subtree resolve to Baloo (Tailwind v4 utilities emit
+     var(--font-*) references), and the plain font-family covers elements
+     that only inherit. Baloo 2 carries no Arabic glyphs — Arabic text falls
+     through to the trailing system stacks per glyph. */
   font-family: var(--font-baloo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-baloo), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-baloo), ui-serif, Georgia, serif;
   --background: #f6f1e7; /* cream */
   --foreground: #33302b; /* primary text */
   --card: #ffffff; /* white surface */
