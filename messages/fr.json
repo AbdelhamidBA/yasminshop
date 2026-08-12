@@ -121,6 +121,50 @@
     "signIn": "Se connecter",
     "invalidCredentials": "E-mail ou mot de passe incorrect."
   },
+  "authPages": {
+    "register": {
+      "title": "Créer un compte",
+      "name": "Nom",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "passwordHint": "8 caractères minimum.",
+      "confirmPassword": "Confirmer le mot de passe",
+      "submit": "Créer mon compte",
+      "createdBody": "Votre compte a été créé. Connectez-vous pour continuer."
+    },
+    "reset": {
+      "requestTitle": "Réinitialiser le mot de passe",
+      "requestIntro": "Saisissez votre adresse e-mail et nous vous enverrons un lien de réinitialisation.",
+      "email": "E-mail",
+      "sendLink": "Envoyer le lien",
+      "sentBody": "Si un compte existe avec cet e-mail, un lien de réinitialisation a été envoyé. Pensez à vérifier vos spams.",
+      "newTitle": "Nouveau mot de passe",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "submit": "Réinitialiser le mot de passe",
+      "successBody": "Votre mot de passe a été mis à jour. Vous pouvez maintenant vous connecter.",
+      "requestNew": "Demander un nouveau lien"
+    },
+    "links": {
+      "signIn": "Se connecter",
+      "backToLogin": "Retour à la connexion",
+      "haveAccount": "Vous avez déjà un compte ?",
+      "forgotPassword": "Mot de passe oublié ?",
+      "noAccount": "Pas encore de compte ?",
+      "register": "Créer un compte"
+    },
+    "errors": {
+      "required": "Champ requis.",
+      "tooShort": "Trop court.",
+      "tooLong": "Trop long.",
+      "invalidEmail": "Adresse e-mail invalide.",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "emailTaken": "Un compte existe déjà avec cet e-mail.",
+      "invalidToken": "Ce lien de réinitialisation est invalide ou a expiré.",
+      "validation": "Veuillez corriger les champs en rouge."
+    }
+  },
   "admin": {
     "blocks": {
       "dashboard": "Tableau de bord",
