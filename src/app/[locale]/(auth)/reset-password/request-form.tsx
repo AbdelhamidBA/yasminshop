@@ -2,6 +2,7 @@
 
 import {useActionState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
+import {Eyebrow} from '@/components/storefront/brand';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -15,6 +16,7 @@ import {requestPasswordReset} from './actions';
 export function RequestResetForm() {
   const t = useTranslations('authPages');
   const locale = useLocale();
+  const isAr = locale === 'ar';
   const [state, formAction, pending] = useActionState(requestPasswordReset, undefined);
 
   // Shared localizer: maps a message-KEY through this form's errors.* namespace,
@@ -27,7 +29,11 @@ export function RequestResetForm() {
     return (
       <div className="flex flex-col gap-4">
         <p className="text-sm">{t('reset.sentBody')}</p>
-        <Button variant="outline" render={<Link href="/login" />}>
+        <Button
+          variant="outline"
+          className="h-12 w-full text-sm font-semibold"
+          render={<Link href="/login" />}
+        >
           {t('links.backToLogin')}
         </Button>
       </div>
@@ -35,20 +41,34 @@ export function RequestResetForm() {
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} className="flex flex-col gap-5">
       <p className="text-sm text-muted-foreground">{t('reset.requestIntro')}</p>
       {/* Locale rides along only to build the logged dev URL's prefix. */}
       <input type="hidden" name="locale" value={locale} />
       <div className="flex flex-col gap-2">
-        <Label htmlFor="email">{t('reset.email')}</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required dir="ltr" />
+        <Label htmlFor="email" className="text-muted-foreground">
+          <Eyebrow tracked={!isAr}>{t('reset.email')}</Eyebrow>
+        </Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          dir="ltr"
+          className="h-11"
+        />
       </div>
       {/* The action otherwise ALWAYS succeeds (no account-existence oracle); the
           only failure it can return is a rate-limit, which is safe to show. */}
       {state && !state.ok && (
         <p className="text-sm text-destructive">{errorText(state.error)}</p>
       )}
-      <Button type="submit" disabled={pending}>
+      <Button
+        type="submit"
+        disabled={pending}
+        className="mt-1 h-12 w-full text-sm font-semibold"
+      >
         {t('reset.sendLink')}
       </Button>
     </form>

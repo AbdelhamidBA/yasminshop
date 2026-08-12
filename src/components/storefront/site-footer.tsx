@@ -1,5 +1,5 @@
 import {getLocale, getTranslations} from 'next-intl/server';
-import {Eyebrow} from '@/components/storefront/brand';
+import {BrandLockup, Eyebrow} from '@/components/storefront/brand';
 import {Link} from '@/i18n/navigation';
 
 // The footer used to repeat the four service promises already made by the
@@ -40,19 +40,7 @@ export async function SiteFooter() {
     <footer className="mt-16 border-t bg-secondary/40">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div className="lg:col-span-1">
-          <Link href="/" className="flex items-center gap-2.5">
-            <img src="/brand/yasmine-logo.webp" alt="" className="h-9 w-auto" />
-            <span className="flex flex-col items-center">
-              <span className="font-(family-name:--font-betterlett) text-xl leading-none">
-                Yasmine
-              </span>
-              <span className="mt-1 flex items-center gap-1.5 text-[10px] leading-none font-semibold tracking-[0.28em] text-foreground/70 uppercase">
-                <span aria-hidden="true" className="h-px w-4 bg-foreground/40" />
-                Shop
-                <span aria-hidden="true" className="h-px w-4 bg-foreground/40" />
-              </span>
-            </span>
-          </Link>
+          <BrandLockup size="md" />
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted-foreground">
             {t('about.lead')}
           </p>

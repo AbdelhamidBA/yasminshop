@@ -16,20 +16,26 @@ export default async function ResetPasswordTokenPage({params}: PageProps) {
 
   if (!RESET_TOKEN_PATTERN.test(token)) {
     return (
-      <main className="mx-auto flex min-h-svh w-full max-w-sm flex-col justify-center gap-6 p-6">
-        <h1 className="text-2xl font-semibold">{t('reset.newTitle')}</h1>
-        <p className="text-sm text-destructive">{t('errors.invalidToken')}</p>
-        <Button variant="outline" render={<Link href="/reset-password" />}>
+      <>
+        <h1 className="text-3xl leading-none font-extrabold">{t('reset.newTitle')}</h1>
+        <p className="mt-6 text-sm text-destructive">{t('errors.invalidToken')}</p>
+        <Button
+          variant="outline"
+          className="mt-6 w-full"
+          render={<Link href="/reset-password" />}
+        >
           {t('reset.requestNew')}
         </Button>
-      </main>
+      </>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-sm flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-semibold">{t('reset.newTitle')}</h1>
-      <ResetPasswordForm token={token} />
-    </main>
+    <>
+      <h1 className="text-3xl leading-none font-extrabold">{t('reset.newTitle')}</h1>
+      <div className="mt-8">
+        <ResetPasswordForm token={token} />
+      </div>
+    </>
   );
 }

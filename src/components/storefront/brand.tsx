@@ -1,4 +1,5 @@
 import type {ReactNode} from 'react';
+import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 
 // YasmineShop design primitives.
@@ -19,6 +20,46 @@ import {cn} from '@/lib/utils';
 // `tracked` is a prop rather than a locale lookup so these stay usable from
 // server components: letter-spacing breaks joined Arabic, so Arabic callers
 // pass tracked={false}.
+
+const LOCKUP_SIZES = {
+  md: {logo: 'h-9 w-auto', script: 'text-xl'},
+  lg: {logo: 'h-9 w-auto', script: 'text-2xl'},
+  xl: {logo: 'h-11 w-auto', script: 'text-3xl'}
+} as const;
+
+/**
+ * The brand lockup: the shopping-bag mark beside "Yasmine" in the Betterlett
+ * script over a ruled "SHOP". Always links home — on the auth screens it is
+ * the only way back to the store. The mark is decorative (`alt=""`) so the
+ * link's accessible name is the wordmark text.
+ */
+export function BrandLockup({
+  size = 'lg',
+  hideTextBelowSm = false,
+  className
+}: {
+  size?: keyof typeof LOCKUP_SIZES;
+  /** Header only: the crowded mobile row keeps the mark and hides the words. */
+  hideTextBelowSm?: boolean;
+  className?: string;
+}) {
+  const sizes = LOCKUP_SIZES[size];
+  return (
+    <Link href="/" className={cn('flex shrink-0 items-center gap-2.5', className)}>
+      <img src="/brand/yasmine-logo.webp" alt="" className={sizes.logo} />
+      <span className={cn('flex flex-col items-center', hideTextBelowSm && 'max-sm:sr-only')}>
+        <span className={cn('font-(family-name:--font-betterlett) leading-none', sizes.script)}>
+          Yasmine
+        </span>
+        <span className="mt-1 flex items-center gap-1.5 text-[10px] leading-none font-semibold tracking-[0.28em] text-foreground/70 uppercase">
+          <span aria-hidden="true" className="h-px w-4 bg-foreground/40" />
+          Shop
+          <span aria-hidden="true" className="h-px w-4 bg-foreground/40" />
+        </span>
+      </span>
+    </Link>
+  );
+}
 
 /** Utility-face micro-label: section eyebrows, meta lines, slip captions. */
 export function Eyebrow({

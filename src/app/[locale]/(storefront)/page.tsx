@@ -130,7 +130,7 @@ export default async function HomePage({
           product grid: a first-time cash-on-delivery buyer meets it before
           they start choosing, and the brief forbids a promotional section
           between the last product section and the footer. */}
-      <OrderLifecycle isAr={isAr} />
+      {/* <OrderLifecycle isAr={isAr} /> */}
 
       {/* FULL-WIDTH PRODUCT GRID SECTIONS (spec §6/§13) — no embla on the
           home page anymore: plain responsive grids, 2/row on mobile (cards

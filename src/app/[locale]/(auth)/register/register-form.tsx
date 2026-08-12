@@ -1,7 +1,8 @@
 'use client';
 
 import {useActionState, useState} from 'react';
-import {useTranslations} from 'next-intl';
+import {useLocale, useTranslations} from 'next-intl';
+import {Eyebrow} from '@/components/storefront/brand';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -15,6 +16,7 @@ import {registerClient} from './actions';
 // registerSchema regardless.
 export function RegisterForm() {
   const t = useTranslations('authPages');
+  const isAr = useLocale() === 'ar';
   const [state, formAction, pending] = useActionState(registerClient, undefined);
   const [clientErrors, setClientErrors] = useState<Record<string, string>>({});
 
@@ -51,7 +53,9 @@ export function RegisterForm() {
     return (
       <div className="flex flex-col gap-4">
         <p className="text-sm">{t('register.createdBody')}</p>
-        <Button render={<Link href="/login" />}>{t('links.signIn')}</Button>
+        <Button className="h-12 w-full text-sm font-semibold" render={<Link href="/login" />}>
+          {t('links.signIn')}
+        </Button>
       </div>
     );
   }
@@ -69,20 +73,34 @@ export function RegisterForm() {
         setClientErrors(errors);
         if (Object.keys(errors).length > 0) event.preventDefault();
       }}
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-5"
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="name">{t('register.name')}</Label>
-        <Input id="name" name="name" autoComplete="name" required />
+        <Label htmlFor="name" className="text-muted-foreground">
+          <Eyebrow tracked={!isAr}>{t('register.name')}</Eyebrow>
+        </Label>
+        <Input id="name" name="name" autoComplete="name" required className="h-11" />
         {errorLine('name')}
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="email">{t('register.email')}</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required dir="ltr" />
+        <Label htmlFor="email" className="text-muted-foreground">
+          <Eyebrow tracked={!isAr}>{t('register.email')}</Eyebrow>
+        </Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          dir="ltr"
+          className="h-11"
+        />
         {errorLine('email')}
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="password">{t('register.password')}</Label>
+        <Label htmlFor="password" className="text-muted-foreground">
+          <Eyebrow tracked={!isAr}>{t('register.password')}</Eyebrow>
+        </Label>
         <Input
           id="password"
           name="password"
@@ -90,12 +108,15 @@ export function RegisterForm() {
           autoComplete="new-password"
           required
           dir="ltr"
+          className="h-11"
         />
         <p className="text-xs text-muted-foreground">{t('register.passwordHint')}</p>
         {errorLine('password')}
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="confirmPassword">{t('register.confirmPassword')}</Label>
+        <Label htmlFor="confirmPassword" className="text-muted-foreground">
+          <Eyebrow tracked={!isAr}>{t('register.confirmPassword')}</Eyebrow>
+        </Label>
         <Input
           id="confirmPassword"
           name="confirmPassword"
@@ -103,11 +124,16 @@ export function RegisterForm() {
           autoComplete="new-password"
           required
           dir="ltr"
+          className="h-11"
         />
         {errorLine('confirmPassword')}
       </div>
       {formError && <p className="text-sm text-destructive">{errorText(formError)}</p>}
-      <Button type="submit" disabled={pending}>
+      <Button
+        type="submit"
+        disabled={pending}
+        className="mt-1 h-12 w-full text-sm font-semibold"
+      >
         {t('register.submit')}
       </Button>
     </form>
