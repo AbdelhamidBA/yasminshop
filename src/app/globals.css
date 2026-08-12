@@ -124,6 +124,10 @@
    the redesign brief: 70–80% cream/white, beige surfaces, gold reserved for
    CTAs / hover / active / badges. */
 .theme-yasmine {
+  /* Baloo 2 (user-supplied brand font; variable defined on <body> via
+     next/font so portalled surfaces resolve it). Baloo 2 carries no Arabic
+     glyphs — Arabic text falls through to the system stack per glyph. */
+  font-family: var(--font-baloo), ui-sans-serif, system-ui, sans-serif;
   --background: #f6f1e7; /* cream */
   --foreground: #33302b; /* primary text */
   --card: #ffffff; /* white surface */
