@@ -1,11 +1,11 @@
 import {getTranslations} from 'next-intl/server';
+import {AdminPagination} from '@/components/admin/admin-pagination';
 import {Link} from '@/i18n/navigation';
 import {ALLOWED_TRANSITIONS, type OrderStatus} from '@/lib/orders';
 import {cn} from '@/lib/utils';
 import {requirePageStaff} from '@/server/authz';
 import {listOrders} from '@/server/orders';
 import {getParameters} from '@/server/settings';
-import {OrdersPagination} from './orders-pagination';
 import {OrdersSearch} from './orders-search';
 import {OrdersTable} from './orders-table';
 
@@ -83,7 +83,8 @@ export default async function OrdersPage({
         includeArchived={includeArchived}
         currencyLabel={parameters.currency}
       />
-      <OrdersPagination
+      <AdminPagination
+        basePath="/admin/orders"
         page={page}
         totalPages={Math.ceil(total / PAGE_SIZE)}
         params={paginationParams}
