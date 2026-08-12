@@ -109,7 +109,8 @@
     "increaseQuantity": "زيادة الكمية",
     "description": "الوصف",
     "galleryLabel": "صور المنتج {name}",
-    "galleryThumb": "{name} — الصورة {index} من {count}"
+    "galleryThumb": "{name} — الصورة {index} من {count}",
+    "codStamp": "ادفع عند الاستلام"
   },
   "breadcrumb": {
     "home": "الرئيسية",

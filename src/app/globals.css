@@ -178,6 +178,23 @@
   --brand-brown: #cdb891; /* light warm tan — readable price on dark card */
 }
 
+/* Delivery-slip edge: scallops in the surface colour hang below the panel so
+   an order summary reads as the torn paper note that comes with the parcel
+   (see the Slip primitive). Purely decorative — the panel keeps its own
+   bottom padding, and browsers without radial-gradient support simply get a
+   flat edge. var(--card) resolves per theme scope, so light and dark both
+   land on the right colour. */
+.y-slip::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  height: 9px;
+  background-image: radial-gradient(circle at 50% 0, var(--card) 0 5.5px, transparent 6px);
+  background-size: 18px 9px;
+  background-repeat: repeat-x;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

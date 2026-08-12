@@ -47,43 +47,51 @@ export function AddToCart({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-      <span id={labelId} className="text-sm font-medium">
-        {t('quantity')}
-      </span>
-      {/* Karina-soft stepper: pill outline, roomier hit targets. Locator
-          surfaces preserved exactly — +/− button text, their aria-labels and
-          the aria-live qty span (Phase 6 a11y). */}
-      <div
-        role="group"
-        aria-labelledby={labelId}
-        className="flex h-12 items-center rounded-lg border bg-card px-1"
-      >
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={t('decreaseQuantity')}
-          disabled={outOfStock || qty <= 1}
-          onClick={() => setQty((prev) => Math.max(1, prev - 1))}
-          className="rounded-lg"
-        >
-          −
-        </Button>
-        <span aria-live="polite" className="w-10 text-center text-base font-semibold tabular-nums">
-          {outOfStock ? 0 : qty}
+    // Stacked: quantity settles first, then one decisive full-width CTA. In
+    // the narrow product-page decision panel a side-by-side row left the
+    // button looking incidental.
+    <div className="flex flex-col items-stretch gap-4">
+      <div className="flex items-center gap-4">
+        <span id={labelId} className="text-sm font-medium">
+          {t('quantity')}
         </span>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={t('increaseQuantity')}
-          disabled={outOfStock || qty >= maxQty}
-          onClick={() => setQty((prev) => Math.min(maxQty, prev + 1))}
-          className="rounded-lg"
+        {/* Stepper: pill outline, roomy hit targets. Locator surfaces
+            preserved exactly — +/− button text, their aria-labels and the
+            aria-live qty span (Phase 6 a11y). */}
+        <div
+          role="group"
+          aria-labelledby={labelId}
+          className="flex h-12 items-center rounded-lg border bg-card px-1"
         >
-          +
-        </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={t('decreaseQuantity')}
+            disabled={outOfStock || qty <= 1}
+            onClick={() => setQty((prev) => Math.max(1, prev - 1))}
+            className="rounded-lg"
+          >
+            −
+          </Button>
+          <span
+            aria-live="polite"
+            className="w-10 text-center text-base font-semibold tabular-nums"
+          >
+            {outOfStock ? 0 : qty}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={t('increaseQuantity')}
+            disabled={outOfStock || qty >= maxQty}
+            onClick={() => setQty((prev) => Math.min(maxQty, prev + 1))}
+            className="rounded-lg"
+          >
+            +
+          </Button>
+        </div>
       </div>
       {/* Confident CTA: taller rounded-lg CTA; text node stays t('addToCart')
           ('Ajouter au panier') and onAdd still ends in openDrawer(). */}
@@ -92,7 +100,7 @@ export function AddToCart({
         size="lg"
         disabled={outOfStock}
         onClick={onAdd}
-        className="h-12 w-full rounded-lg px-10 text-sm font-semibold tracking-wide uppercase shadow-sm sm:w-auto"
+        className="h-13 w-full rounded-lg px-10 text-sm font-semibold tracking-wide uppercase shadow-sm"
       >
         {outOfStock ? t('outOfStock') : t('addToCart')}
       </Button>

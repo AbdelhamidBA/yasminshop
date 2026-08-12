@@ -24,7 +24,9 @@ type GalleryProps = {
 // muted pastel backdrop token (dark-safe), image covering it edge to edge.
 const FRAME_CLASS =
   'overflow-hidden rounded-lg border bg-gradient-to-br from-muted/90 to-muted/40';
-const IMAGE_CLASS = 'aspect-square w-full object-cover';
+// Square, but capped: at full column width an uncapped square runs past a
+// laptop fold and dwarfs the decision panel beside it.
+const IMAGE_CLASS = 'aspect-square max-h-[540px] w-full object-cover';
 
 // Product image gallery (Phase 7). A product with >1 REAL image gets an
 // embla-powered main carousel (swipe + RTL-aware arrows from the shared

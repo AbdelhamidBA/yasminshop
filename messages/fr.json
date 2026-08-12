@@ -109,7 +109,8 @@
     "increaseQuantity": "Augmenter la quantité",
     "description": "Description",
     "galleryLabel": "Images du produit {name}",
-    "galleryThumb": "{name} — image {index} sur {count}"
+    "galleryThumb": "{name} — image {index} sur {count}",
+    "codStamp": "Payez à la réception"
   },
   "breadcrumb": {
     "home": "Accueil",
