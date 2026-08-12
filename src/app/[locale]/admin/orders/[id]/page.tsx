@@ -53,7 +53,13 @@ export default async function OrderDetailPage({
           {dateFormatter.format(order.createdAt)}
         </span>
         <div className="ms-auto flex items-center gap-2">
-          <Button variant="outline" render={<Link href={`/admin/orders/${order.id}/invoice`} />}>
+          {/* Invoice lives OUTSIDE /admin (print-clean, no chrome — see the
+              routing note in [locale]/invoice/[id]/page.tsx); new tab so the
+              admin keeps the detail page open while printing. */}
+          <Button
+            variant="outline"
+            render={<Link href={`/invoice/${order.id}`} target="_blank" rel="noopener" />}
+          >
             <Printer className="size-4" /> {t('invoice')}
           </Button>
           {isAdmin && (

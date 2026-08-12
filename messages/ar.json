@@ -391,5 +391,24 @@
       "tooShort": "قصير جداً.",
       "tooLong": "طويل جداً."
     }
+  },
+  "invoice": {
+    "title": "فاتورة",
+    "orderNumber": "طلب رقم {number}",
+    "date": "التاريخ",
+    "billedTo": "فاتورة إلى",
+    "phone": "الهاتف",
+    "address": "العنوان",
+    "product": "المنتج",
+    "unitPrice": "سعر الوحدة",
+    "qty": "الكمية",
+    "lineTotal": "مجموع السطر",
+    "subtotal": "المجموع الفرعي",
+    "promoDiscount": "التخفيض",
+    "delivery": "التوصيل",
+    "deliveryFree": "مجاني",
+    "total": "المجموع الكلي",
+    "codNote": "الدفع عند الاستلام — يُسدَّد المبلغ الإجمالي عند تسلّم الطلب.",
+    "print": "طباعة"
   }
 }

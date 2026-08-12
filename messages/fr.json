@@ -391,5 +391,24 @@
       "tooShort": "Trop court.",
       "tooLong": "Trop long."
     }
+  },
+  "invoice": {
+    "title": "Facture",
+    "orderNumber": "Commande n° {number}",
+    "date": "Date",
+    "billedTo": "Facturé à",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "product": "Produit",
+    "unitPrice": "Prix unitaire",
+    "qty": "Qté",
+    "lineTotal": "Total ligne",
+    "subtotal": "Sous-total",
+    "promoDiscount": "Remise",
+    "delivery": "Livraison",
+    "deliveryFree": "Gratuite",
+    "total": "Total",
+    "codNote": "Paiement à la livraison — le montant total est à régler à la réception de la commande.",
+    "print": "Imprimer"
   }
 }
