@@ -218,7 +218,7 @@ export default async function ProductPage({params}: PageProps) {
             opts={{align: 'start', slidesToScroll: 'auto'}}
             className="mt-8"
           >
-            <CarouselContent className="-ms-4">
+            <CarouselContent viewportClassName="-my-2 py-2" className="-ms-4">
               {related.map((relatedProduct) => (
                 <CarouselItem
                   key={relatedProduct.id}

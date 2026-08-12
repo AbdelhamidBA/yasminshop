@@ -235,7 +235,10 @@ export default async function HomePage({
                 breakpoints: {'(min-width: 1280px)': {active: false}}
               }}
             >
-              <CarouselContent className="-ms-4 xl:ms-0 xl:grid xl:grid-cols-4 xl:gap-4">
+              <CarouselContent
+                viewportClassName="-my-2 py-2 xl:overflow-visible"
+                className="-ms-4 xl:ms-0 xl:grid xl:grid-cols-4 xl:gap-4"
+              >
                 {products.map((product) => (
                   <CarouselItem
                     key={product.id}

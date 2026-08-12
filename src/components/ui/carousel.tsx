@@ -136,10 +136,22 @@ function Carousel({opts, autoplayDelay, className, children, ...props}: Carousel
   );
 }
 
-function CarouselContent({className, ...props}: React.ComponentProps<'div'>) {
+function CarouselContent({
+  className,
+  viewportClassName,
+  ...props
+}: React.ComponentProps<'div'> & {
+  /**
+   * Extra classes for the overflow-hidden viewport wrapper. Lets callers give
+   * hover-lifted slides breathing room (`-my-2 py-2`) or drop the clip
+   * entirely where embla is deactivated by a breakpoint (`xl:overflow-visible`
+   * on the home grids) so card lift/shadows aren't truncated.
+   */
+  viewportClassName?: string;
+}) {
   const {carouselRef} = useCarousel();
   return (
-    <div ref={carouselRef} className="overflow-hidden">
+    <div ref={carouselRef} className={cn('overflow-hidden', viewportClassName)}>
       {/* touch-pan-y keeps vertical page scrolling alive over the strip. */}
       <div className={cn('flex touch-pan-y', className)} {...props} />
     </div>
