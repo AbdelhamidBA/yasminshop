@@ -1,6 +1,7 @@
-import type {ReactNode} from 'react';
-import {getTranslations} from 'next-intl/server';
-import {BrandLockup} from '@/components/storefront/brand';
+import type { ReactNode } from "react";
+import { getTranslations } from "next-intl/server";
+import { BrandLockup } from "@/components/storefront/brand";
+import { cn } from "@/lib/utils";
 
 // Shared shell for sign-in, registration and the two password-reset steps.
 // These screens used to sit outside the brand entirely — default theme, no
@@ -8,8 +9,18 @@ import {BrandLockup} from '@/components/storefront/brand';
 // leaving the site. They now carry the champagne-gold theme, the lockup (which
 // doubles as the route home) and the brand photograph, while staying a focused
 // single-column task on the right.
-export default async function AuthLayout({children}: {children: ReactNode}) {
-  const t = await getTranslations('home');
+export default async function AuthLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const t = await getTranslations("home");
+
+  const LOCKUP_SIZES = {
+    md: { logo: "h-9 w-auto", script: "text-xl" },
+    lg: { logo: "h-9 w-auto", script: "text-2xl" },
+    xl: { logo: "h-11 w-auto", script: "text-3xl" },
+  } as const;
 
   return (
     <div className="theme-yasmine grid min-h-svh bg-background text-foreground lg:grid-cols-[1.1fr_1fr]">
@@ -32,12 +43,39 @@ export default async function AuthLayout({children}: {children: ReactNode}) {
             both locales the copy sits bottom-left where there is room for it.
             (Same reasoning as the homepage hero.) The Arabic text still runs
             right-to-left within the block. */}
+
         <div className="relative flex h-full flex-col items-start justify-end p-12 text-left xl:p-16">
+          <div className="mb-4">
+            <span
+              className={cn("flex flex-col items-center", "max-sm:sr-only")}
+            >
+              <span
+                className={cn(
+                  "font-(family-name:--font-betterlett) leading-none",
+                  "text-3xl",
+                )}
+              >
+                Yasmine
+              </span>
+              <span className="mt-1 flex items-center gap-1.5 text-[10px] leading-none font-semibold tracking-[0.28em] text-foreground/70 uppercase">
+                <span
+                  aria-hidden="true"
+                  className="h-px w-4 bg-foreground/40"
+                />
+                Shop
+                <span
+                  aria-hidden="true"
+                  className="h-px w-4 bg-foreground/40"
+                />
+              </span>
+            </span>
+          </div>
+
           <p className="max-w-sm text-3xl leading-[1.15] font-extrabold text-balance">
-            {t('heroTitle')}
+            {t("heroTitle")}
           </p>
           <p className="mt-4 max-w-sm leading-relaxed text-muted-foreground">
-            {t('heroSubtitle')}
+            {t("heroSubtitle")}
           </p>
         </div>
       </div>
