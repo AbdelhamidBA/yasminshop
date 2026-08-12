@@ -15,7 +15,10 @@ export default async function AdminLayout({children}: {children: ReactNode}) {
   }
 
   return (
-    <div className="flex min-h-svh">
+    // theme-minimal scopes the dashboard palette (see globals.css) so the
+    // storefront's champagne-gold brand and the auth screens keep theirs.
+    // Portalled admin surfaces (dialogs, dropdowns) must carry the class too.
+    <div className="theme-minimal flex min-h-svh bg-background text-foreground">
       <AdminSidebar isAdmin={role === 'ADMIN'} />
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminHeader userName={session?.user.name ?? ''} />
