@@ -88,3 +88,18 @@ export async function getOrder(id: string) {
 }
 
 export type OrderDetail = NonNullable<Awaited<ReturnType<typeof getOrder>>>;
+
+// My Orders (storefront): ONLY the given client's orders — the caller pins
+// clientId from the session (never from user input), so no scalar guard is
+// needed. Archived orders stay visible (a client's own history; admin archive
+// is a back-office concern — same ruling as the client-detail page, Task 6).
+// Newest first with id tiebreak, items included for the inline lines.
+export async function listClientOrders(clientId: string) {
+  return prisma.order.findMany({
+    where: {clientId},
+    orderBy: [{createdAt: 'desc'}, {id: 'asc'}],
+    include: {items: {orderBy: {id: 'asc'}}}
+  });
+}
+
+export type ClientOrder = Awaited<ReturnType<typeof listClientOrders>>[number];

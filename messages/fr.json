@@ -112,6 +112,12 @@
     "codNote": "Vous paierez à la livraison. Nous vous contacterons pour confirmer.",
     "backHome": "Retour à l'accueil"
   },
+  "myOrders": {
+    "title": "Mes commandes",
+    "empty": "Vous n'avez pas encore passé de commande.",
+    "browseCta": "Découvrir les produits",
+    "total": "Total"
+  },
   "footer": {
     "copyright": "Tous droits réservés."
   },

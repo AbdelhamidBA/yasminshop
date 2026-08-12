@@ -21,3 +21,14 @@ export async function requirePageStaff(): Promise<Session> {
   }
   return session as Session;
 }
+
+// Storefront account pages: ANY signed-in role (CLIENT included — staff simply
+// see their own data). Same locale-aware redirect idiom as requirePageStaff,
+// minus the role check.
+export async function requirePageUser(): Promise<Session> {
+  const session = await auth();
+  if (!session) {
+    redirect({href: '/login', locale: await getLocale()});
+  }
+  return session as Session;
+}

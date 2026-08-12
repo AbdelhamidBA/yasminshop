@@ -47,7 +47,14 @@ export async function SiteHeader() {
           {/* Client leaf — the header stays a server component. */}
           <CartBadge />
           {session ? (
-            <LogoutButton />
+            <>
+              {/* Subtle account entry next to logout — same styling as the
+                  anonymous login link. */}
+              <Link href="/account/orders" className="text-sm font-medium hover:underline">
+                {t('myOrders.title')}
+              </Link>
+              <LogoutButton />
+            </>
           ) : (
             <Link href="/login" className="text-sm font-medium hover:underline">
               {t('common.login')}
