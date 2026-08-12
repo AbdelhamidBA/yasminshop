@@ -6,6 +6,7 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Link} from '@/i18n/navigation';
+import {fieldErrorText} from '@/lib/field-error';
 import {registerClient} from './actions';
 
 // Registration form — login-form idiom (useActionState + server action). The
@@ -25,8 +26,10 @@ export function RegisterForm() {
       ? (state.fieldErrors ?? {})
       : {};
 
+  // Shared localizer: maps a message-KEY through this form's errors.* namespace,
+  // falling back to errors.validation — never echoes a raw zod code.
   function errorText(code: string): string {
-    return t.has(`errors.${code}` as never) ? t(`errors.${code}` as never) : code;
+    return fieldErrorText(code, t);
   }
 
   function errorLine(key: string) {

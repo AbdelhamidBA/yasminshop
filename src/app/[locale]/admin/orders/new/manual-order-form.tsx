@@ -10,6 +10,7 @@ import {Textarea} from '@/components/ui/textarea';
 import {useRouter} from '@/i18n/navigation';
 import {MAX_QTY} from '@/lib/cart';
 import {computeCartTotals} from '@/lib/checkout';
+import {fieldErrorText} from '@/lib/field-error';
 import {effectivePriceMillimes, formatMillimes} from '@/lib/money';
 import {cn} from '@/lib/utils';
 import {checkOrderPromo, createManualOrder} from '../actions';
@@ -119,8 +120,10 @@ export function ManualOrderForm({
     };
   }, [query]);
 
+  // Shared localizer: maps a message-KEY through this form's errors.* namespace,
+  // falling back to errors.validation — never echoes a raw zod code.
   function errorText(code: string): string {
-    return t.has(`errors.${code}` as never) ? t(`errors.${code}` as never) : code;
+    return fieldErrorText(code, t);
   }
 
   function errorLine(key: string) {

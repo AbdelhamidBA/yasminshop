@@ -6,6 +6,7 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Link} from '@/i18n/navigation';
+import {fieldErrorText} from '@/lib/field-error';
 import {requestPasswordReset} from './actions';
 
 // Reset-request form (login-form idiom). The action ALWAYS succeeds — the
@@ -16,8 +17,10 @@ export function RequestResetForm() {
   const locale = useLocale();
   const [state, formAction, pending] = useActionState(requestPasswordReset, undefined);
 
+  // Shared localizer: maps a message-KEY through this form's errors.* namespace,
+  // falling back to errors.validation — never echoes a raw zod code.
   function errorText(code: string): string {
-    return t.has(`errors.${code}` as never) ? t(`errors.${code}` as never) : code;
+    return fieldErrorText(code, t);
   }
 
   if (state?.ok) {

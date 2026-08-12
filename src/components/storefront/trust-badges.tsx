@@ -36,10 +36,9 @@ export async function TrustBadges({variant = 'strip'}: TrustBadgesProps) {
             <Icon className="size-5" aria-hidden="true" />
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold">{title}</span>
-            <span className="block truncate text-xs text-muted-foreground">
-              {subtitle}
-            </span>
+            {/* No truncate: long Arabic titles/subtitles must wrap, not clip. */}
+            <span className="block text-sm font-semibold">{title}</span>
+            <span className="block text-xs text-muted-foreground">{subtitle}</span>
           </span>
         </li>
       ))}

@@ -1,5 +1,10 @@
 import {describe, expect, test} from 'vitest';
-import {checkRateLimit, clientIpFromHeaders, type RateLimitStore} from './rate-limit';
+import {
+  checkRateLimit,
+  clientIpFromHeaders,
+  pruneExpired,
+  type RateLimitStore
+} from './rate-limit';
 
 describe('checkRateLimit — fixed window', () => {
   const LIMIT = 3;
@@ -52,11 +57,28 @@ describe('checkRateLimit — fixed window', () => {
   });
 });
 
-describe('clientIpFromHeaders', () => {
+describe('pruneExpired', () => {
+  test('drops entries whose window has elapsed and keeps live ones', () => {
+    const store: RateLimitStore = new Map();
+    checkRateLimit(store, 'expired', 3, 1000, 0); // resetAt 1000
+    checkRateLimit(store, 'live', 3, 1000, 500); // resetAt 1500
+    pruneExpired(store, 1200);
+    expect(store.has('expired')).toBe(false);
+    expect(store.has('live')).toBe(true);
+  });
+});
+
+describe('clientIpFromHeaders — rightmost trusted hop (single-proxy)', () => {
   const h = (init: Record<string, string>) => new Headers(init);
 
-  test('takes the first entry of x-forwarded-for', () => {
-    expect(clientIpFromHeaders(h({'x-forwarded-for': '203.0.113.7, 10.0.0.1'}))).toBe('203.0.113.7');
+  test('takes the rightmost hop of x-forwarded-for (the trusted proxy appended it)', () => {
+    expect(clientIpFromHeaders(h({'x-forwarded-for': '203.0.113.7, 10.0.0.1'}))).toBe('10.0.0.1');
+  });
+
+  test('ignores a client-spoofed leftmost entry', () => {
+    // A client pre-seeds a fake left entry; the proxy appends the real address on
+    // the right, which is the one we key on — spoof has no effect.
+    expect(clientIpFromHeaders(h({'x-forwarded-for': '1.2.3.4, 203.0.113.7'}))).toBe('203.0.113.7');
   });
 
   test('falls back to x-real-ip when no forwarded-for', () => {
@@ -67,8 +89,8 @@ describe('clientIpFromHeaders', () => {
     expect(clientIpFromHeaders(h({}))).toBe('unknown');
   });
 
-  test('ignores a blank x-forwarded-for and empty leading entry', () => {
+  test('ignores a blank x-forwarded-for and a trailing empty entry', () => {
     expect(clientIpFromHeaders(h({'x-forwarded-for': '   '}))).toBe('unknown');
-    expect(clientIpFromHeaders(h({'x-forwarded-for': ', 10.0.0.1'}))).toBe('10.0.0.1');
+    expect(clientIpFromHeaders(h({'x-forwarded-for': '10.0.0.1, '}))).toBe('10.0.0.1');
   });
 });

@@ -78,6 +78,8 @@
     "addedToCart": "Ajouté au panier.",
     "related": "Produits similaires",
     "quantity": "Quantité",
+    "decreaseQuantity": "Diminuer la quantité",
+    "increaseQuantity": "Augmenter la quantité",
     "description": "Description"
   },
   "breadcrumb": {
@@ -145,7 +147,8 @@
     "email": "E-mail",
     "password": "Mot de passe",
     "signIn": "Se connecter",
-    "invalidCredentials": "E-mail ou mot de passe incorrect."
+    "invalidCredentials": "E-mail ou mot de passe incorrect.",
+    "tooManyAttempts": "Trop de tentatives de connexion. Veuillez patienter un instant puis réessayer."
   },
   "authPages": {
     "register": {
@@ -500,6 +503,7 @@
       "forbidden": "Action non autorisée.",
       "invalidTransition": "Changement de statut non autorisé.",
       "insufficientStock": "Stock insuffisant pour confirmer cette commande.",
+      "conflict": "Opération concurrente détectée. Veuillez réessayer.",
       "orderArchived": "Commande archivée — modification impossible.",
       "cartChanged": "Un produit n'est plus disponible ou le stock est insuffisant. Vérifiez les articles.",
       "invalidPromo": "Code promo invalide.",

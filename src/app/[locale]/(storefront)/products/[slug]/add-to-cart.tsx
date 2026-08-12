@@ -59,6 +59,7 @@ export function AddToCart({
           type="button"
           variant="ghost"
           size="icon"
+          aria-label={t('decreaseQuantity')}
           disabled={outOfStock || qty <= 1}
           onClick={() => setQty((prev) => Math.max(1, prev - 1))}
         >
@@ -71,6 +72,7 @@ export function AddToCart({
           type="button"
           variant="ghost"
           size="icon"
+          aria-label={t('increaseQuantity')}
           disabled={outOfStock || qty >= maxQty}
           onClick={() => setQty((prev) => Math.min(maxQty, prev + 1))}
         >

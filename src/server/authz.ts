@@ -33,6 +33,15 @@ async function tokenVersionCurrent(session: Session): Promise<boolean> {
   return sessionStillValid(session.user.tokenVersion ?? 0, dbUser.tokenVersion);
 }
 
+// Route-handler-friendly revocation check (no redirect, no throw): true when the
+// session's embedded token version no longer matches the DB (reset/archive/role
+// change) or the user is gone. The /api/push/* handlers own their auth at the
+// route boundary and cannot use the throwing require* helpers, so they call this
+// after their own role gate to close the same revocation window.
+export async function sessionRevoked(session: Session): Promise<boolean> {
+  return !(await tokenVersionCurrent(session));
+}
+
 export async function requireRole(...allowed: Role[]): Promise<Session> {
   const session = await auth();
   assertRole(session, ...allowed);

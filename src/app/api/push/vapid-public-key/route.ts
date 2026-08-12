@@ -1,5 +1,6 @@
 import {NextResponse} from 'next/server';
 import {auth} from '@/auth';
+import {sessionRevoked} from '@/server/authz';
 import {getVapidPublicKey} from '@/server/push';
 
 // GET /api/push/vapid-public-key — the browser needs the VAPID PUBLIC key to
@@ -13,6 +14,10 @@ export async function GET() {
   const role = session.user.role;
   if (role !== 'ADMIN' && role !== 'SUB_ADMIN') {
     return NextResponse.json({error: 'forbidden'}, {status: 403});
+  }
+  // Revocation re-check: a reset/archive/role-change invalidates a live token.
+  if (await sessionRevoked(session)) {
+    return NextResponse.json({error: 'unauthorized'}, {status: 401});
   }
 
   const publicKey = await getVapidPublicKey();
