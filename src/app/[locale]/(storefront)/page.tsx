@@ -1,5 +1,6 @@
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {ArrowRight} from 'lucide-react';
+import {OrderLifecycle} from '@/components/storefront/order-lifecycle';
 import {ProductCard} from '@/components/storefront/product-card';
 import {SectionHeader} from '@/components/storefront/section-header';
 import {Link} from '@/i18n/navigation';
@@ -123,6 +124,13 @@ export default async function HomePage({
           </div>
         </section>
       )}
+
+      {/* ORDER LIFECYCLE BAND — the three real OrderStatus stages, set as a
+          delivery note. Placed HERE, between the category pills and the first
+          product grid: a first-time cash-on-delivery buyer meets it before
+          they start choosing, and the brief forbids a promotional section
+          between the last product section and the footer. */}
+      <OrderLifecycle isAr={isAr} />
 
       {/* FULL-WIDTH PRODUCT GRID SECTIONS (spec §6/§13) — no embla on the
           home page anymore: plain responsive grids, 2/row on mobile (cards

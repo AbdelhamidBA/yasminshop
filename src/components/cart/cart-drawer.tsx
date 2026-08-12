@@ -3,10 +3,11 @@
 import {ShoppingBag, X} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {useCart} from '@/components/cart/cart-provider';
+import {Eyebrow, SlipRow} from '@/components/storefront/brand';
 import {Button} from '@/components/ui/button';
 import {Sheet, SheetClose, SheetContent} from '@/components/ui/sheet';
 import {Link} from '@/i18n/navigation';
-import {cartSubtotal, MAX_QTY} from '@/lib/cart';
+import {cartCount, cartSubtotal, MAX_QTY} from '@/lib/cart';
 import {formatMillimes} from '@/lib/money';
 
 type CartDrawerProps = {
@@ -14,15 +15,21 @@ type CartDrawerProps = {
   currencyLabel: string;
 };
 
-// The "panier" side menu (Phase 7): a slide-over from the inline-end edge,
-// opened by the header/bottom-nav cart buttons and after every add-to-cart.
-// It complements — never replaces — the /cart page, which stays the full cart
-// + promo-code surface ("Voir le panier" leads there, "Commander" straight to
-// checkout). All amounts are DISPLAY ONLY (add-time effective prices in
-// millimes); checkout re-prices server-side.
+// The "panier" side menu: a slide-over from the inline-end edge, opened by the
+// header/bottom-nav cart buttons and after every add-to-cart. It complements —
+// never replaces — the /cart page, which stays the full cart + promo-code
+// surface ("Voir le panier" leads there, "Commander" straight to checkout).
+//
+// Design pass: the drawer is the first page of the bon de livraison. Each line
+// sets name (semibold) against its line total in the display face and brand
+// brown, with the unit price demoted to the utility face underneath; the
+// subtotal is a SlipRow so the dotted leader already reads as a receipt before
+// the customer reaches the real slip on /cart. All amounts are DISPLAY ONLY
+// (add-time effective prices in millimes); checkout re-prices server-side.
 export function CartDrawer({currencyLabel}: CartDrawerProps) {
   const t = useTranslations();
   const locale = useLocale();
+  const isAr = locale === 'ar';
   const {state, hydrated, setQty, remove, drawerOpen, setDrawerOpen} = useCart();
 
   const close = () => setDrawerOpen(false);
@@ -36,8 +43,13 @@ export function CartDrawer({currencyLabel}: CartDrawerProps) {
       {/* Portalled to <body>, outside the storefront layout wrapper — carries
           the theme-yasmine token scope itself. */}
       <SheetContent side="end" aria-label={t('cartDrawer.title')} className="theme-yasmine">
-        <div className="flex items-center justify-between gap-4 border-b px-5 py-4">
-          <h2 className="font-heading text-base font-semibold">{t('cartDrawer.title')}</h2>
+        <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
+          <div className="min-w-0">
+            <h2 className="text-lg leading-none font-extrabold">{t('cartDrawer.title')}</h2>
+            <Eyebrow tracked={!isAr} className="mt-2 block text-muted-foreground">
+              {t('cartDrawer.itemCount', {count: cartCount({items})})}
+            </Eyebrow>
+          </div>
           <SheetClose
             render={
               <Button variant="ghost" size="icon-sm" aria-label={t('cartDrawer.close')} />
@@ -48,40 +60,63 @@ export function CartDrawer({currencyLabel}: CartDrawerProps) {
         </div>
 
         {items.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5 py-10 text-center">
-            <ShoppingBag className="size-10 text-muted-foreground/40" aria-hidden="true" />
-            <p className="text-sm text-muted-foreground">{t('cart.empty')}</p>
-            <Button variant="outline" render={<Link href="/products" onClick={close} />}>
+          // Empty state: an invitation, not a dead end — the CTA carries the
+          // gold so there is exactly one thing to do here.
+          <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-12 text-center">
+            <span
+              aria-hidden="true"
+              className="flex size-16 items-center justify-center rounded-lg border border-dashed text-muted-foreground/50"
+            >
+              <ShoppingBag className="size-7" />
+            </span>
+            <p className="text-base font-semibold">{t('cart.empty')}</p>
+            <Button
+              className="h-11 px-6"
+              render={<Link href="/products" onClick={close} />}
+            >
               {t('cartDrawer.continueShopping')}
             </Button>
           </div>
         ) : (
           <>
-            <ul className="flex-1 divide-y overflow-y-auto px-5">
+            {/* Dotted rules between lines: the same receipt gesture as the
+                slip's leaders. */}
+            <ul className="flex-1 divide-y divide-dotted overflow-y-auto px-5">
               {items.map((line) => {
-                const name = locale === 'ar' ? line.nameAr : line.nameFr;
+                const name = isAr ? line.nameAr : line.nameFr;
                 return (
                   <li key={line.productId} className="flex items-start gap-3 py-4">
                     <Link href={`/products/${line.slug}`} onClick={close} className="shrink-0">
                       <img
                         src={line.imageUrl ?? '/placeholder-product.svg'}
                         alt={name}
-                        className="size-16 rounded-lg border object-cover"
+                        className="size-16 rounded-lg border bg-card object-cover"
                       />
                     </Link>
                     <div className="min-w-0 flex-1">
-                      <Link
-                        href={`/products/${line.slug}`}
-                        onClick={close}
-                        className="line-clamp-2 text-sm font-medium hover:underline"
-                      >
-                        {name}
-                      </Link>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {formatMillimes(line.unitPriceMillimes)} {currencyLabel}
-                      </p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <div className="flex items-center rounded-lg border">
+                      <div className="flex items-start justify-between gap-3">
+                        <Link
+                          href={`/products/${line.slug}`}
+                          onClick={close}
+                          className="line-clamp-2 text-sm leading-snug font-semibold hover:underline"
+                        >
+                          {name}
+                        </Link>
+                        {/* Line total: the figure the customer is actually
+                            weighing, so it gets the display face + brown. */}
+                        <span className="shrink-0 text-sm font-extrabold whitespace-nowrap tabular-nums text-(--brand-brown)">
+                          {formatMillimes(line.unitPriceMillimes * line.qty)} {currencyLabel}
+                        </span>
+                      </div>
+                      {/* At qty 1 the unit price and the line total are the
+                          same figure — print it once. */}
+                      {line.qty > 1 && (
+                        <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+                          {formatMillimes(line.unitPriceMillimes)} {currencyLabel} ×{line.qty}
+                        </p>
+                      )}
+                      <div className="mt-2.5 flex items-center gap-2">
+                        <div className="flex h-9 items-center rounded-lg border bg-card px-0.5">
                           <Button
                             type="button"
                             variant="ghost"
@@ -94,7 +129,7 @@ export function CartDrawer({currencyLabel}: CartDrawerProps) {
                           </Button>
                           <span
                             aria-live="polite"
-                            className="w-7 text-center text-sm tabular-nums"
+                            className="w-8 text-center text-sm font-semibold tabular-nums"
                           >
                             {line.qty}
                           </span>
@@ -121,30 +156,37 @@ export function CartDrawer({currencyLabel}: CartDrawerProps) {
                         </Button>
                       </div>
                     </div>
-                    <p className="text-sm font-semibold whitespace-nowrap tabular-nums">
-                      {formatMillimes(line.unitPriceMillimes * line.qty)} {currencyLabel}
-                    </p>
                   </li>
                 );
               })}
             </ul>
 
-            <div className="border-t bg-muted/30 px-5 py-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t('cart.subtotal')}</span>
-                <span className="font-semibold tabular-nums">
-                  {formatMillimes(cartSubtotal(state))} {currencyLabel}
-                </span>
-              </div>
+            <div className="border-t bg-secondary/40 px-5 py-4">
+              <SlipRow
+                label={t('cart.subtotal')}
+                value={`${formatMillimes(cartSubtotal(state))} ${currencyLabel}`}
+                emphasis
+              />
               {/* Honest scope note: delivery + promo math live on /cart and at
                   checkout, not in the drawer. */}
-              <p className="mt-1 text-xs text-muted-foreground">{t('cartDrawer.note')}</p>
-              <div className="mt-4 grid gap-2">
-                <Button variant="outline" render={<Link href="/cart" onClick={close} />}>
-                  {t('cartDrawer.viewCart')}
-                </Button>
-                <Button render={<Link href="/checkout" onClick={close} />}>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                {t('cartDrawer.note')}
+              </p>
+              {/* One decisive CTA; "Voir le panier" stays available but reads
+                  as the quieter of the two. */}
+              <div className="mt-4 flex flex-col items-stretch gap-1">
+                <Button
+                  className="h-12 w-full text-sm font-semibold shadow-sm"
+                  render={<Link href="/checkout" onClick={close} />}
+                >
                   {t('cartDrawer.checkout')}
+                </Button>
+                <Button
+                  variant="link"
+                  className="h-9 w-full text-muted-foreground hover:text-foreground"
+                  render={<Link href="/cart" onClick={close} />}
+                >
+                  {t('cartDrawer.viewCart')}
                 </Button>
               </div>
             </div>

@@ -35,6 +35,7 @@
   "cartDrawer": {
     "title": "سلتك",
     "close": "إغلاق",
+    "itemCount": "{count, plural, =0 {لا توجد منتجات} =1 {منتج واحد} =2 {منتجان} few {# منتجات} many {# منتجاً} other {# منتج}}",
     "note": "تُحتسب تكلفة التوصيل وأكواد التخفيض في الخطوة التالية.",
     "viewCart": "عرض السلة",
     "checkout": "إتمام الطلب",
@@ -52,6 +53,15 @@
     "viewAll": "عرض الكل",
     "categoriesTitle": "تصفّح حسب الفئات",
     "allCategories": "الكل",
+    "lifecycle": {
+      "title": "من سلّتك إلى بابك",
+      "step1Title": "تطلب",
+      "step1Body": "أضف منتجاتك إلى السلة وأكّد الطلب. لا دفع عبر الإنترنت ولا بطاقة بنكية.",
+      "step2Title": "نؤكّد طلبك",
+      "step2Body": "نتحقّق من توفّر المنتجات ونؤكّد طلبك قبل شحنه.",
+      "step3Title": "تدفع عند الاستلام",
+      "step3Body": "يسلّمك عامل التوصيل الطرد في كامل تونس، وتدفع نقدًا عند ذلك."
+    },
     "sections": {
       "bestSellers": "الأكثر مبيعاً",
       "newest": "منتجات جديدة",
@@ -61,16 +71,6 @@
   },
   "storefront": {
     "outOfStock": "نفد المخزون"
-  },
-  "trust": {
-    "shippingTitle": "التوصيل إلى المنزل",
-    "shippingSubtitle": "في كامل تونس",
-    "paymentTitle": "الدفع عند الاستلام",
-    "paymentSubtitle": "ادفع عند التسليم",
-    "returnsTitle": "إرجاع سهل",
-    "returnsSubtitle": "استبدال مضمون",
-    "supportTitle": "دعم العملاء",
-    "supportSubtitle": "فريق في خدمتك"
   },
   "search": {
     "noResults": "لا نتائج"
@@ -91,7 +91,9 @@
     "sortPriceAsc": "السعر تصاعدياً",
     "sortPriceDesc": "السعر تنازلياً",
     "clear": "مسح التصفية",
+    "removeFilter": "إزالة عامل التصفية {label}",
     "empty": "لا توجد منتجات مطابقة.",
+    "emptyHint": "وسّع نطاق بحثك، أو ابدأ من الكتالوج الكامل.",
     "prev": "السابق",
     "next": "التالي"
   },
@@ -144,7 +146,11 @@
     "address": "العنوان",
     "city": "المدينة",
     "notes": "ملاحظات (اختياري)",
+    "sectionContact": "بياناتك",
+    "sectionDelivery": "عنوان التوصيل",
+    "sectionPayment": "الدفع",
     "payOnDelivery": "الدفع عند الاستلام",
+    "codExplain": "لا يوجد دفع عبر الإنترنت: لا بطاقة بنكية ولا تحويل. تدفع نقداً لعامل التوصيل عند استلام طردك.",
     "placeOrder": "تأكيد الطلب",
     "summary": "ملخص الطلب",
     "errors": {
@@ -161,7 +167,11 @@
   "confirmation": {
     "title": "شكراً لطلبك!",
     "number": "طلب رقم {number}",
-    "codNote": "ستدفع عند الاستلام. سنتصل بك للتأكيد.",
+    "deliverTo": "التوصيل إلى",
+    "nextTitle": "الخطوات التالية",
+    "stepPending": "استلمنا طلبك. سنتصل بك على الرقم {phone} لتأكيده.",
+    "stepConfirmed": "بعد التأكيد، يُجهَّز طلبك ثم يُسلَّم إلى عامل التوصيل.",
+    "stepDelivered": "تدفع {amount} {currency} نقداً لعامل التوصيل عند استلام الطرد.",
     "backHome": "العودة إلى الرئيسية"
   },
   "myOrders": {

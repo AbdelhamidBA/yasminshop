@@ -16,8 +16,10 @@ export default async function CartPage({params}: {params: Promise<{locale: strin
   ]);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8">
-      <h1 className="text-2xl font-bold">{t('title')}</h1>
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
+      {/* Display role for the page title; the item count (client state) is
+          rendered by CartView right underneath. */}
+      <h1 className="text-3xl leading-none font-extrabold sm:text-4xl">{t('title')}</h1>
       <CartView
         locale={locale}
         deliveryCostMillimes={parameters.deliveryCostMillimes}

@@ -35,6 +35,7 @@
   "cartDrawer": {
     "title": "Votre panier",
     "close": "Fermer",
+    "itemCount": "{count, plural, =0 {aucun article} =1 {1 article} other {# articles}}",
     "note": "Livraison et codes promo calculés à l'étape suivante.",
     "viewCart": "Voir le panier",
     "checkout": "Commander",
@@ -52,6 +53,15 @@
     "viewAll": "Voir tout",
     "categoriesTitle": "Parcourir par catégories",
     "allCategories": "Toutes",
+    "lifecycle": {
+      "title": "De votre panier à votre porte",
+      "step1Title": "Vous commandez",
+      "step1Body": "Ajoutez vos articles au panier et validez. Aucun paiement en ligne, aucune carte demandée.",
+      "step2Title": "Nous confirmons",
+      "step2Body": "Nous vérifions la disponibilité et confirmons votre commande avant de l'expédier.",
+      "step3Title": "Vous payez à la réception",
+      "step3Body": "Le livreur vous remet le colis partout en Tunisie. Vous réglez en espèces, à ce moment-là."
+    },
     "sections": {
       "bestSellers": "Meilleures ventes",
       "newest": "Nouveaux produits",
@@ -61,16 +71,6 @@
   },
   "storefront": {
     "outOfStock": "Rupture de stock"
-  },
-  "trust": {
-    "shippingTitle": "Livraison à domicile",
-    "shippingSubtitle": "Partout en Tunisie",
-    "paymentTitle": "Paiement à la livraison",
-    "paymentSubtitle": "Payez à la réception",
-    "returnsTitle": "Retours faciles",
-    "returnsSubtitle": "Satisfait ou échangé",
-    "supportTitle": "Support client",
-    "supportSubtitle": "Une équipe à votre écoute"
   },
   "search": {
     "noResults": "Aucun résultat"
@@ -91,7 +91,9 @@
     "sortPriceAsc": "Prix croissant",
     "sortPriceDesc": "Prix décroissant",
     "clear": "Effacer les filtres",
+    "removeFilter": "Retirer le filtre {label}",
     "empty": "Aucun produit ne correspond.",
+    "emptyHint": "Élargissez votre recherche, ou repartez du catalogue complet.",
     "prev": "Précédent",
     "next": "Suivant"
   },
@@ -144,7 +146,11 @@
     "address": "Adresse",
     "city": "Ville",
     "notes": "Remarques (optionnel)",
+    "sectionContact": "Vos coordonnées",
+    "sectionDelivery": "Adresse de livraison",
+    "sectionPayment": "Paiement",
     "payOnDelivery": "Paiement à la livraison",
+    "codExplain": "Aucun paiement en ligne : ni carte bancaire, ni virement. Vous réglez le livreur en espèces, à la réception de votre colis.",
     "placeOrder": "Confirmer la commande",
     "summary": "Récapitulatif",
     "errors": {
@@ -161,7 +167,11 @@
   "confirmation": {
     "title": "Merci pour votre commande !",
     "number": "Commande n° {number}",
-    "codNote": "Vous paierez à la livraison. Nous vous contacterons pour confirmer.",
+    "deliverTo": "Livraison à",
+    "nextTitle": "La suite",
+    "stepPending": "Nous avons bien reçu votre commande. Nous vous appelons au {phone} pour la confirmer.",
+    "stepConfirmed": "Une fois confirmée, votre commande est préparée puis remise au livreur.",
+    "stepDelivered": "Vous réglez {amount} {currency} en espèces au livreur, à la réception du colis.",
     "backHome": "Retour à l'accueil"
   },
   "myOrders": {
