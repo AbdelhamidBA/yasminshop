@@ -32,6 +32,8 @@ export async function updateParameters(formData: FormData): Promise<ActionResult
       copyright: String(formData.get('copyright') ?? ''),
       siteDescription: String(formData.get('siteDescription') ?? ''),
       keywords: String(formData.get('keywords') ?? ''),
+      contactPhone: String(formData.get('contactPhone') ?? ''),
+      contactEmail: String(formData.get('contactEmail') ?? ''),
       socialLinks: {
         facebook: String(formData.get('facebook') ?? ''),
         instagram: String(formData.get('instagram') ?? ''),

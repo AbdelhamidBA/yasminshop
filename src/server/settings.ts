@@ -13,6 +13,10 @@ export const DEFAULT_PARAMETERS: AppParameters = {
   copyright: '© 2026 Ma Boutique',
   siteDescription: '',
   keywords: '',
+  // Optional owner contact details (Contact page). Empty = not provided —
+  // never seed invented values.
+  contactPhone: '',
+  contactEmail: '',
   socialLinks: {facebook: '', instagram: '', tiktok: ''}
 };
 

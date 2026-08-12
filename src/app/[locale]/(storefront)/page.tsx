@@ -134,8 +134,11 @@ export default async function HomePage({
         products.length > 0 ? (
           <section
             key={key}
+            // Header nav anchor ("Meilleures ventes" → /#meilleures-ventes);
+            // scroll-mt clears the sticky header when the anchor lands.
+            id={key === 'bestSellers' ? 'meilleures-ventes' : undefined}
             aria-label={t(`sections.${key}`)}
-            className="mx-auto w-full max-w-6xl px-4 pb-14 sm:pb-16"
+            className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 pb-14 sm:pb-16"
           >
             <SectionHeader
               title={t(`sections.${key}`)}

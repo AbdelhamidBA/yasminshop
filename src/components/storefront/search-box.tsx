@@ -24,6 +24,13 @@ type SearchBoxProps = {
   locale: string;
   massDiscountPct: number | null;
   currencyLabel: string;
+  // Focus the input on mount — the header search popover opens straight into
+  // typing (the popover's default initial focus agrees; this pins it).
+  autoFocus?: boolean;
+  // Fired right before any navigation this box triggers (suggestion pick or
+  // full-search Enter) so a hosting popover can close itself — the header
+  // survives client navigation, so it would linger open otherwise.
+  onNavigate?: () => void;
 };
 
 const DEBOUNCE_MS = 250;
@@ -34,7 +41,13 @@ const MIN_QUERY_LENGTH = 2;
 // from /api/search-suggestions (debounced 250ms); picking one records a
 // fire-and-forget search hit and navigates to the product page; Enter with no
 // active option runs a full catalog search (/products?q=…).
-export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxProps) {
+export function SearchBox({
+  locale,
+  massDiscountPct,
+  currencyLabel,
+  autoFocus,
+  onNavigate
+}: SearchBoxProps) {
   const t = useTranslations();
   const router = useRouter();
   const id = useId();
@@ -120,6 +133,7 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
       body: JSON.stringify({productId: suggestion.id}),
       keepalive: true
     }).catch(() => {});
+    onNavigate?.();
     router.push(`/products/${suggestion.slug}`);
   }
 
@@ -160,6 +174,7 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
       // focus) survives the client navigation to /products.
       dismissedRef.current = true;
       setOpen(false);
+      onNavigate?.();
       router.push(q ? `/products?q=${encodeURIComponent(q)}` : '/products');
     }
   }
@@ -198,6 +213,7 @@ export function SearchBox({locale, massDiscountPct, currencyLabel}: SearchBoxPro
           panelOpen && activeIndex >= 0 ? `${id}-option-${activeIndex}` : undefined
         }
         autoComplete="off"
+        autoFocus={autoFocus}
         className="h-9"
       />
       {panelOpen && (

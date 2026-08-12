@@ -13,9 +13,27 @@ export async function login(page: Page, email: string, password: string) {
   await page.getByRole('button', {name: 'Se connecter'}).click();
   // The login action redirects to '/'; the client-side RSC fetch follows the
   // locale redirect ('/' -> '/fr') internally, so the committed URL can stay
-  // '/'. Wait for having left /login, then for the authenticated header.
+  // '/'. Wait for having left /login, then for the authenticated header:
+  // 'Se déconnecter' now lives inside the header account menu ('Compte').
   await page.waitForURL((url) => !url.pathname.endsWith('/login'));
-  await expect(page.getByRole('button', {name: 'Se déconnecter'})).toBeVisible({timeout: 30_000});
+  await openAccountMenu(page, 'Se déconnecter');
+  // Close the menu again so the page state stays clean for the caller.
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('menuitem', {name: 'Se déconnecter'})).toHaveCount(0);
+}
+
+// Opens the header account menu ('Compte') until the expected menu item is
+// visible. The click is retried idempotently (only while the item is not
+// visible): a click landing before the Base UI trigger hydrates opens
+// nothing, and an already-open menu must never be toggled shut.
+export async function openAccountMenu(page: Page, itemName: string) {
+  const item = page.getByRole('menuitem', {name: itemName});
+  await expect(async () => {
+    if (!(await item.isVisible())) {
+      await page.getByRole('button', {name: 'Compte'}).click();
+    }
+    await expect(item).toBeVisible({timeout: 1500});
+  }).toPass({timeout: 30_000});
 }
 
 // Places a COD order for ONE seed product and returns its sequential order

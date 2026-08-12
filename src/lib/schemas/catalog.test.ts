@@ -63,8 +63,20 @@ describe('parametersSchema', () => {
     copyright: '',
     siteDescription: '',
     keywords: '',
+    contactPhone: '',
+    contactEmail: '',
     socialLinks: {facebook: '', instagram: '', tiktok: ''}
   };
+  test('accepts empty contact details (both optional) and trims provided values', () => {
+    expect(parametersSchema.safeParse(valid).success).toBe(true);
+    const parsed = parametersSchema.parse({
+      ...valid,
+      contactPhone: ' 21 000 000 ',
+      contactEmail: ' owner@example.tn '
+    });
+    expect(parsed.contactPhone).toBe('21 000 000');
+    expect(parsed.contactEmail).toBe('owner@example.tn');
+  });
   test('accepts millimes fields at MAX_MILLIMES', () => {
     const bounded = {
       ...valid,

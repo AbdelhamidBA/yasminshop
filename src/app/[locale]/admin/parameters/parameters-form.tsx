@@ -107,6 +107,29 @@ export function ParametersForm({
           </div>
         </section>
         <section className="flex flex-col gap-4">
+          <h2 className="text-lg font-medium">{t('contact')}</h2>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="contactPhone">{t('contactPhone')}</Label>
+            <Input
+              id="contactPhone"
+              name="contactPhone"
+              dir="ltr"
+              defaultValue={parameters.contactPhone}
+            />
+            {errorLine('contactPhone')}
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="contactEmail">{t('contactEmail')}</Label>
+            <Input
+              id="contactEmail"
+              name="contactEmail"
+              dir="ltr"
+              defaultValue={parameters.contactEmail}
+            />
+            {errorLine('contactEmail')}
+          </div>
+        </section>
+        <section className="flex flex-col gap-4">
           <h2 className="text-lg font-medium">{t('social')}</h2>
           <div className="flex flex-col gap-2">
             <Label htmlFor="facebook">{t('facebook')}</Label>

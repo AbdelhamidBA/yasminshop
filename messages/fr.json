@@ -15,8 +15,12 @@
   },
   "nav": {
     "home": "Accueil",
-    "products": "Produits",
+    "shop": "Boutique",
+    "newArrivals": "Nouveautés",
+    "bestSellers": "Meilleures ventes",
     "categories": "Catégories",
+    "about": "À propos",
+    "contact": "Contact",
     "main": "Navigation principale",
     "menu": "Menu",
     "account": "Compte",
@@ -26,7 +30,7 @@
   "announcement": {
     "delivery": "Livraison partout en Tunisie",
     "cod": "Paiement à la livraison",
-    "freeDeliveryFrom": "Livraison gratuite dès {amount} {currency}"
+    "refund": "Satisfait ou remboursé"
   },
   "cartDrawer": {
     "title": "Votre panier",
@@ -167,6 +171,29 @@
   },
   "footer": {
     "copyright": "Tous droits réservés."
+  },
+  "about": {
+    "title": "À propos",
+    "lead": "Yasmine Shop est une boutique en ligne tunisienne : des produits importés et locaux, choisis avec soin, livrés partout en Tunisie.",
+    "storyTitle": "Notre histoire",
+    "story1": "Yasmine Shop est née d'une idée simple : rendre accessibles, partout en Tunisie, des produits utiles et de qualité — qu'ils viennent d'ici ou d'ailleurs.",
+    "story2": "Chaque article du catalogue est sélectionné avec soin, à un prix juste. Vous commandez en ligne, nous vous appelons pour confirmer, et vous payez à la réception.",
+    "valuesTitle": "Nos engagements",
+    "valueProductsTitle": "Produits importés et locaux",
+    "valueProductsBody": "Une sélection soignée qui mêle trouvailles importées et produits locaux.",
+    "valueCodTitle": "Paiement à la livraison",
+    "valueCodBody": "Vous payez uniquement à la réception de votre commande — simple et sans risque.",
+    "valueDeliveryTitle": "Livraison partout en Tunisie",
+    "valueDeliveryBody": "Nous livrons dans toutes les régions du pays, directement à votre porte.",
+    "cta": "Découvrir la boutique"
+  },
+  "contact": {
+    "title": "Contact",
+    "lead": "Une question sur un produit ou une commande ? Nous sommes à votre écoute.",
+    "phoneTitle": "Téléphone",
+    "emailTitle": "E-mail",
+    "fallback": "Contactez-nous via la boutique : passez votre commande en ligne, nous vous appelons pour la confirmer.",
+    "codNote": "Paiement à la livraison — vous payez à la réception de votre commande."
   },
   "auth": {
     "email": "E-mail",
@@ -405,6 +432,9 @@
       "copyright": "Copyright",
       "siteDescription": "Description du site",
       "keywords": "Mots-clés",
+      "contact": "Contact",
+      "contactPhone": "Téléphone de contact",
+      "contactEmail": "E-mail de contact",
       "social": "Réseaux sociaux",
       "facebook": "Facebook",
       "instagram": "Instagram",
