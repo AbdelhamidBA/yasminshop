@@ -80,9 +80,12 @@ describe('resetPassword — sibling token invalidation', () => {
     expect(sweep!.where.usedAt).toBeNull();
     expect(sweep!.data.usedAt).toBeInstanceOf(Date);
 
-    // The password was actually rotated for the right user.
+    // The password was actually rotated for the right user, AND tokenVersion
+    // was bumped in the same update — the session-revocation rider: a live JWT
+    // for this user is invalidated on its next protected access.
     expect(h.userUpdateCalls).toHaveLength(1);
     expect(h.userUpdateCalls[0].where.id).toBe('user-1');
     expect(h.userUpdateCalls[0].data.passwordHash).toBe('HASHED');
+    expect(h.userUpdateCalls[0].data.tokenVersion).toEqual({increment: 1});
   });
 });

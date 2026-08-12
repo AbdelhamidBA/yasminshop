@@ -114,7 +114,15 @@ export async function resetPassword(token: string, formData: FormData): Promise<
         data: {usedAt: now}
       });
       if (updated.count === 0) throw new ResetAbort();
-      await tx.user.update({where: {id: row.user.id}, data: {passwordHash}});
+      // Rotate the password AND bump tokenVersion in the same tx: a live JWT
+      // session for this user (issued before the reset) no longer matches the
+      // DB version, so it is revoked on the next protected navigation — the
+      // §6b/§6e session-revocation rider. A stolen credential's session dies
+      // the instant the owner resets.
+      await tx.user.update({
+        where: {id: row.user.id},
+        data: {passwordHash, tokenVersion: {increment: 1}}
+      });
       // OWASP rider: a completed reset invalidates the user's OTHER outstanding
       // reset tokens too. Any still-unused token (the just-burned one already has
       // usedAt set, so `usedAt: null` excludes it) is stamped used in the SAME

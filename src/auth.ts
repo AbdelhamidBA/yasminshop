@@ -25,7 +25,15 @@ export const {handlers, auth, signIn, signOut} = NextAuth({
         if (!user || user.archivedAt) return null;
         if (!(await verifyPassword(parsed.data.password, user.passwordHash))) return null;
 
-        return {id: user.id, name: user.name, email: user.email, role: user.role};
+        // tokenVersion rides along into the JWT (jwt callback) so protected
+        // surfaces can later re-check it against the DB for session revocation.
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          tokenVersion: user.tokenVersion
+        };
       }
     })
   ]
