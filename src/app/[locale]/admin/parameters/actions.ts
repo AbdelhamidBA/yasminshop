@@ -1,9 +1,11 @@
 'use server';
 
+import {Prisma} from '@prisma/client';
 import {revalidatePath} from 'next/cache';
 import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/action-result';
 import {AuthzError} from '@/lib/authz';
 import {requireAdmin} from '@/server/authz';
+import {prisma} from '@/lib/db';
 import {parseDinarsToMillimes} from '@/lib/money';
 import {parametersSchema} from '@/lib/schemas/catalog';
 import {saveParameters} from '@/server/settings';
@@ -39,6 +41,39 @@ export async function updateParameters(formData: FormData): Promise<ActionResult
     if (!parsed.success) return failure('validation', fieldErrorsFromZod(parsed.error));
 
     await saveParameters(parsed.data);
+    revalidatePath('/[locale]/admin/parameters', 'page');
+    return success(undefined);
+  } catch (error) {
+    if (error instanceof AuthzError) return failure('forbidden');
+    throw error;
+  }
+}
+
+// Global mass-discount override (§6c/§6e): a single percentage applied across
+// ALL products by effectivePriceMillimes. Distinct from per-product discountPct
+// — this never touches product rows, only the massDiscountPct Setting.
+// Apply → integer 0–100; Remove → null (stored as Prisma.JsonNull).
+export async function setMassDiscount(pct: number | null): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+
+    if (pct !== null && (!Number.isInteger(pct) || pct < 0 || pct > 100)) {
+      return failure('invalidPct');
+    }
+
+    await prisma.setting.upsert({
+      where: {key: 'massDiscountPct'},
+      update: {value: pct === null ? Prisma.JsonNull : (pct as Prisma.InputJsonValue)},
+      create: {
+        key: 'massDiscountPct',
+        value: pct === null ? Prisma.JsonNull : (pct as Prisma.InputJsonValue)
+      }
+    });
+
+    // Storefront prices are derived via effectivePriceMillimes, so every page
+    // under the (storefront) layout must re-render; the Parameters control
+    // reflects the new active value.
+    revalidatePath('/[locale]/(storefront)', 'layout');
     revalidatePath('/[locale]/admin/parameters', 'page');
     return success(undefined);
   } catch (error) {

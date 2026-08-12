@@ -84,7 +84,8 @@
     "deliveryFree": "Gratuite",
     "freeDeliveryHint": "Plus que {amount} {currency} pour la livraison gratuite !",
     "total": "Total",
-    "checkout": "Passer la commande"
+    "checkout": "Passer la commande",
+    "pricesUpdatedNotice": "Une remise globale est active — les prix sont recalculés au paiement."
   },
   "checkout": {
     "title": "Commande",
@@ -341,6 +342,21 @@
       "errors": {
         "validation": "Veuillez corriger les champs en rouge.",
         "invalidAmount": "Montant invalide (ex. 7.500).",
+        "forbidden": "Action non autorisée."
+      }
+    },
+    "massDiscount": {
+      "title": "Remise globale",
+      "description": "Appliquez une remise unique à tous les produits de la boutique. Tant qu'elle est active, elle remplace les remises par produit.",
+      "label": "Pourcentage (0–100)",
+      "apply": "Appliquer à tout",
+      "remove": "Retirer de tout",
+      "active": "Remise globale active : −{pct}%.",
+      "inactive": "Aucune remise globale active.",
+      "applied": "Remise globale appliquée.",
+      "removed": "Remise globale retirée.",
+      "errors": {
+        "invalidPct": "Pourcentage invalide (entier de 0 à 100).",
         "forbidden": "Action non autorisée."
       }
     }
