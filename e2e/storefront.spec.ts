@@ -19,9 +19,11 @@ test.afterAll(async () => {
   await page.close();
 });
 
-// Header cart link (aria-label common.cart). Its only text content is the
-// count bubble, so toHaveText asserts the badge count ('' when empty).
-const cartBadge = () => page.getByLabel('Panier');
+// Header cart BUTTON (aria-label common.cart) — a drawer trigger since Phase
+// 7, no longer a /cart link. Its only text content is the count bubble, so
+// toHaveText asserts the badge count ('' when empty). exact:true keeps the
+// locator unambiguous while the drawer (aria-label 'Votre panier') is open.
+const cartBadge = () => page.getByLabel('Panier', {exact: true});
 
 test('guest browses home to a product and adds it to the cart twice', async () => {
   await page.goto('/fr');
@@ -35,9 +37,22 @@ test('guest browses home to a product and adds it to the cart twice', async () =
   await expect(page.getByRole('heading', {name: 'Casque sans fil'})).toBeVisible();
 
   // Two clicks with the stepper at 1 → the reducer merges into one line, qty 2.
+  // Since Phase 7 every add opens the cart drawer as feedback; it is modal, so
+  // dismiss it (Escape) before the second click can reach the button.
   const addToCart = page.getByRole('button', {name: 'Ajouter au panier'});
+  const drawer = page.getByRole('dialog', {name: 'Votre panier'});
   await addToCart.click();
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByText('Casque sans fil')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(drawer).not.toBeVisible();
   await addToCart.click();
+  await expect(drawer).toBeVisible();
+
+  // The drawer's "Voir le panier" CTA is the journey's new path to /cart (the
+  // header cart control opens the drawer instead of linking there).
+  await drawer.getByRole('link', {name: 'Voir le panier'}).click();
+  await page.waitForURL('**/fr/cart');
   await expect(cartBadge()).toHaveText('2');
 });
 

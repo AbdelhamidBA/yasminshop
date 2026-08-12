@@ -16,12 +16,37 @@
   "nav": {
     "home": "الرئيسية",
     "products": "المنتجات",
-    "categories": "الفئات"
+    "categories": "الفئات",
+    "main": "التنقل الرئيسي",
+    "menu": "القائمة",
+    "account": "حسابي",
+    "bottomNav": "شريط التنقل السفلي",
+    "viewAll": "عرض الكل"
+  },
+  "announcement": {
+    "freeDeliveryFrom": "توصيل مجاني ابتداءً من {amount} {currency} — الدفع عند الاستلام",
+    "generic": "توصيل إلى جميع أنحاء تونس — الدفع عند الاستلام"
+  },
+  "cartDrawer": {
+    "title": "سلتك",
+    "close": "إغلاق",
+    "note": "تُحتسب تكلفة التوصيل وأكواد التخفيض في الخطوة التالية.",
+    "viewCart": "عرض السلة",
+    "checkout": "إتمام الطلب",
+    "continueShopping": "مواصلة التسوق"
+  },
+  "carousel": {
+    "previous": "الشريحة السابقة",
+    "next": "الشريحة التالية",
+    "goToSlide": "الانتقال إلى الشريحة {index}"
   },
   "home": {
     "heroEyebrow": "الأكثر رواجاً الآن",
     "heroTitle": "اكتشف منتجات ستحبها",
     "heroSubtitle": "منتجات محلية ومستوردة تصل إلى باب منزلك.",
+    "heroCarouselLabel": "أبرز العروض",
+    "heroSelection": "من مختاراتنا",
+    "heroViewProduct": "اكتشف المنتج",
     "cta": "عرض جميع المنتجات",
     "viewAll": "عرض الكل",
     "categoriesTitle": "تسوّق حسب الفئة",
@@ -80,7 +105,9 @@
     "quantity": "الكمية",
     "decreaseQuantity": "إنقاص الكمية",
     "increaseQuantity": "زيادة الكمية",
-    "description": "الوصف"
+    "description": "الوصف",
+    "galleryLabel": "صور المنتج {name}",
+    "galleryThumb": "{name} — الصورة {index} من {count}"
   },
   "breadcrumb": {
     "home": "الرئيسية",

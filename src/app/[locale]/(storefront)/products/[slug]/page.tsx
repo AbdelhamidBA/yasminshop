@@ -2,6 +2,13 @@ import {cache} from 'react';
 import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
+} from '@/components/ui/carousel';
 import {ProductCard} from '@/components/storefront/product-card';
 import {Price} from '@/components/storefront/price';
 import {Link} from '@/i18n/navigation';
@@ -90,7 +97,7 @@ export default async function ProductPage({params}: PageProps) {
       {/* Breadcrumb: home / category / [subcategory] / product */}
       <nav
         aria-label={tBreadcrumb('label')}
-        className="rounded-xl border bg-muted/40 px-4 py-2.5 text-sm text-muted-foreground"
+        className="rounded-xl border bg-muted/40 px-5 py-3 text-sm text-muted-foreground"
       >
         <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <li>
@@ -125,7 +132,7 @@ export default async function ProductPage({params}: PageProps) {
       </nav>
 
       {/* Two-column on lg: gallery | info (reference layout) */}
-      <div className="mt-6 grid gap-8 lg:grid-cols-2 lg:gap-12">
+      <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-12">
         <Gallery
           images={product.images.map((image) => ({id: image.id, url: image.url}))}
           name={name}
@@ -183,7 +190,7 @@ export default async function ProductPage({params}: PageProps) {
       {/* Description: reference's tab area, honestly a SINGLE active tab (no
           Reviews tab — reviews are not in the data model). Full description
           text lives here; the info column above shows a clamped teaser. */}
-      <section className="mt-12" aria-labelledby="product-description-heading">
+      <section className="mt-14" aria-labelledby="product-description-heading">
         <div className="border-b">
           <h2
             id="product-description-heading"
@@ -197,23 +204,39 @@ export default async function ProductPage({params}: PageProps) {
         </p>
       </section>
 
+      {/* RELATED PRODUCTS — horizontal embla strip with partial-slide peek at
+          every width (the karina browsing gesture; ≤4 real same-category
+          products). Arrows come from the shared carousel: RTL-aware, disabled
+          at the edges (and both disabled when everything already fits). */}
       {related.length > 0 && (
         <section className="mt-16">
           <h2 className="text-center text-2xl font-bold tracking-tight">{t('related')}</h2>
           {/* Decorative underline under the centered section title */}
           <div aria-hidden="true" className="mx-auto mt-3 h-1 w-16 rounded-full bg-primary" />
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {related.map((relatedProduct) => (
-              <ProductCard
-                key={relatedProduct.id}
-                product={relatedProduct}
-                locale={locale}
-                massDiscountPct={massDiscountPct}
-                currencyLabel={parameters.currency}
-                outOfStockLabel={tStorefront('outOfStock')}
-              />
-            ))}
-          </div>
+          <Carousel
+            aria-label={t('related')}
+            opts={{align: 'start', slidesToScroll: 'auto'}}
+            className="mt-8"
+          >
+            <CarouselContent viewportClassName="-my-2 py-2" className="-ms-4">
+              {related.map((relatedProduct) => (
+                <CarouselItem
+                  key={relatedProduct.id}
+                  className="basis-[78%] ps-4 sm:basis-[46%] md:basis-1/3 lg:basis-[29.5%]"
+                >
+                  <ProductCard
+                    product={relatedProduct}
+                    locale={locale}
+                    massDiscountPct={massDiscountPct}
+                    currencyLabel={parameters.currency}
+                    outOfStockLabel={tStorefront('outOfStock')}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="absolute -start-3 top-1/2 -translate-y-1/2" />
+            <CarouselNext className="absolute -end-3 top-1/2 -translate-y-1/2" />
+          </Carousel>
         </section>
       )}
     </div>

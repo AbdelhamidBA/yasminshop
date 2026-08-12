@@ -16,12 +16,37 @@
   "nav": {
     "home": "Accueil",
     "products": "Produits",
-    "categories": "Catégories"
+    "categories": "Catégories",
+    "main": "Navigation principale",
+    "menu": "Menu",
+    "account": "Compte",
+    "bottomNav": "Navigation mobile",
+    "viewAll": "Voir tout"
+  },
+  "announcement": {
+    "freeDeliveryFrom": "Livraison gratuite dès {amount} {currency} — Paiement à la livraison",
+    "generic": "Livraison partout en Tunisie — Paiement à la livraison"
+  },
+  "cartDrawer": {
+    "title": "Votre panier",
+    "close": "Fermer",
+    "note": "Livraison et codes promo calculés à l'étape suivante.",
+    "viewCart": "Voir le panier",
+    "checkout": "Commander",
+    "continueShopping": "Continuer vos achats"
+  },
+  "carousel": {
+    "previous": "Diapositive précédente",
+    "next": "Diapositive suivante",
+    "goToSlide": "Aller à la diapositive {index}"
   },
   "home": {
     "heroEyebrow": "Tendances du moment",
     "heroTitle": "Découvrez des produits que vous allez adorer",
     "heroSubtitle": "Produits locaux et importés, livrés chez vous.",
+    "heroCarouselLabel": "À la une",
+    "heroSelection": "Notre sélection",
+    "heroViewProduct": "Découvrir le produit",
     "cta": "Voir tous les produits",
     "viewAll": "Tout voir",
     "categoriesTitle": "Achetez par catégorie",
@@ -80,7 +105,9 @@
     "quantity": "Quantité",
     "decreaseQuantity": "Diminuer la quantité",
     "increaseQuantity": "Augmenter la quantité",
-    "description": "Description"
+    "description": "Description",
+    "galleryLabel": "Images du produit {name}",
+    "galleryThumb": "{name} — image {index} sur {count}"
   },
   "breadcrumb": {
     "home": "Accueil",

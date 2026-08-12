@@ -28,11 +28,18 @@ export async function placeOrder(
 ): Promise<string> {
   await page.goto(`/fr/products/${slug}`);
   const addToCart = page.getByRole('button', {name: 'Ajouter au panier'});
+  const drawer = page.getByRole('dialog', {name: 'Votre panier'});
   for (let i = 0; i < qty; i += 1) {
-    // Stepper stays at 1: repeated clicks merge into one line of qty n.
+    // Stepper stays at 1: repeated clicks merge into one line of qty n. Every
+    // add opens the modal cart drawer as feedback (Phase 7) — dismiss it so
+    // the next click (and the badge assertion) isn't behind the overlay.
     await addToCart.click();
+    await expect(drawer).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(drawer).not.toBeVisible();
   }
-  await expect(page.getByLabel('Panier')).toHaveText(String(qty));
+  // exact:true — the header badge, not the drawer's 'Votre panier' label.
+  await expect(page.getByLabel('Panier', {exact: true})).toHaveText(String(qty));
 
   await page.goto('/fr/checkout');
   // fill() replaces any session-prefilled values, so the helper works for
