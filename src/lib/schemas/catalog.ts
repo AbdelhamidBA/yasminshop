@@ -73,6 +73,10 @@ export const parametersSchema = z.object({
   copyright: z.string().trim(),
   siteDescription: z.string().trim(),
   keywords: z.string().trim(),
+  // Optional owner contact details — empty string means "not provided" (the
+  // storefront Contact page hides the corresponding field).
+  contactPhone: z.string().trim(),
+  contactEmail: z.string().trim(),
   socialLinks: z.object({
     facebook: z.string().trim(),
     instagram: z.string().trim(),

@@ -69,7 +69,18 @@ test('guest browses home to a product and adds it to the cart twice', async () =
 
 test('header search suggestion navigates to the product page', async () => {
   await page.goto('/fr');
-  await page.getByRole('combobox', {name: 'Rechercher'}).fill('casque');
+  // The search box lives inside a popover behind the header's icon-only
+  // search button. Retry the click idempotently (only while the combobox is
+  // not visible): a click landing before the Base UI trigger hydrates opens
+  // nothing, and an open popover must never be toggled shut.
+  const searchInput = page.getByRole('combobox', {name: 'Rechercher'});
+  await expect(async () => {
+    if (!(await searchInput.isVisible())) {
+      await page.getByRole('button', {name: 'Rechercher'}).click();
+    }
+    await expect(searchInput).toBeVisible({timeout: 1500});
+  }).toPass({timeout: 20_000});
+  await searchInput.fill('casque');
   // Debounced fetch → listbox option; clicking records a search hit
   // (fire-and-forget, NOT asserted — heuristic) and navigates.
   await page.getByRole('option', {name: 'Casque sans fil'}).click();

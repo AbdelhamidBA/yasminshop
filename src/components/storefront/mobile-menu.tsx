@@ -13,10 +13,12 @@ import type {StorefrontCategoryNode} from '@/server/storefront';
 
 type MobileMenuProps = {categories: StorefrontCategoryNode[]};
 
-// Mobile menu (md:hidden trigger): a sheet from the inline-start edge with the
-// main links and the full category tree as an indented list — every entry is a
-// real /products?cat=&sub= destination. Links close the sheet on click since
-// client-side navigation keeps the layout (and this state) mounted.
+// Mobile menu (lg:hidden trigger — the desktop nav links take over at lg): a
+// sheet from the inline-start edge with the main links (mirroring the desktop
+// nav: home, shop, new arrivals, best sellers, about, contact) and the full
+// category tree as an indented list — every entry is a real destination.
+// Links close the sheet on click since client-side navigation keeps the
+// layout (and this state) mounted.
 export function MobileMenu({categories}: MobileMenuProps) {
   const [open, setOpen] = useState(false);
   const tNav = useTranslations('nav');
@@ -35,7 +37,7 @@ export function MobileMenu({categories}: MobileMenuProps) {
         type="button"
         aria-label={tNav('menu')}
         onClick={() => setOpen(true)}
-        className="flex size-9 shrink-0 items-center justify-center rounded-md border hover:bg-accent md:hidden"
+        className="flex size-9 shrink-0 items-center justify-center rounded-md border hover:bg-accent lg:hidden"
       >
         <Menu className="size-4" />
       </button>
@@ -56,7 +58,13 @@ export function MobileMenu({categories}: MobileMenuProps) {
               {tNav('home')}
             </Link>
             <Link href="/products" onClick={close} className={linkCls}>
-              {tNav('products')}
+              {tNav('shop')}
+            </Link>
+            <Link href="/products?sort=new" onClick={close} className={linkCls}>
+              {tNav('newArrivals')}
+            </Link>
+            <Link href="/#meilleures-ventes" onClick={close} className={linkCls}>
+              {tNav('bestSellers')}
             </Link>
             <p
               className={cn(
@@ -93,6 +101,14 @@ export function MobileMenu({categories}: MobileMenuProps) {
                 );
               })}
             </ul>
+            <div className="mt-4 border-t pt-3">
+              <Link href="/about" onClick={close} className={linkCls}>
+                {tNav('about')}
+              </Link>
+              <Link href="/contact" onClick={close} className={linkCls}>
+                {tNav('contact')}
+              </Link>
+            </div>
           </nav>
         </SheetContent>
       </Sheet>

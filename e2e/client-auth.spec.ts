@@ -1,5 +1,5 @@
 import {expect, test, type Page} from '@playwright/test';
-import {placeOrder} from './helpers';
+import {openAccountMenu, placeOrder} from './helpers';
 
 // Client account journey: register → lands signed in → places an order under
 // the session → My Orders lists it → logout. ONE continuous session (the
@@ -33,10 +33,14 @@ test('registration creates the account and lands signed in', async () => {
   await page.getByRole('button', {name: 'Créer mon compte'}).click();
 
   // registerClient signs the fresh CLIENT in server-side and redirects home;
-  // the authenticated storefront header is the signed-in proof.
+  // the authenticated header account menu ('Compte') is the signed-in proof:
+  // it holds 'Mes commandes' and 'Se déconnecter'.
   await page.waitForURL((url) => !url.pathname.endsWith('/register'));
-  await expect(page.getByRole('button', {name: 'Se déconnecter'})).toBeVisible({timeout: 30_000});
-  await expect(page.getByRole('link', {name: 'Mes commandes'})).toBeVisible();
+  await openAccountMenu(page, 'Se déconnecter');
+  await expect(page.getByRole('menuitem', {name: 'Mes commandes'})).toBeVisible();
+  // Close the menu so the next test starts from a clean page state.
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('menuitem', {name: 'Se déconnecter'})).toHaveCount(0);
 });
 
 test('the signed-in client places an order', async () => {
@@ -64,7 +68,13 @@ test('my orders lists the new order', async () => {
 });
 
 test('logout returns the header to the anonymous state', async () => {
-  await page.getByRole('button', {name: 'Se déconnecter'}).click();
-  await expect(page.getByRole('link', {name: 'Se connecter'})).toBeVisible({timeout: 30_000});
-  await expect(page.getByRole('button', {name: 'Se déconnecter'})).toHaveCount(0);
+  // 'Se déconnecter' is a submit-button menu item inside the account menu.
+  await openAccountMenu(page, 'Se déconnecter');
+  await page.getByRole('menuitem', {name: 'Se déconnecter'}).click();
+  // The sign-out action redirects home; the anonymous account menu now offers
+  // 'Se connecter' instead, and the logout entry is gone.
+  await openAccountMenu(page, 'Se connecter');
+  await expect(page.getByRole('menuitem', {name: 'Se déconnecter'})).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('menuitem', {name: 'Se connecter'})).toHaveCount(0);
 });
