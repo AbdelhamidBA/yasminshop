@@ -13,9 +13,12 @@ export default async function StorefrontLayout({children}: {children: ReactNode}
 
   return (
     <CartProvider>
-      {/* Bottom padding clears the fixed mobile bottom navbar (+ device
-          safe-area inset) so page footers never sit underneath it. */}
-      <div className="flex min-h-svh flex-col pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
+      {/* theme-yasmine scopes the champagne-gold brand tokens to the
+          storefront (admin/auth keep the default theme); bg/text classes
+          repaint this subtree with the redefined tokens. Bottom padding
+          clears the fixed mobile bottom navbar (+ device safe-area inset) so
+          page footers never sit underneath it. */}
+      <div className="theme-yasmine flex min-h-svh flex-col bg-background text-foreground pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
         <AnnouncementBar
           freeDeliveryThresholdMillimes={parameters.freeDeliveryThresholdMillimes}
           currencyLabel={parameters.currency}

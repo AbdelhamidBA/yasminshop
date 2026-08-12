@@ -33,7 +33,9 @@ export function CartDrawer({currencyLabel}: CartDrawerProps) {
 
   return (
     <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-      <SheetContent side="end" aria-label={t('cartDrawer.title')}>
+      {/* Portalled to <body>, outside the storefront layout wrapper — carries
+          the theme-yasmine token scope itself. */}
+      <SheetContent side="end" aria-label={t('cartDrawer.title')} className="theme-yasmine">
         <div className="flex items-center justify-between gap-4 border-b px-5 py-4">
           <h2 className="font-heading text-base font-semibold">{t('cartDrawer.title')}</h2>
           <SheetClose

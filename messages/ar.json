@@ -1,6 +1,6 @@
 {
   "common": {
-    "siteName": "متجري",
+    "siteName": "ياسمين شوب",
     "currency": "د.ت",
     "search": "بحث",
     "cart": "السلة",
@@ -24,8 +24,9 @@
     "viewAll": "عرض الكل"
   },
   "announcement": {
-    "freeDeliveryFrom": "توصيل مجاني ابتداءً من {amount} {currency} — الدفع عند الاستلام",
-    "generic": "توصيل إلى جميع أنحاء تونس — الدفع عند الاستلام"
+    "delivery": "توصيل إلى جميع أنحاء تونس",
+    "cod": "الدفع عند الاستلام",
+    "freeDeliveryFrom": "توصيل مجاني ابتداءً من {amount} {currency}"
   },
   "cartDrawer": {
     "title": "سلتك",
@@ -41,17 +42,12 @@
     "goToSlide": "الانتقال إلى الشريحة {index}"
   },
   "home": {
-    "heroEyebrow": "الأكثر رواجاً الآن",
-    "heroTitle": "اكتشف منتجات ستحبها",
-    "heroSubtitle": "منتجات محلية ومستوردة تصل إلى باب منزلك.",
-    "heroCarouselLabel": "أبرز العروض",
-    "heroSelection": "من مختاراتنا",
-    "heroViewProduct": "اكتشف المنتج",
-    "cta": "عرض جميع المنتجات",
+    "heroTitle": "منتجات فريدة من جميع أنحاء العالم",
+    "heroSubtitle": "اكتشف تشكيلة مختارة بعناية لحياتك اليومية.",
+    "cta": "اكتشف المتجر",
     "viewAll": "عرض الكل",
-    "categoriesTitle": "تسوّق حسب الفئة",
-    "categoriesSubtitle": "تصفّح أقسامنا واعثر على ما تحتاجه.",
-    "shopNow": "اكتشف",
+    "categoriesTitle": "تصفّح حسب الفئات",
+    "allCategories": "الكل",
     "sections": {
       "newest": "وصل حديثاً",
       "featured": "مميزة",
