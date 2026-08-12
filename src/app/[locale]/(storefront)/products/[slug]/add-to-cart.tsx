@@ -2,7 +2,6 @@
 
 import {useId, useState} from 'react';
 import {useTranslations} from 'next-intl';
-import {toast} from 'sonner';
 import {useCart} from '@/components/cart/cart-provider';
 import {Button} from '@/components/ui/button';
 import {MAX_QTY} from '@/lib/cart';
@@ -33,7 +32,7 @@ export function AddToCart({
   quantity
 }: AddToCartProps) {
   const t = useTranslations('product');
-  const {add} = useCart();
+  const {add, openDrawer} = useCart();
   const labelId = useId();
   const [qty, setQty] = useState(1);
 
@@ -42,7 +41,9 @@ export function AddToCart({
 
   function onAdd() {
     add({productId, slug, nameFr, nameAr, unitPriceMillimes, imageUrl}, qty);
-    toast.success(t('addedToCart'));
+    // The cart drawer replaces the success toast as add feedback (Phase 7):
+    // it shows the added line, quantity and the cart/checkout CTAs directly.
+    openDrawer();
   }
 
   return (

@@ -4,47 +4,59 @@ import {Link} from '@/i18n/navigation';
 import {CartBadge} from '@/components/cart/cart-badge';
 import {LanguageSwitcher} from '@/components/language-switcher';
 import {LogoutButton} from '@/components/logout-button';
+import {CategoryNav} from '@/components/storefront/category-nav';
+import {MobileMenu} from '@/components/storefront/mobile-menu';
 import {SearchBox} from '@/components/storefront/search-box';
 import {ThemeToggle} from '@/components/theme-toggle';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
+import {listVisibleCategoryTree} from '@/server/storefront';
+import {cn} from '@/lib/utils';
 
+// Karina-style two-row header: logo row (mobile menu | start-aligned logo |
+// centered search | actions) over a desktop category-nav row with dropdowns.
+// Stays a server component — MobileMenu/CategoryNav/CartBadge are the client
+// leaves, fed the category tree and settings they cannot fetch themselves.
 export async function SiteHeader() {
-  const [t, locale, session, parameters, massDiscountPct] = await Promise.all([
+  const [t, locale, session, parameters, massDiscountPct, categories] = await Promise.all([
     getTranslations(),
     getLocale(),
     auth(),
     getParameters(),
-    getMassDiscountPct()
+    getMassDiscountPct(),
+    listVisibleCategoryTree()
   ]);
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-4">
-        <Link href="/" className="text-lg font-bold">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4">
+        <MobileMenu categories={categories} />
+        <Link
+          href="/"
+          className={cn(
+            'shrink-0 text-lg font-bold',
+            // Uppercase + tracking is FR-only: letter-spacing breaks the
+            // joined Arabic script.
+            locale !== 'ar' && 'uppercase tracking-[0.2em]'
+          )}
+        >
           {t('common.siteName')}
         </Link>
-        <nav className="ms-6 hidden items-center gap-6 text-sm md:flex">
-          <Link href="/" className="hover:underline">
-            {t('nav.home')}
-          </Link>
-          <Link href="/products" className="hover:underline">
-            {t('nav.products')}
-          </Link>
-        </nav>
-        {/* md+ only per the plan; a mobile-visible search variant is deferred
-            (not required this phase). The header stays a server component —
+        {/* md+ only per the plan; mobile reaches the catalog via the bottom
+            navbar's search entry. The header stays a server component —
             SearchBox is the client leaf, fed the settings it cannot fetch. */}
-        <div className="hidden min-w-0 max-w-sm flex-1 md:block">
-          <SearchBox
-            locale={locale}
-            massDiscountPct={massDiscountPct}
-            currencyLabel={parameters.currency}
-          />
+        <div className="hidden min-w-0 flex-1 justify-center px-4 md:flex">
+          <div className="w-full max-w-sm">
+            <SearchBox
+              locale={locale}
+              massDiscountPct={massDiscountPct}
+              currencyLabel={parameters.currency}
+            />
+          </div>
         </div>
-        <div className="ms-auto flex items-center gap-2">
+        <div className="ms-auto flex items-center gap-2 md:ms-0">
           <LanguageSwitcher />
           <ThemeToggle />
-          {/* Client leaf — the header stays a server component. */}
+          {/* Client leaf — opens the cart drawer. */}
           <CartBadge />
           {session ? (
             <>
@@ -62,6 +74,8 @@ export async function SiteHeader() {
           )}
         </div>
       </div>
+      {/* Desktop category dropdown row (roots + subcategories). */}
+      <CategoryNav categories={categories} />
     </header>
   );
 }

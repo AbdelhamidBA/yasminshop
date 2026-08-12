@@ -31,6 +31,12 @@ type CartContextValue = {
   setQty: (productId: string, qty: number) => void;
   remove: (productId: string) => void;
   clear: () => void;
+  // Cart side-drawer UI state (Phase 7). Session-only (never persisted):
+  // opened by the header/bottom-nav cart buttons and after add-to-cart,
+  // rendered by <CartDrawer> in the storefront layout.
+  drawerOpen: boolean;
+  openDrawer: () => void;
+  setDrawerOpen: (open: boolean) => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -93,6 +99,7 @@ function reviveStoredState(raw: string): CartState {
 export function CartProvider({children}: {children: ReactNode}) {
   const [state, dispatch] = useReducer(providerReducer, {items: []});
   const [hydrated, setHydrated] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Hydrate once on mount (client only — the server always renders an empty,
   // not-yet-hydrated cart).
@@ -129,10 +136,11 @@ export function CartProvider({children}: {children: ReactNode}) {
   );
   const remove = useCallback((productId: string) => dispatch({type: 'remove', productId}), []);
   const clear = useCallback(() => dispatch({type: 'clear'}), []);
+  const openDrawer = useCallback(() => setDrawerOpen(true), []);
 
   const value = useMemo(
-    () => ({state, hydrated, add, setQty, remove, clear}),
-    [state, hydrated, add, setQty, remove, clear]
+    () => ({state, hydrated, add, setQty, remove, clear, drawerOpen, openDrawer, setDrawerOpen}),
+    [state, hydrated, add, setQty, remove, clear, drawerOpen, openDrawer]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

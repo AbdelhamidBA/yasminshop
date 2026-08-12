@@ -16,7 +16,24 @@
   "nav": {
     "home": "Accueil",
     "products": "Produits",
-    "categories": "Catégories"
+    "categories": "Catégories",
+    "main": "Navigation principale",
+    "menu": "Menu",
+    "account": "Compte",
+    "bottomNav": "Navigation mobile",
+    "viewAll": "Voir tout"
+  },
+  "announcement": {
+    "freeDeliveryFrom": "Livraison gratuite dès {amount} {currency} — Paiement à la livraison",
+    "generic": "Livraison partout en Tunisie — Paiement à la livraison"
+  },
+  "cartDrawer": {
+    "title": "Votre panier",
+    "close": "Fermer",
+    "note": "Livraison et codes promo calculés à l'étape suivante.",
+    "viewCart": "Voir le panier",
+    "checkout": "Commander",
+    "continueShopping": "Continuer vos achats"
   },
   "home": {
     "heroEyebrow": "Tendances du moment",

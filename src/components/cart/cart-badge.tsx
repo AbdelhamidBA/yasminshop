@@ -3,21 +3,22 @@
 import {ShoppingCart} from 'lucide-react';
 import {useTranslations} from 'next-intl';
 import {useCart} from '@/components/cart/cart-provider';
-import {Link} from '@/i18n/navigation';
 import {cartCount} from '@/lib/cart';
 
-// Header cart icon linking to /cart. The count bubble stays hidden until the
-// provider has hydrated from localStorage so server and first client render
-// agree (no hydration mismatch).
+// Header cart control. Since Phase 7 it opens the cart side-drawer instead of
+// linking to /cart (the drawer's "Voir le panier" CTA leads there). The count
+// bubble stays hidden until the provider has hydrated from localStorage so
+// server and first client render agree (no hydration mismatch).
 export function CartBadge() {
   const t = useTranslations('common');
-  const {state, hydrated} = useCart();
+  const {state, hydrated, openDrawer} = useCart();
   const count = cartCount(state);
 
   return (
-    <Link
-      href="/cart"
+    <button
+      type="button"
       aria-label={t('cart')}
+      onClick={openDrawer}
       className="relative flex size-9 items-center justify-center rounded-md border hover:bg-accent"
     >
       <ShoppingCart className="size-4" />
@@ -29,6 +30,6 @@ export function CartBadge() {
           {count}
         </span>
       )}
-    </Link>
+    </button>
   );
 }

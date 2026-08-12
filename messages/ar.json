@@ -16,7 +16,24 @@
   "nav": {
     "home": "الرئيسية",
     "products": "المنتجات",
-    "categories": "الفئات"
+    "categories": "الفئات",
+    "main": "التنقل الرئيسي",
+    "menu": "القائمة",
+    "account": "حسابي",
+    "bottomNav": "شريط التنقل السفلي",
+    "viewAll": "عرض الكل"
+  },
+  "announcement": {
+    "freeDeliveryFrom": "توصيل مجاني ابتداءً من {amount} {currency} — الدفع عند الاستلام",
+    "generic": "توصيل إلى جميع أنحاء تونس — الدفع عند الاستلام"
+  },
+  "cartDrawer": {
+    "title": "سلتك",
+    "close": "إغلاق",
+    "note": "تُحتسب تكلفة التوصيل وأكواد التخفيض في الخطوة التالية.",
+    "viewCart": "عرض السلة",
+    "checkout": "إتمام الطلب",
+    "continueShopping": "مواصلة التسوق"
   },
   "home": {
     "heroEyebrow": "الأكثر رواجاً الآن",
