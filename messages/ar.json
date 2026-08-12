@@ -19,9 +19,14 @@
     "categories": "الفئات"
   },
   "home": {
+    "heroEyebrow": "الأكثر رواجاً الآن",
     "heroTitle": "اكتشف منتجات ستحبها",
     "heroSubtitle": "منتجات محلية ومستوردة تصل إلى باب منزلك.",
     "cta": "عرض جميع المنتجات",
+    "viewAll": "عرض الكل",
+    "categoriesTitle": "تسوّق حسب الفئة",
+    "categoriesSubtitle": "تصفّح أقسامنا واعثر على ما تحتاجه.",
+    "shopNow": "اكتشف",
     "sections": {
       "newest": "وصل حديثاً",
       "featured": "مميزة",
@@ -31,6 +36,16 @@
   },
   "storefront": {
     "outOfStock": "نفد المخزون"
+  },
+  "trust": {
+    "shippingTitle": "التوصيل إلى المنزل",
+    "shippingSubtitle": "في كامل تونس",
+    "paymentTitle": "الدفع عند الاستلام",
+    "paymentSubtitle": "ادفع عند التسليم",
+    "returnsTitle": "إرجاع سهل",
+    "returnsSubtitle": "استبدال مضمون",
+    "supportTitle": "دعم العملاء",
+    "supportSubtitle": "فريق في خدمتك"
   },
   "search": {
     "noResults": "لا نتائج"

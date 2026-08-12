@@ -25,30 +25,32 @@ export function ProductCard({
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group flex flex-col rounded-lg border bg-card p-3 transition-colors hover:border-foreground/20"
+      className="group flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md"
     >
-      <div className="relative">
+      <div className="relative overflow-hidden bg-muted">
         {/* Plain <img>: uploads are served same-origin from /api/uploads. */}
         <img
           src={imageUrl}
           alt={name}
           loading="lazy"
-          className="aspect-square w-full rounded-lg object-cover"
+          className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         {product.quantity === 0 && (
-          <span className="absolute start-2 top-2 rounded-md bg-background/90 px-2 py-0.5 text-xs font-medium text-muted-foreground">
+          <span className="absolute start-3 top-3 rounded-full bg-background/90 px-2.5 py-0.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
             {outOfStockLabel}
           </span>
         )}
       </div>
-      <h3 className="mt-3 truncate text-sm font-medium group-hover:underline">{name}</h3>
-      <div className="mt-1">
-        <Price
-          priceMillimes={product.priceMillimes}
-          discountPct={product.discountPct}
-          massDiscountPct={massDiscountPct}
-          currencyLabel={currencyLabel}
-        />
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <h3 className="truncate text-sm font-medium group-hover:text-primary">{name}</h3>
+        <div className="mt-auto text-base">
+          <Price
+            priceMillimes={product.priceMillimes}
+            discountPct={product.discountPct}
+            massDiscountPct={massDiscountPct}
+            currencyLabel={currencyLabel}
+          />
+        </div>
       </div>
     </Link>
   );

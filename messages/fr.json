@@ -19,9 +19,14 @@
     "categories": "Catégories"
   },
   "home": {
+    "heroEyebrow": "Tendances du moment",
     "heroTitle": "Découvrez des produits que vous allez adorer",
     "heroSubtitle": "Produits locaux et importés, livrés chez vous.",
     "cta": "Voir tous les produits",
+    "viewAll": "Tout voir",
+    "categoriesTitle": "Achetez par catégorie",
+    "categoriesSubtitle": "Parcourez nos rayons et trouvez ce qu'il vous faut.",
+    "shopNow": "Découvrir",
     "sections": {
       "newest": "Nouveautés",
       "featured": "En vedette",
@@ -31,6 +36,16 @@
   },
   "storefront": {
     "outOfStock": "Rupture de stock"
+  },
+  "trust": {
+    "shippingTitle": "Livraison à domicile",
+    "shippingSubtitle": "Partout en Tunisie",
+    "paymentTitle": "Paiement à la livraison",
+    "paymentSubtitle": "Payez à la réception",
+    "returnsTitle": "Retours faciles",
+    "returnsSubtitle": "Satisfait ou échangé",
+    "supportTitle": "Support client",
+    "supportSubtitle": "Une équipe à votre écoute"
   },
   "search": {
     "noResults": "Aucun résultat"
