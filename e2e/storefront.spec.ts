@@ -99,5 +99,14 @@ test('guest checkout places the order and empties the cart', async () => {
   ).toBeVisible();
   await expect(page.getByText(/Commande n° \d+/)).toBeVisible();
   await expect(page.getByText(/Casque sans fil\s*×3/)).toBeVisible();
+
+  // Money-value gate (spec §6d): the total row shows the exact frozen figure —
+  // 89.000 ×3 = 267.000, −10% (BIENVENUE10) = 240.300, delivery free above
+  // the 100 DT threshold. Guards the server-side pricing math end to end.
+  const totalRow = page
+    .locator('dl > div')
+    .filter({has: page.getByText('Total', {exact: true})});
+  await expect(totalRow).toContainText('240.300 TND');
+
   await expect(cartBadge()).toHaveText('');
 });

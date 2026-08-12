@@ -93,7 +93,14 @@ export async function placeOrder(formData: FormData): Promise<ActionResult<{orde
   // client's cart is stale) ──
   const products = await prisma.product.findMany({
     where: {AND: [VISIBLE, {id: {in: lines.map((line) => line.productId)}}]},
-    select: {id: true, nameFr: true, priceMillimes: true, discountPct: true, quantity: true}
+    select: {
+      id: true,
+      nameFr: true,
+      nameAr: true,
+      priceMillimes: true,
+      discountPct: true,
+      quantity: true
+    }
   });
   const productById = new Map(products.map((product) => [product.id, product]));
   if (lines.some((line) => !productById.has(line.productId))) {
@@ -122,6 +129,7 @@ export async function placeOrder(formData: FormData): Promise<ActionResult<{orde
       productId: line.productId,
       qty: line.qty,
       nameSnapshot: product.nameFr,
+      nameArSnapshot: product.nameAr,
       unitPriceMillimes,
       lineTotalMillimes: unitPriceMillimes * line.qty
     };
@@ -180,10 +188,18 @@ export async function placeOrder(formData: FormData): Promise<ActionResult<{orde
         items: {
           createMany: {
             data: pricedLines.map(
-              ({productId, qty, nameSnapshot, unitPriceMillimes, lineTotalMillimes}) => ({
+              ({
                 productId,
                 qty,
                 nameSnapshot,
+                nameArSnapshot,
+                unitPriceMillimes,
+                lineTotalMillimes
+              }) => ({
+                productId,
+                qty,
+                nameSnapshot,
+                nameArSnapshot,
                 unitPriceMillimes,
                 lineTotalMillimes
               })

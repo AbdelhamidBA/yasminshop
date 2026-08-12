@@ -20,18 +20,31 @@ enum OrderStatus {
 }
 
 model User {
-  id                String             @id @default(cuid())
-  name              String
-  email             String             @unique
-  phone             String?
-  passwordHash      String
-  role              Role               @default(CLIENT)
-  address           String?
-  city              String?
-  archivedAt        DateTime?
-  createdAt         DateTime           @default(now())
-  orders            Order[]
-  pushSubscriptions PushSubscription[]
+  id                  String               @id @default(cuid())
+  name                String
+  email               String               @unique
+  phone               String?
+  passwordHash        String
+  role                Role                 @default(CLIENT)
+  address             String?
+  city                String?
+  archivedAt          DateTime?
+  createdAt           DateTime             @default(now())
+  orders              Order[]
+  pushSubscriptions   PushSubscription[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Category {
@@ -114,6 +127,7 @@ model OrderItem {
   productId         String
   product           Product @relation(fields: [productId], references: [id])
   nameSnapshot      String
+  nameArSnapshot    String  @default("")
   unitPriceMillimes Int
   qty               Int
   lineTotalMillimes Int

@@ -41,12 +41,14 @@ export default async function OrderConfirmationPage({params}: PageProps) {
 
       <div className="mt-8 rounded-lg border bg-card p-4">
         {/* Snapshot lines: name/price captured at order time — immune to later
-            catalog edits. */}
+            catalog edits. Arabic views prefer the Arabic snapshot; the || falls
+            back to the French one for items predating nameArSnapshot. */}
         <ul className="flex flex-col gap-2 border-b pb-3 text-sm">
           {order.items.map((item) => (
             <li key={item.id} className="flex items-baseline justify-between gap-3">
               <span className="min-w-0 flex-1">
-                {item.nameSnapshot} <span className="text-muted-foreground">×{item.qty}</span>
+                {locale === 'ar' ? item.nameArSnapshot || item.nameSnapshot : item.nameSnapshot}{' '}
+                <span className="text-muted-foreground">×{item.qty}</span>
               </span>
               <span className="tabular-nums whitespace-nowrap">
                 {formatMillimes(item.lineTotalMillimes)} {currencyLabel}
