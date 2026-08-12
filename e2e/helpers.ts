@@ -12,11 +12,19 @@ export async function login(page: Page, email: string, password: string) {
   await page.getByLabel('E-mail').fill(email);
   await page.getByLabel('Mot de passe').fill(password);
   await page.getByRole('button', {name: 'Se connecter'}).click();
-  // The login action redirects to '/'; the client-side RSC fetch follows the
-  // locale redirect ('/' -> '/fr') internally, so the committed URL can stay
-  // '/'. Wait for having left /login, then for the authenticated header:
-  // 'Se déconnecter' now lives inside the header account menu ('Compte').
+  // Sign-in is role-aware: staff land on /admin, everyone else on '/' (whose
+  // client-side RSC fetch follows the locale redirect internally, so the
+  // committed URL can stay '/'). Wait for having left /login, then assert the
+  // authenticated shell that actually belongs to where we landed.
   await page.waitForURL((url) => !url.pathname.endsWith('/login'));
+  if (new URL(page.url()).pathname.includes('/admin')) {
+    // The dashboard hero only renders for an authenticated staff session.
+    await expect(page.getByRole('heading', {name: /Bienvenue/})).toBeVisible({
+      timeout: 30_000
+    });
+    return;
+  }
+  // Storefront: 'Se déconnecter' lives inside the header account menu.
   await openAccountMenu(page, 'Se déconnecter');
   // Close the menu again so the page state stays clean for the caller.
   await page.keyboard.press('Escape');
