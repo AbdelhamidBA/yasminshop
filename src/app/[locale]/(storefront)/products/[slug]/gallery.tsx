@@ -27,32 +27,37 @@ export function Gallery({images, name}: GalleryProps) {
       <img
         src={list[currentIndex].url}
         alt={name}
-        className="aspect-square w-full rounded-lg border bg-muted object-cover"
+        className="aspect-square w-full rounded-2xl border bg-muted object-cover"
       />
-      <div className="mt-3 grid grid-cols-4 gap-3">
-        {list.map((image, index) => (
-          <button
-            key={image.id}
-            type="button"
-            onClick={() => setSelected(index)}
-            aria-label={`${name} ${index + 1}/${list.length}`}
-            aria-current={index === currentIndex}
-            className={cn(
-              'overflow-hidden rounded-lg border transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
-              index === currentIndex
-                ? 'border-primary ring-1 ring-primary'
-                : 'hover:border-foreground/30'
-            )}
-          >
-            <img
-              src={image.url}
-              alt=""
-              loading="lazy"
-              className="aspect-square w-full object-cover"
-            />
-          </button>
-        ))}
-      </div>
+      {/* Thumb strip only when there is genuinely more than one image — a
+          single-image product shows the main image cleanly, no fabricated
+          thumbnails. */}
+      {list.length > 1 && (
+        <div className="mt-3 grid grid-cols-4 gap-3">
+          {list.map((image, index) => (
+            <button
+              key={image.id}
+              type="button"
+              onClick={() => setSelected(index)}
+              aria-label={`${name} ${index + 1}/${list.length}`}
+              aria-current={index === currentIndex}
+              className={cn(
+                'overflow-hidden rounded-xl border transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                index === currentIndex
+                  ? 'border-foreground ring-1 ring-foreground'
+                  : 'hover:border-foreground/30'
+              )}
+            >
+              <img
+                src={image.url}
+                alt=""
+                loading="lazy"
+                className="aspect-square w-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {Label} from '@/components/ui/label';
 import {Textarea} from '@/components/ui/textarea';
 import {Link, useRouter} from '@/i18n/navigation';
 import {computeCartTotals} from '@/lib/checkout';
+import {fieldErrorText} from '@/lib/field-error';
 import {formatMillimes} from '@/lib/money';
 import {placeOrder} from './actions';
 
@@ -50,8 +51,10 @@ export function CheckoutForm({
   // state while the confirmation redirect is in flight.
   const [placed, setPlaced] = useState(false);
 
+  // Shared localizer: maps a message-KEY through this form's errors.* namespace,
+  // falling back to errors.validation — never echoes a raw zod code.
   function errorText(code: string): string {
-    return t.has(`errors.${code}` as never) ? t(`errors.${code}` as never) : code;
+    return fieldErrorText(code, t);
   }
 
   function errorLine(key: string) {

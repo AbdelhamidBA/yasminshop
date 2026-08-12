@@ -2,10 +2,12 @@
 
 import {Prisma} from '@prisma/client';
 import {AuthError} from 'next-auth';
+import {headers} from 'next/headers';
 import {signIn} from '@/auth';
 import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/action-result';
 import {prisma} from '@/lib/db';
 import {hashPassword} from '@/lib/password';
+import {RATE_LIMITS, clientIpFromHeaders, enforceRateLimit} from '@/lib/rate-limit';
 import {registerSchema} from '@/lib/schemas/auth';
 
 // Registration outcome consumed by the form via useActionState (login idiom):
@@ -20,6 +22,16 @@ export async function registerClient(
   _prevState: RegisterState | undefined,
   formData: FormData
 ): Promise<RegisterState> {
+  // Rate-limit by client IP before any validation or DB write — registration is
+  // an unauthenticated public write. Over-limit → typed non-field failure.
+  const ip = clientIpFromHeaders(await headers());
+  if (
+    !enforceRateLimit(`register:${ip}`, RATE_LIMITS.register.limit, RATE_LIMITS.register.windowMs)
+      .allowed
+  ) {
+    return failure('rateLimited');
+  }
+
   const parsed = registerSchema.safeParse({
     name: String(formData.get('name') ?? ''),
     email: String(formData.get('email') ?? ''),

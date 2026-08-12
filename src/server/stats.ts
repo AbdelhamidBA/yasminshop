@@ -4,7 +4,10 @@ import {prisma} from '@/lib/db';
 import {
   bucketOrders,
   bucketWindowStart,
+  computeDelta,
+  previousRangeStart,
   rangeStart,
+  type Delta,
   type Range,
   type SalesBucket
 } from '@/lib/stats';
@@ -39,6 +42,17 @@ export type TopProduct = {
   revenueMillimes: number;
 };
 
+// Period-over-period deltas for the KPI tiles (reference-image alignment). Each
+// is null when its prior-window base is empty (nothing to compare against) — the
+// tile then renders no delta rather than a fabricated figure. revenue/orders are
+// current-period vs prior-equal-window; clients is the growth of the active base
+// over the period (new active clients ÷ base that predates the period).
+export type DashboardDeltas = {
+  revenue: Delta | null;
+  orders: Delta | null;
+  clients: Delta | null;
+};
+
 export type DashboardStats = {
   clientsTotal: number;
   ordersTotal: number;
@@ -48,17 +62,19 @@ export type DashboardStats = {
   salesSeries: SalesBucket[];
   topProducts: TopProduct[];
   recentOrders: OrderRow[];
+  deltas: DashboardDeltas;
 };
 
 export async function getDashboardStats(range: Range): Promise<DashboardStats> {
   const now = new Date();
   const start = rangeStart(range, now);
+  const prevStart = previousRangeStart(range, now);
   const orderWhere: Prisma.OrderWhereInput = {createdAt: {gte: start}, archivedAt: null};
 
   // One interactive transaction for a read-consistent snapshot. (The array form
   // of $transaction widens groupBy result types — Prisma limitation — so the
   // interactive form is used here to keep the aggregate typings precise.)
-  const {grouped, clientsTotal, chartOrders, topGrouped, recentOrders} =
+  const {grouped, prevGrouped, clientsTotal, newClientsInPeriod, chartOrders, topGrouped, recentOrders} =
     await prisma.$transaction(async (tx) => {
       const grouped = await tx.order.groupBy({
         by: ['status'],
@@ -67,8 +83,22 @@ export async function getDashboardStats(range: Range): Promise<DashboardStats> {
         _count: {_all: true},
         _sum: {totalMillimes: true}
       });
+      // Prior equal-length window [prevStart, start) — same status/archived rules
+      // — so the tile deltas compare like with like.
+      const prevGrouped = await tx.order.groupBy({
+        by: ['status'],
+        where: {createdAt: {gte: prevStart, lt: start}, archivedAt: null},
+        orderBy: {status: 'asc'},
+        _count: {_all: true},
+        _sum: {totalMillimes: true}
+      });
       const clientsTotal = await tx.user.count({
         where: {role: 'CLIENT', archivedAt: null}
+      });
+      // Active clients acquired within the current period — the numerator of the
+      // client-base growth delta (base that predates the period = total − these).
+      const newClientsInPeriod = await tx.user.count({
+        where: {role: 'CLIENT', archivedAt: null, createdAt: {gte: start}}
       });
       const chartOrders = await tx.order.findMany({
         where: {createdAt: {gte: bucketWindowStart(range, now)}, archivedAt: null},
@@ -89,7 +119,15 @@ export async function getDashboardStats(range: Range): Promise<DashboardStats> {
         include: RECENT_ORDER_INCLUDE,
         take: 5
       });
-      return {grouped, clientsTotal, chartOrders, topGrouped, recentOrders};
+      return {
+        grouped,
+        prevGrouped,
+        clientsTotal,
+        newClientsInPeriod,
+        chartOrders,
+        topGrouped,
+        recentOrders
+      };
     });
 
   const statusBreakdown: StatusBreakdown = {
@@ -108,6 +146,24 @@ export async function getDashboardStats(range: Range): Promise<DashboardStats> {
       revenueMillimes += g._sum.totalMillimes ?? 0;
     }
   }
+
+  // Prior-window totals for the deltas (same CONFIRMED+DELIVERED revenue rule).
+  let prevOrdersTotal = 0;
+  let prevRevenueMillimes = 0;
+  for (const g of prevGrouped) {
+    prevOrdersTotal += g._count._all;
+    if (g.status === 'CONFIRMED' || g.status === 'DELIVERED') {
+      prevRevenueMillimes += g._sum.totalMillimes ?? 0;
+    }
+  }
+
+  const deltas: DashboardDeltas = {
+    revenue: computeDelta(revenueMillimes, prevRevenueMillimes),
+    orders: computeDelta(ordersTotal, prevOrdersTotal),
+    // Growth of the active client base over the period: total now vs the base
+    // that predates the period (total − clients acquired this period).
+    clients: computeDelta(clientsTotal, clientsTotal - newClientsInPeriod)
+  };
 
   const salesSeries = bucketOrders(chartOrders, range, now);
 
@@ -141,6 +197,7 @@ export async function getDashboardStats(range: Range): Promise<DashboardStats> {
     statusBreakdown,
     salesSeries,
     topProducts,
-    recentOrders
+    recentOrders,
+    deltas
   };
 }

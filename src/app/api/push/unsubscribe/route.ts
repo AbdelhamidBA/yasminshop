@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {auth} from '@/auth';
 import {prisma} from '@/lib/db';
+import {sessionRevoked} from '@/server/authz';
 
 // POST /api/push/unsubscribe — remove this device's subscription (staff toggle
 // off, or a browser that revoked permission). Same route-boundary authz as
@@ -24,6 +25,10 @@ export async function POST(request: Request) {
   const role = session.user.role;
   if (role !== 'ADMIN' && role !== 'SUB_ADMIN') {
     return NextResponse.json({error: 'forbidden'}, {status: 403});
+  }
+  // Revocation re-check: a reset/archive/role-change invalidates a live token.
+  if (await sessionRevoked(session)) {
+    return NextResponse.json({error: 'unauthorized'}, {status: 401});
   }
 
   let body: unknown;

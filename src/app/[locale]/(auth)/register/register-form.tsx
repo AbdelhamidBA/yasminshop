@@ -6,6 +6,7 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Link} from '@/i18n/navigation';
+import {fieldErrorText} from '@/lib/field-error';
 import {registerClient} from './actions';
 
 // Registration form — login-form idiom (useActionState + server action). The
@@ -25,8 +26,10 @@ export function RegisterForm() {
       ? (state.fieldErrors ?? {})
       : {};
 
+  // Shared localizer: maps a message-KEY through this form's errors.* namespace,
+  // falling back to errors.validation — never echoes a raw zod code.
   function errorText(code: string): string {
-    return t.has(`errors.${code}` as never) ? t(`errors.${code}` as never) : code;
+    return fieldErrorText(code, t);
   }
 
   function errorLine(key: string) {
@@ -34,6 +37,13 @@ export function RegisterForm() {
     if (!message) return null;
     return <p className="text-sm text-destructive">{errorText(message)}</p>;
   }
+
+  // A non-field failure (e.g. rate limiting) has no fieldErrors — surface it as a
+  // generic line above the submit button.
+  const formError =
+    state && !state.ok && !state.fieldErrors && !Object.keys(clientErrors).length
+      ? state.error
+      : null;
 
   // signIn refused after creation (edge case): the account exists — invite a
   // normal sign-in instead of re-submitting a duplicate registration.
@@ -96,6 +106,7 @@ export function RegisterForm() {
         />
         {errorLine('confirmPassword')}
       </div>
+      {formError && <p className="text-sm text-destructive">{errorText(formError)}</p>}
       <Button type="submit" disabled={pending}>
         {t('register.submit')}
       </Button>

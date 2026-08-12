@@ -1,5 +1,6 @@
 import {NextResponse} from 'next/server';
 import {prisma} from '@/lib/db';
+import {RATE_LIMITS, clientIpFromHeaders, enforceRateLimit} from '@/lib/rate-limit';
 
 // Charset allowlist: product ids are cuids (lowercase alphanumeric); the
 // hyphen is tolerated for slug-shaped values. This kills NUL bytes and
@@ -12,6 +13,21 @@ const PRODUCT_ID_PATTERN = /^[a-z0-9-]{1,40}$/i;
 // is possible and ACCEPTED — the spec treats searchHits as a heuristic
 // popularity signal, not an integrity-bearing metric.
 export async function POST(request: Request) {
+  // Unauthenticated public write — rate-limit by client IP. Over-limit → 429
+  // with Retry-After (seconds) so a well-behaved client can back off.
+  const ip = clientIpFromHeaders(request.headers);
+  const rl = enforceRateLimit(
+    `search-hits:${ip}`,
+    RATE_LIMITS.searchHits.limit,
+    RATE_LIMITS.searchHits.windowMs
+  );
+  if (!rl.allowed) {
+    return NextResponse.json(
+      {error: 'rateLimited'},
+      {status: 429, headers: {'Retry-After': String(Math.ceil(rl.retryAfterMs / 1000))}}
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();

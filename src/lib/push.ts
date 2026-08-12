@@ -1,14 +1,9 @@
 // Pure Web Push helpers. Deliberately free of `server-only`, of any DB access,
-// and of a *static* `web-push` import so the fan-out logic below stays
-// unit-testable without a browser, a database, or the web-push library. The
-// real order-alert path (src/server/push.ts) injects web-push's sendNotification
-// and Prisma's delete; the tests inject fakes.
-
-export type VapidDetails = {
-  publicKey: string;
-  privateKey: string;
-  subject: string;
-};
+// of a *static* `web-push` import, AND of any env/VAPID read so the fan-out logic
+// below stays unit-testable without a browser, a database, or the web-push
+// library. The VAPID key surface (env read + dynamic web-push import) lives in
+// the server-only src/server/push.ts; the real order-alert path there injects
+// web-push's sendNotification and Prisma's delete, while the tests inject fakes.
 
 // Web Push status semantics: a 404 (Not Found) or 410 (Gone) from the push
 // service means the subscription is permanently dead and MUST be pruned. Every
@@ -77,45 +72,4 @@ export async function sendToSubscriptions(
     }
   }
   return summary;
-}
-
-// Process-memoized VAPID details (the PROMISE is cached so a burst of first
-// callers can't each generate a different dev keypair). Memoization is what
-// makes the subscribe path — which hands the browser the PUBLIC key via
-// /api/push/vapid-public-key — and the send path agree on ONE keypair within a
-// single server run.
-let vapidPromise: Promise<VapidDetails> | null = null;
-
-export function getVapidDetails(): Promise<VapidDetails> {
-  if (!vapidPromise) vapidPromise = resolveVapidDetails();
-  return vapidPromise;
-}
-
-async function resolveVapidDetails(): Promise<VapidDetails> {
-  const publicKey = process.env.VAPID_PUBLIC_KEY?.trim();
-  const privateKey = process.env.VAPID_PRIVATE_KEY?.trim();
-  // web-push requires a mailto: or https: subject; fall back to a placeholder so
-  // the dev path works out of the box.
-  const subject = process.env.VAPID_SUBJECT?.trim() || 'mailto:admin@example.com';
-
-  if (publicKey && privateKey) {
-    return {publicKey, privateKey, subject};
-  }
-
-  // DEV fallback: generate an ephemeral keypair ONCE per process. Lazy-import
-  // web-push so this module's static graph — and the pure helpers above — never
-  // pull the library in (keeps the unit tests web-push-free).
-  const webpush = await import('web-push');
-  const generated = webpush.generateVAPIDKeys();
-  console.warn(
-    'DEV ONLY — set VAPID_* in .env. Generated an ephemeral VAPID keypair; ' +
-      'push subscriptions stop delivering after a server restart.'
-  );
-  return {publicKey: generated.publicKey, privateKey: generated.privateKey, subject};
-}
-
-// Convenience for the GET /api/push/vapid-public-key endpoint (the browser needs
-// only the public key to create a subscription).
-export async function getVapidPublicKey(): Promise<string> {
-  return (await getVapidDetails()).publicKey;
 }

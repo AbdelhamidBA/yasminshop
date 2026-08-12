@@ -19,6 +19,12 @@ const ID_PATTERN = /^[a-z0-9-]{1,40}$/i;
 
 const ORDER_STATUSES: readonly string[] = ['PENDING', 'CONFIRMED', 'DELIVERED', 'CANCELED'];
 
+// Bounded retry for the confirm/cancel transaction on a Postgres write conflict
+// / deadlock (Prisma P2034). Postgres aborts one side of a genuine deadlock; the
+// transaction re-reads stock on each attempt, so a retry is safe. Exhausting the
+// budget surfaces a typed 'conflict' failure instead of a 500.
+const MAX_TX_ATTEMPTS = 3;
+
 function isPrismaError(error: unknown, code: string): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === code;
 }
@@ -43,20 +49,32 @@ export async function changeOrderStatus(id: string, to: OrderStatus): Promise<Ac
 
     const order = await prisma.order.findUnique({
       where: {id},
-      select: {status: true, items: {select: {productId: true, qty: true}}}
+      select: {status: true, archivedAt: true, items: {select: {productId: true, qty: true}}}
     });
     if (!order) return failure('notFound');
+    // Distinct signal for an archived order (view-only) vs a genuinely illegal
+    // transition — the UI hides status buttons on archived orders, so this only
+    // fires for a crafted/stale POST, but the message should still be honest.
+    if (order.archivedAt !== null) return failure('orderArchived');
     if (!canTransition(order.status, to)) return failure('invalidTransition');
+
+    // Deterministic lock order (deadlock hardening): acquire the per-product row
+    // locks in a stable productId order so two concurrent confirms that share
+    // products can never hold-and-wait in opposite orders (the classic ABBA
+    // deadlock). Same set of writes — only the sequence is pinned.
+    const orderedItems = [...order.items].sort((a, b) =>
+      a.productId < b.productId ? -1 : a.productId > b.productId ? 1 : 0
+    );
 
     // Promo policy at confirm (binding): HONOR THE SNAPSHOT. Totals — promo
     // discount included — were frozen at order creation; the code is NOT
     // re-validated here even if it has since expired, been deactivated or
     // archived.
     const delta = stockDelta(order.status, to);
-    try {
-      await prisma.$transaction(async (tx) => {
+    const runTransition = () =>
+      prisma.$transaction(async (tx) => {
         if (delta === 'decrement') {
-          for (const item of order.items) {
+          for (const item of orderedItems) {
             // §6d binding: stock re-check INSIDE the decrement transaction —
             // reload each product within the tx and reject if it is archived
             // (or gone) or the line qty exceeds its current stock.
@@ -80,7 +98,7 @@ export async function changeOrderStatus(id: string, to: OrderStatus): Promise<Ac
         } else if (delta === 'restock') {
           // Restock on CONFIRMED→CANCELED re-adds stock even when a product
           // has been archived since — the units physically return either way.
-          for (const item of order.items) {
+          for (const item of orderedItems) {
             await tx.product.updateMany({
               where: {id: item.productId},
               data: {quantity: {increment: item.qty}}
@@ -99,8 +117,23 @@ export async function changeOrderStatus(id: string, to: OrderStatus): Promise<Ac
         });
         if (updated.count === 0) throw new TransitionAbort('invalidTransition');
       });
+
+    try {
+      // Retry ONLY on a write-conflict/deadlock (P2034); a TransitionAbort or any
+      // other error breaks out immediately and is handled below.
+      for (let attempt = 1; ; attempt++) {
+        try {
+          await runTransition();
+          break;
+        } catch (error) {
+          if (isPrismaError(error, 'P2034') && attempt < MAX_TX_ATTEMPTS) continue;
+          throw error;
+        }
+      }
     } catch (error) {
       if (error instanceof TransitionAbort) return failure(error.reason);
+      // Deadlock/write-conflict that outlived the retry budget → typed, retryable.
+      if (isPrismaError(error, 'P2034')) return failure('conflict');
       throw error;
     }
     revalidatePath(PATH, 'page');

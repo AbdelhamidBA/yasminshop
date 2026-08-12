@@ -19,9 +19,14 @@
     "categories": "Catégories"
   },
   "home": {
+    "heroEyebrow": "Tendances du moment",
     "heroTitle": "Découvrez des produits que vous allez adorer",
     "heroSubtitle": "Produits locaux et importés, livrés chez vous.",
     "cta": "Voir tous les produits",
+    "viewAll": "Tout voir",
+    "categoriesTitle": "Achetez par catégorie",
+    "categoriesSubtitle": "Parcourez nos rayons et trouvez ce qu'il vous faut.",
+    "shopNow": "Découvrir",
     "sections": {
       "newest": "Nouveautés",
       "featured": "En vedette",
@@ -31,6 +36,16 @@
   },
   "storefront": {
     "outOfStock": "Rupture de stock"
+  },
+  "trust": {
+    "shippingTitle": "Livraison à domicile",
+    "shippingSubtitle": "Partout en Tunisie",
+    "paymentTitle": "Paiement à la livraison",
+    "paymentSubtitle": "Payez à la réception",
+    "returnsTitle": "Retours faciles",
+    "returnsSubtitle": "Satisfait ou échangé",
+    "supportTitle": "Support client",
+    "supportSubtitle": "Une équipe à votre écoute"
   },
   "search": {
     "noResults": "Aucun résultat"
@@ -62,10 +77,14 @@
     "addToCart": "Ajouter au panier",
     "addedToCart": "Ajouté au panier.",
     "related": "Produits similaires",
-    "quantity": "Quantité"
+    "quantity": "Quantité",
+    "decreaseQuantity": "Diminuer la quantité",
+    "increaseQuantity": "Augmenter la quantité",
+    "description": "Description"
   },
   "breadcrumb": {
-    "home": "Accueil"
+    "home": "Accueil",
+    "label": "Fil d'Ariane"
   },
   "cart": {
     "title": "Panier",
@@ -78,6 +97,7 @@
     "promoApply": "Appliquer",
     "promoApplied": "Code {code} appliqué (−{pct}%).",
     "promoInvalid": "Code promo invalide.",
+    "rateLimited": "Trop de tentatives. Veuillez patienter un instant puis réessayer.",
     "subtotal": "Sous-total",
     "promoDiscount": "Remise",
     "delivery": "Livraison",
@@ -104,6 +124,7 @@
       "tooLong": "Trop long.",
       "invalidPromo": "Code promo invalide.",
       "cartChanged": "Votre panier a changé (stock ou produits). Vérifiez-le puis réessayez.",
+      "rateLimited": "Trop de tentatives. Veuillez patienter un instant puis réessayer.",
       "validation": "Veuillez corriger les champs en rouge."
     }
   },
@@ -126,7 +147,8 @@
     "email": "E-mail",
     "password": "Mot de passe",
     "signIn": "Se connecter",
-    "invalidCredentials": "E-mail ou mot de passe incorrect."
+    "invalidCredentials": "E-mail ou mot de passe incorrect.",
+    "tooManyAttempts": "Trop de tentatives de connexion. Veuillez patienter un instant puis réessayer."
   },
   "authPages": {
     "register": {
@@ -169,10 +191,12 @@
       "passwordMismatch": "Les mots de passe ne correspondent pas.",
       "emailTaken": "Un compte existe déjà avec cet e-mail.",
       "invalidToken": "Ce lien de réinitialisation est invalide ou a expiré.",
+      "rateLimited": "Trop de tentatives. Veuillez patienter un instant puis réessayer.",
       "validation": "Veuillez corriger les champs en rouge."
     }
   },
   "admin": {
+    "brand": "Boutique",
     "blocks": {
       "dashboard": "Tableau de bord",
       "settings": "Paramètres"
@@ -217,7 +241,13 @@
         "invalidParent": "Catégorie parente invalide.",
         "hasChildren": "Une catégorie avec des sous-catégories ne peut pas avoir de parent.",
         "notFound": "Catégorie introuvable.",
-        "forbidden": "Action non autorisée."
+        "forbidden": "Action non autorisée.",
+        "required": "Champ requis.",
+        "tooShort": "Trop court.",
+        "tooLong": "Trop long.",
+        "invalid": "Valeur invalide.",
+        "min": "Valeur trop petite.",
+        "max": "Valeur trop grande."
       }
     },
     "products": {
@@ -286,7 +316,19 @@
       "errors": {
         "invalidAmount": "Prix invalide (ex. 89.000).",
         "referenceTaken": "Cette référence existe déjà.",
-        "imagesRequired": "Au moins une image valide est requise."
+        "imagesRequired": "Au moins une image valide est requise.",
+        "validation": "Veuillez corriger les champs en rouge.",
+        "required": "Champ requis.",
+        "tooShort": "Trop court.",
+        "tooLong": "Trop long.",
+        "invalid": "Valeur invalide.",
+        "min": "Valeur trop petite.",
+        "max": "Valeur trop grande.",
+        "minOneImage": "Ajoutez au moins une image.",
+        "invalidCategory": "Catégorie invalide.",
+        "invalidSubCategory": "Sous-catégorie invalide.",
+        "notFound": "Produit introuvable.",
+        "forbidden": "Action non autorisée."
       }
     },
     "promoCodesPage": {
@@ -318,7 +360,13 @@
         "codeTaken": "Ce code existe déjà.",
         "invalidDate": "Date invalide.",
         "forbidden": "Action non autorisée.",
-        "notFound": "Code introuvable."
+        "notFound": "Code introuvable.",
+        "required": "Champ requis.",
+        "tooShort": "Trop court.",
+        "tooLong": "Trop long.",
+        "invalid": "Valeur invalide.",
+        "min": "Valeur trop petite.",
+        "max": "Valeur trop grande."
       }
     },
     "parameters": {
@@ -342,7 +390,13 @@
       "errors": {
         "validation": "Veuillez corriger les champs en rouge.",
         "invalidAmount": "Montant invalide (ex. 7.500).",
-        "forbidden": "Action non autorisée."
+        "forbidden": "Action non autorisée.",
+        "required": "Champ requis.",
+        "tooShort": "Trop court.",
+        "tooLong": "Trop long.",
+        "invalid": "Valeur invalide.",
+        "min": "Valeur trop petite.",
+        "max": "Valeur trop grande."
       }
     },
     "massDiscount": {
@@ -449,6 +503,7 @@
       "forbidden": "Action non autorisée.",
       "invalidTransition": "Changement de statut non autorisé.",
       "insufficientStock": "Stock insuffisant pour confirmer cette commande.",
+      "conflict": "Opération concurrente détectée. Veuillez réessayer.",
       "orderArchived": "Commande archivée — modification impossible.",
       "cartChanged": "Un produit n'est plus disponible ou le stock est insuffisant. Vérifiez les articles.",
       "invalidPromo": "Code promo invalide.",
@@ -589,6 +644,11 @@
       "orders": "Commandes",
       "clients": "Clients",
       "pending": "En attente"
+    },
+    "delta": {
+      "increase": "En hausse de {value}% sur la période précédente",
+      "decrease": "En baisse de {value}% sur la période précédente",
+      "unchanged": "Stable sur la période précédente"
     },
     "sales": {
       "title": "Aperçu des ventes",

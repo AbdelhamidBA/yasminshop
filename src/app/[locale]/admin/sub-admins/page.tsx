@@ -1,6 +1,7 @@
 import {notFound} from 'next/navigation';
 import {getTranslations} from 'next-intl/server';
 import {auth} from '@/auth';
+import {requirePageStaff} from '@/server/authz';
 import {AdminPagination} from '@/components/admin/admin-pagination';
 import {listSubAdmins} from '@/server/sub-admins';
 import {SubAdminsSearch} from './sub-admins-search';
@@ -13,6 +14,10 @@ export default async function SubAdminsPage({
 }: {
   searchParams: Promise<{q?: string; archived?: string; page?: string}>;
 }) {
+  // Funnel through the revocation check first (DB tokenVersion re-check): a
+  // revoked/archived staff token is redirected to /login here, so an ADMIN who
+  // self-revoked (password reset) can no longer read the sub-admin directory.
+  await requirePageStaff();
   // ADMIN-only surface (kept from the Phase 1 placeholder): the proxy + admin
   // layout already gate /admin to staff, so a SUB_ADMIN reaching this page is
   // shown notFound() rather than redirected. Every action re-checks requireAdmin.

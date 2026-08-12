@@ -2,6 +2,7 @@ import {NextResponse} from 'next/server';
 import type {Prisma} from '@prisma/client';
 import {auth} from '@/auth';
 import {prisma} from '@/lib/db';
+import {sessionRevoked} from '@/server/authz';
 
 // POST /api/push/subscribe — staff store their browser push subscription so
 // new-order alerts can reach this device. requireStaff role set enforced at the
@@ -65,6 +66,10 @@ export async function POST(request: Request) {
   const role = session.user.role;
   if (role !== 'ADMIN' && role !== 'SUB_ADMIN') {
     return NextResponse.json({error: 'forbidden'}, {status: 403});
+  }
+  // Revocation re-check: a reset/archive/role-change invalidates a live token.
+  if (await sessionRevoked(session)) {
+    return NextResponse.json({error: 'unauthorized'}, {status: 401});
   }
 
   let body: unknown;

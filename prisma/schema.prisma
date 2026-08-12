@@ -29,6 +29,7 @@ model User {
   address             String?
   city                String?
   archivedAt          DateTime?
+  tokenVersion        Int                  @default(0)
   createdAt           DateTime             @default(now())
   orders              Order[]
   pushSubscriptions   PushSubscription[]

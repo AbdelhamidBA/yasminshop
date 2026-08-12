@@ -6,9 +6,14 @@ const optionalId = z
   .optional()
   .transform((v) => (v && v.trim() !== '' ? v : null));
 
+// Admin catalog schemas. Like the client-facing checkout/auth schemas (spec §6c
+// binding), every constraint carries a message KEY — never zod's default
+// English text — so fieldErrorsFromZod surfaces keys the admin forms translate
+// via their own `errors.*` namespace through fieldErrorText(). Keys: 'required',
+// 'tooShort', 'tooLong', 'invalid', 'min', 'max'. Bounds/logic are unchanged.
 export const categorySchema = z.object({
-  nameFr: z.string().trim().min(1),
-  nameAr: z.string().trim().min(1),
+  nameFr: z.string().trim().min(1, {message: 'required'}),
+  nameAr: z.string().trim().min(1, {message: 'required'}),
   parentId: optionalId
 });
 export type CategoryInput = z.output<typeof categorySchema>;
@@ -17,11 +22,11 @@ export const promoCodeSchema = z.object({
   code: z
     .string()
     .trim()
-    .min(3)
-    .max(32)
-    .regex(/^[A-Za-z0-9_-]+$/)
+    .min(3, {message: 'tooShort'})
+    .max(32, {message: 'tooLong'})
+    .regex(/^[A-Za-z0-9_-]+$/, {message: 'invalid'})
     .transform((v) => v.toUpperCase()),
-  percentOff: z.number().int().min(1).max(100),
+  percentOff: z.number().int().min(1, {message: 'min'}).max(100, {message: 'max'}),
   active: z.boolean(),
   expiresAt: z.date().nullable()
 });
@@ -33,30 +38,38 @@ export const productImageSchema = z.object({
 });
 
 export const productSchema = z.object({
-  reference: z.string().trim().min(1).max(64),
-  nameFr: z.string().trim().min(1),
-  nameAr: z.string().trim().min(1),
-  descriptionFr: z.string().trim().min(1),
-  descriptionAr: z.string().trim().min(1),
-  priceMillimes: z.number().int().min(0).max(MAX_MILLIMES),
-  discountPct: z.number().int().min(0).max(100),
-  quantity: z.number().int().min(0),
+  reference: z.string().trim().min(1, {message: 'required'}).max(64, {message: 'tooLong'}),
+  nameFr: z.string().trim().min(1, {message: 'required'}),
+  nameAr: z.string().trim().min(1, {message: 'required'}),
+  descriptionFr: z.string().trim().min(1, {message: 'required'}),
+  descriptionAr: z.string().trim().min(1, {message: 'required'}),
+  priceMillimes: z.number().int().min(0, {message: 'min'}).max(MAX_MILLIMES, {message: 'max'}),
+  discountPct: z.number().int().min(0, {message: 'min'}).max(100, {message: 'max'}),
+  quantity: z.number().int().min(0, {message: 'min'}),
   featured: z.boolean(),
-  categoryId: z.string().min(1),
+  categoryId: z.string().min(1, {message: 'required'}),
   subCategoryId: optionalId,
-  images: z.array(productImageSchema).min(1)
+  images: z.array(productImageSchema).min(1, {message: 'required'})
 });
 export type ProductInput = z.output<typeof productSchema>;
 
 export const quantitySchema = z.object({
-  quantity: z.number().int().min(0)
+  quantity: z.number().int().min(0, {message: 'min'})
 });
 
 export const parametersSchema = z.object({
-  deliveryCostMillimes: z.number().int().min(0).max(MAX_MILLIMES),
-  freeDeliveryThresholdMillimes: z.number().int().min(0).max(MAX_MILLIMES),
-  currency: z.string().trim().min(1).max(8),
-  lastChanceThreshold: z.number().int().min(0),
+  deliveryCostMillimes: z
+    .number()
+    .int()
+    .min(0, {message: 'min'})
+    .max(MAX_MILLIMES, {message: 'max'}),
+  freeDeliveryThresholdMillimes: z
+    .number()
+    .int()
+    .min(0, {message: 'min'})
+    .max(MAX_MILLIMES, {message: 'max'}),
+  currency: z.string().trim().min(1, {message: 'required'}).max(8, {message: 'tooLong'}),
+  lastChanceThreshold: z.number().int().min(0, {message: 'min'}),
   copyright: z.string().trim(),
   siteDescription: z.string().trim(),
   keywords: z.string().trim(),

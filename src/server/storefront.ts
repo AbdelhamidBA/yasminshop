@@ -8,11 +8,14 @@ import {MAX_MILLIMES} from '@/lib/money';
 // that subcategory is not archived either. EVERY exported product query in
 // this module applies it. Combine it with other filters via `AND: [...]`
 // (never spread next to another `OR`, which would clobber the subcategory arm).
-export const VISIBLE = {
+// Object.freeze so this shared constant can never be mutated in place by a
+// caller (e.g. an accidental `VISIBLE.archivedAt = ...`) — every query composes
+// it via `AND: [VISIBLE, ...]` and must treat it as immutable.
+export const VISIBLE = Object.freeze({
   archivedAt: null,
   category: {archivedAt: null},
   OR: [{subCategoryId: null}, {subCategory: {archivedAt: null}}]
-} satisfies Prisma.ProductWhereInput;
+}) satisfies Prisma.ProductWhereInput;
 
 // Card shape for grids/sections: one image only, ordered by
 // [sortOrder asc, id asc] — the stable tiebreaker used across the storefront.

@@ -6,6 +6,7 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Link} from '@/i18n/navigation';
+import {fieldErrorText} from '@/lib/field-error';
 import {resetPassword} from '../actions';
 
 // New-password form — checkout-form idiom (useTransition + direct action
@@ -19,8 +20,10 @@ export function ResetPasswordForm({token}: {token: string}) {
   const [formError, setFormError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
+  // Shared localizer: maps a message-KEY through this form's errors.* namespace,
+  // falling back to errors.validation — never echoes a raw zod code.
   function errorText(code: string): string {
-    return t.has(`errors.${code}` as never) ? t(`errors.${code}` as never) : code;
+    return fieldErrorText(code, t);
   }
 
   function errorLine(key: string) {
