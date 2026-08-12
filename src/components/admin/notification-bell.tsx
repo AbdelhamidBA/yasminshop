@@ -4,7 +4,7 @@ import {useState} from 'react';
 import {Popover} from '@base-ui/react/popover';
 import {Bell} from 'lucide-react';
 import {useTranslations} from 'next-intl';
-import {Link, useRouter} from '@/i18n/navigation';
+import {Link} from '@/i18n/navigation';
 import type {NotificationRow} from '@/server/notifications';
 import {MarkAllReadButton} from './mark-all-read-button';
 import {NotificationItem} from './notification-item';
@@ -26,12 +26,17 @@ export function NotificationBell({
   currencyLabel: string;
 }) {
   const t = useTranslations('notifications');
-  const router = useRouter();
   const [open, setOpen] = useState(false);
 
+  // `items`/`unreadCount` are already fresh: AdminHeader (a server component)
+  // re-fetches them on every navigation into an admin route. We deliberately do
+  // NOT router.refresh() on open — a server round-trip mid-open re-streams the
+  // header and can transiently disrupt the just-opened popup (and flickers its
+  // content for the user). Staleness is bounded to "a new order arrived while
+  // sitting on one page without navigating", which push delivery (Task 5)
+  // covers; mark-all-read still revalidates to drop the badge to 0.
   function handleOpenChange(next: boolean) {
     setOpen(next);
-    if (next) router.refresh();
   }
 
   const badge = unreadCount > 9 ? '9+' : String(unreadCount);

@@ -80,14 +80,21 @@ test('admin notification bell surfaces the order and mark-all-read clears the ba
   const badge = bell.locator('span[aria-hidden="true"]');
   await expect(badge).toBeVisible();
 
-  await bell.click();
-  // The freshly placed order shows in the popover feed. \b guards against a
-  // longer number (#12 must not match #123).
-  await expect(
-    page.getByText(new RegExp(`Nouvelle commande #${orderNumber}\\b`))
-  ).toBeVisible();
+  // The "mark all read" button lives only inside the open popover, so it is our
+  // "is the popover open?" signal. The heavy dashboard route can hydrate slowly
+  // under full-suite load, so a single bell.click() may land before the Base UI
+  // trigger is interactive and open nothing. Retry idempotently: click only
+  // while the popover is closed (never toggling an already-open one shut), until
+  // the freshly placed order surfaces in the feed. \b guards against a longer
+  // number (#12 must not match #123).
+  const markAllRead = page.getByRole('button', {name: 'Tout marquer comme lu'});
+  const orderNotice = page.getByText(new RegExp(`Nouvelle commande #${orderNumber}\\b`));
+  await expect(async () => {
+    if (!(await markAllRead.isVisible())) await bell.click();
+    await expect(orderNotice).toBeVisible({timeout: 1500});
+  }).toPass({timeout: 20_000});
 
-  await page.getByRole('button', {name: 'Tout marquer comme lu'}).click();
+  await markAllRead.click();
   await expect(
     page.getByText('Toutes les notifications ont été marquées comme lues.')
   ).toBeVisible();
