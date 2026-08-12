@@ -40,14 +40,9 @@ export async function SiteHeader() {
             alt=""
             className="h-9 w-auto"
           />
-          <span
-            className={cn(
-              'font-serif font-semibold leading-none max-sm:sr-only sm:text-lg',
-              // Uppercase + tracking is FR-only: letter-spacing breaks the
-              // joined Arabic script.
-              locale !== 'ar' && 'uppercase tracking-[0.16em]'
-            )}
-          >
+          {/* Betterlett script — wordmark only (user directive). Natural
+              case: uppercase/tracking would break a script face. */}
+          <span className="font-(family-name:--font-betterlett) text-xl leading-none max-sm:sr-only sm:text-2xl">
             {t('common.siteName')}
           </span>
         </Link>

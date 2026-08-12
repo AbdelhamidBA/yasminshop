@@ -48,37 +48,45 @@ export default async function HomePage({
           flat-lay photo on the inline-end side (its own cream backdrop blends
           into --background in light mode; the rounded container keeps it
           looking intentional on the dark theme's brown surfaces). */}
-      <section className="border-b">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-8 px-4 py-10 sm:py-14 lg:grid-cols-2 lg:gap-12 lg:py-16">
-          <div className="max-w-xl">
-            <h1 className="font-serif text-4xl font-semibold leading-tight tracking-tight text-balance sm:text-5xl">
-              {t('heroTitle')}
-            </h1>
-            <p className="mt-5 max-w-md text-lg text-muted-foreground">
-              {t('heroSubtitle')}
-            </p>
-            <Link
-              href="/products"
-              className={cn(
-                'mt-8 inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-(--primary-deep)',
-                // Uppercase + tracking is FR-only: letter-spacing breaks the
-                // joined Arabic script.
-                !isAr && 'uppercase tracking-[0.12em]'
-              )}
-            >
-              {t('cta')}
-              <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-            </Link>
-          </div>
-          <div className="overflow-hidden rounded-3xl">
-            {/* Decorative brand imagery — the text block carries the message. */}
-            <img
-              src="/brand/hero.webp"
-              alt=""
-              fetchPriority="high"
-              className="aspect-[16/9] w-full object-cover"
-            />
-          </div>
+      <section className="relative border-b">
+        {/* Full-bleed background photo (user directive). The flat-lay's
+            products sit on the RIGHT of the photo and its empty cream area on
+            the LEFT, so the text overlay is anchored PHYSICALLY left in both
+            locales (deliberate exception to the logical-properties rule — the
+            anchor follows the photo composition, not the writing direction).
+            object-[75%_center] keeps the products in frame when narrow
+            viewports crop the sides. */}
+        <img
+          src="/brand/hero.webp"
+          alt=""
+          fetchPriority="high"
+          className="h-[52svh] max-h-[640px] min-h-[400px] w-full object-cover object-[75%_center]"
+        />
+        {/* Left-to-right readability scrim (physical, matching the overlay):
+            guarantees text contrast at any crop without hiding the products. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/45 to-transparent"
+        />
+        <div className="absolute inset-y-0 left-0 flex w-full max-w-xl flex-col items-start justify-center px-6 sm:px-10 lg:px-16">
+          <h1 className="font-serif text-4xl font-semibold leading-tight tracking-tight text-balance sm:text-5xl">
+            {t('heroTitle')}
+          </h1>
+          <p className="mt-5 max-w-md text-lg text-muted-foreground">
+            {t('heroSubtitle')}
+          </p>
+          <Link
+            href="/products"
+            className={cn(
+              'mt-8 inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-(--primary-deep)',
+              // Uppercase + tracking is FR-only: letter-spacing breaks the
+              // joined Arabic script.
+              !isAr && 'uppercase tracking-[0.12em]'
+            )}
+          >
+            {t('cta')}
+            <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+          </Link>
         </div>
       </section>
 

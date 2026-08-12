@@ -7,6 +7,15 @@ import localFont from 'next/font/local';
 // and auth surfaces keep the default stack. Baloo 2 has no Arabic glyphs —
 // Arabic text falls through to the system fallbacks per glyph, which is the
 // intended behavior.
+// Betterlett — decorative script supplied by the store owner, used ONLY for
+// the "Yasmine Shop" wordmark (site-header). Latin-only; the wordmark is
+// always the Latin brand name in both locales.
+export const betterlett = localFont({
+  variable: '--font-betterlett',
+  display: 'swap',
+  src: [{path: '../../fonts/Betterlett.ttf', weight: '400', style: 'normal'}]
+});
+
 export const baloo = localFont({
   variable: '--font-baloo',
   display: 'swap',
