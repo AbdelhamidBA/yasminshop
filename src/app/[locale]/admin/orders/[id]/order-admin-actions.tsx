@@ -15,6 +15,7 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Textarea} from '@/components/ui/textarea';
 import {useRouter} from '@/i18n/navigation';
+import {fieldErrorText} from '@/lib/field-error';
 import {archiveOrder, restoreOrder, updateOrderCustomer} from '../actions';
 
 export type EditableOrderCustomer = {
@@ -52,15 +53,10 @@ export function OrderAdminActions({order}: {order: EditableOrderCustomer}) {
 
   const defaults = splitAddress(order.customerAddress);
 
-  function errorText(code: string): string {
-    if (t.has(`errors.${code}` as never)) return t(`errors.${code}` as never);
-    return code;
-  }
-
   function errorLine(key: string) {
     const message = fieldErrors[key];
     if (!message) return null;
-    return <p className="text-sm text-destructive">{errorText(message)}</p>;
+    return <p className="text-sm text-destructive">{fieldErrorText(message, t)}</p>;
   }
 
   function submit(formData: FormData) {

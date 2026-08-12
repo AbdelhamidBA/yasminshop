@@ -7,6 +7,7 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Textarea} from '@/components/ui/textarea';
+import {fieldErrorText} from '@/lib/field-error';
 import {millimesToInput} from '@/lib/money';
 import type {AppParameters} from '@/server/settings';
 import {updateParameters} from './actions';
@@ -38,11 +39,7 @@ export function ParametersForm({
   function errorLine(key: string) {
     const message = fieldErrors[key];
     if (!message) return null;
-    return (
-      <p className="text-sm text-destructive">
-        {message === 'invalidAmount' ? t('errors.invalidAmount') : message}
-      </p>
-    );
+    return <p className="text-sm text-destructive">{fieldErrorText(message, t)}</p>;
   }
 
   return (
