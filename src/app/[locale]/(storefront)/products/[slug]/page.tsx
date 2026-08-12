@@ -97,7 +97,7 @@ export default async function ProductPage({params}: PageProps) {
       {/* Breadcrumb: home / category / [subcategory] / product */}
       <nav
         aria-label={tBreadcrumb('label')}
-        className="rounded-xl border bg-muted/40 px-5 py-3 text-sm text-muted-foreground"
+        className="rounded-lg border bg-muted/40 px-5 py-3 text-sm text-muted-foreground"
       >
         <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <li>

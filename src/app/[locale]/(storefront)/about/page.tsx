@@ -64,7 +64,7 @@ export default async function AboutPage({
           {values.map(({icon: Icon, title, body}) => (
             <li
               key={title}
-              className="flex flex-col items-center gap-2 rounded-xl border bg-secondary/40 p-5 text-center"
+              className="flex flex-col items-center gap-2 rounded-lg border bg-secondary/40 p-5 text-center"
             >
               <Icon className="size-6 text-primary" aria-hidden="true" />
               <h3 className="font-semibold">{title}</h3>

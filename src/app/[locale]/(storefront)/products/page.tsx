@@ -88,7 +88,7 @@ export default async function CatalogPage({
       </div>
 
       {/* Mobile: collapsible filters via a plain <details> (no extra deps). */}
-      <details className="mt-4 rounded-2xl border bg-card p-4 lg:hidden">
+      <details className="mt-4 rounded-lg border bg-card p-4 lg:hidden">
         <summary className="cursor-pointer select-none text-sm font-medium">
           {t('filters')}
         </summary>
@@ -97,11 +97,11 @@ export default async function CatalogPage({
 
       <div className="mt-6 flex items-start gap-8">
         <aside className="hidden w-64 shrink-0 lg:block">
-          <div className="rounded-2xl border bg-card p-5">{filters}</div>
+          <div className="rounded-lg border bg-card p-5">{filters}</div>
         </aside>
         <div className="min-w-0 flex-1">
           {products.length === 0 ? (
-            <div className="rounded-2xl border border-dashed py-16 text-center text-sm text-muted-foreground">
+            <div className="rounded-lg border border-dashed py-16 text-center text-sm text-muted-foreground">
               {t('empty')}
             </div>
           ) : (

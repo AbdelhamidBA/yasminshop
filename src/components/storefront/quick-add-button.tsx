@@ -45,7 +45,7 @@ export function QuickAddButton({
         add({productId, slug, nameFr, nameAr, unitPriceMillimes, imageUrl}, 1);
         openDrawer();
       }}
-      className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-full border border-primary/40 px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:bg-primary focus-visible:text-primary-foreground disabled:pointer-events-none disabled:opacity-45"
+      className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-primary/40 px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:bg-primary focus-visible:text-primary-foreground disabled:pointer-events-none disabled:opacity-45"
     >
       <ShoppingCart className="size-4" aria-hidden="true" />
       {t('quickAdd')}

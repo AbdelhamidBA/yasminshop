@@ -66,7 +66,7 @@ export function CartDrawer({currencyLabel}: CartDrawerProps) {
                       <img
                         src={line.imageUrl ?? '/placeholder-product.svg'}
                         alt={name}
-                        className="size-16 rounded-xl border object-cover"
+                        className="size-16 rounded-lg border object-cover"
                       />
                     </Link>
                     <div className="min-w-0 flex-1">

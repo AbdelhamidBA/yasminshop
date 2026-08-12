@@ -50,7 +50,7 @@ export function AccountMenu({isAuthenticated, isStaff, logoutAction}: AccountMen
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="theme-yasmine w-auto min-w-52 rounded-xl p-1.5"
+        className="theme-yasmine w-auto min-w-52 rounded-lg p-1.5"
       >
         {isAuthenticated ? (
           <>

@@ -87,7 +87,7 @@ export function MainNav({categories}: MainNavProps) {
               <DropdownMenuContent
                 align="start"
                 sideOffset={8}
-                className="theme-yasmine w-auto min-w-48 rounded-xl p-1.5"
+                className="theme-yasmine w-auto min-w-48 rounded-lg p-1.5"
               >
                 {categories.map((root) => {
                   const rootHref = `/products?cat=${encodeURIComponent(root.slug)}`;
@@ -101,7 +101,7 @@ export function MainNav({categories}: MainNavProps) {
                   return (
                     <DropdownMenuSub key={root.id}>
                       <DropdownMenuSubTrigger>{name(root)}</DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent className="theme-yasmine w-auto min-w-44 rounded-xl p-1.5">
+                      <DropdownMenuSubContent className="theme-yasmine w-auto min-w-44 rounded-lg p-1.5">
                         <DropdownMenuItem render={<Link href={rootHref} />} className="font-medium">
                           {t('viewAll')}
                         </DropdownMenuItem>
