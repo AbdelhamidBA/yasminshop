@@ -48,22 +48,27 @@ export function Gallery({images, name}: GalleryProps) {
 
   return (
     <Carousel aria-label={t('galleryLabel', {name})} opts={{loop: true}}>
-      <CarouselContent className="-ms-4">
-        {list.map((image, index) => (
-          <CarouselItem key={image.id} className="ps-4">
-            <div className={FRAME_CLASS}>
-              <img
-                src={image.url}
-                alt={`${name} (${index + 1}/${list.length})`}
-                loading={index === 0 ? undefined : 'lazy'}
-                className={IMAGE_CLASS}
-              />
-            </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious className="absolute start-3 top-1/2 -translate-y-1/2" />
-      <CarouselNext className="absolute end-3 top-1/2 -translate-y-1/2" />
+      {/* The arrows anchor to this wrapper (main strip only) rather than the
+          Carousel root, so the thumb strip below doesn't drag their vertical
+          center below the image midline. */}
+      <div className="relative">
+        <CarouselContent className="-ms-4">
+          {list.map((image, index) => (
+            <CarouselItem key={image.id} className="ps-4">
+              <div className={FRAME_CLASS}>
+                <img
+                  src={image.url}
+                  alt={`${name} (${index + 1}/${list.length})`}
+                  loading={index === 0 ? undefined : 'lazy'}
+                  className={IMAGE_CLASS}
+                />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="absolute start-3 top-1/2 -translate-y-1/2" />
+        <CarouselNext className="absolute end-3 top-1/2 -translate-y-1/2" />
+      </div>
       <GalleryThumbs images={list} name={name} />
     </Carousel>
   );
