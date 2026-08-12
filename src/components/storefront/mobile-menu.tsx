@@ -40,7 +40,9 @@ export function MobileMenu({categories}: MobileMenuProps) {
         <Menu className="size-4" />
       </button>
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="start" aria-label={tNav('menu')} className="max-w-[85%] sm:max-w-xs">
+        {/* theme-yasmine: the sheet portals to <body>, outside the storefront
+            layout wrapper, so it carries the brand token scope itself. */}
+        <SheetContent side="start" aria-label={tNav('menu')} className="theme-yasmine max-w-[85%] sm:max-w-xs">
           <div className="flex items-center justify-between gap-4 border-b px-5 py-4">
             <h2 className="font-heading text-base font-semibold">{tNav('menu')}</h2>
             <SheetClose

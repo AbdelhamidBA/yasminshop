@@ -117,6 +117,61 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* YasmineShop storefront theme (scoped): champagne-gold brand palette applied
+   by redefining the shadcn tokens under a wrapper class, so every token-driven
+   component (buttons, cards, drawer, footer…) re-themes automatically while
+   the admin dashboard and auth pages keep the default theme. Hierarchy per
+   the redesign brief: 70–80% cream/white, beige surfaces, gold reserved for
+   CTAs / hover / active / badges. */
+.theme-yasmine {
+  /* Baloo 2 (user-supplied brand font; variable defined on <body> via
+     next/font so portalled surfaces resolve it). Baloo 2 carries no Arabic
+     glyphs — Arabic text falls through to the system stack per glyph. */
+  font-family: var(--font-baloo), ui-sans-serif, system-ui, sans-serif;
+  --background: #f6f1e7; /* cream */
+  --foreground: #33302b; /* primary text */
+  --card: #ffffff; /* white surface */
+  --card-foreground: #33302b;
+  --popover: #ffffff;
+  --popover-foreground: #33302b;
+  --primary: #c5a052; /* primary gold */
+  --primary-foreground: #ffffff;
+  --primary-deep: #a6843c; /* deep gold — CTA hover */
+  --secondary: #e9dfca; /* soft beige */
+  --secondary-foreground: #33302b;
+  --muted: #ede5d3;
+  --muted-foreground: #8e877a; /* secondary text */
+  --accent: #e9dfca;
+  --accent-foreground: #33302b;
+  --border: #e3d8bf;
+  --input: #e3d8bf;
+  --ring: #a6843c; /* deep gold focus ring */
+  --brand-brown: #6e5a3a; /* deep brown — product card prices */
+}
+
+/* Dark variant: warm dark-brown surfaces, cream text, the same golds. */
+.dark .theme-yasmine {
+  --background: #201a12;
+  --foreground: #f1e8d6;
+  --card: #2a2318;
+  --card-foreground: #f1e8d6;
+  --popover: #2a2318;
+  --popover-foreground: #f1e8d6;
+  --primary: #c5a052;
+  --primary-foreground: #ffffff;
+  --primary-deep: #a6843c;
+  --secondary: #38301f;
+  --secondary-foreground: #f1e8d6;
+  --muted: #332b1c;
+  --muted-foreground: #b5aa91;
+  --accent: #38301f;
+  --accent-foreground: #f1e8d6;
+  --border: rgb(241 232 214 / 0.14);
+  --input: rgb(241 232 214 / 0.18);
+  --ring: #c5a052;
+  --brand-brown: #cdb891; /* light warm tan — readable price on dark card */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

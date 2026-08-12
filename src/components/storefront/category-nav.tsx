@@ -62,7 +62,9 @@ export function CategoryNav({categories}: CategoryNavProps) {
                 {name(root)}
                 <ChevronDown aria-hidden="true" className="size-3.5 opacity-60" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" sideOffset={8} className="w-auto min-w-48 rounded-xl p-1.5">
+              {/* theme-yasmine: the popup portals to <body>, outside the
+                  storefront layout wrapper, so it carries the token scope. */}
+              <DropdownMenuContent align="start" sideOffset={8} className="theme-yasmine w-auto min-w-48 rounded-xl p-1.5">
                 <DropdownMenuItem render={<Link href={rootHref} />} className="font-medium">
                   {t('viewAll')}
                 </DropdownMenuItem>

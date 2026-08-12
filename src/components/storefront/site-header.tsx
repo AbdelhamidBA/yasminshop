@@ -30,16 +30,26 @@ export async function SiteHeader() {
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4">
         <MobileMenu categories={categories} />
-        <Link
-          href="/"
-          className={cn(
-            'shrink-0 text-lg font-bold',
-            // Uppercase + tracking is FR-only: letter-spacing breaks the
-            // joined Arabic script.
-            locale !== 'ar' && 'uppercase tracking-[0.2em]'
-          )}
-        >
-          {t('common.siteName')}
+        {/* YasmineShop logo + wordmark (Phase 8). The image is decorative
+            (alt="") — the wordmark text is the link's accessible name. Below
+            sm the wordmark goes sr-only (logo-only brand) so the crowded
+            mobile row can never overflow the page horizontally. */}
+        <Link href="/" className="flex shrink-0 items-center gap-2.5">
+          <img
+            src="/brand/yasmine-logo.webp"
+            alt=""
+            className="h-9 w-auto"
+          />
+          <span
+            className={cn(
+              'font-serif font-semibold leading-none max-sm:sr-only sm:text-lg',
+              // Uppercase + tracking is FR-only: letter-spacing breaks the
+              // joined Arabic script.
+              locale !== 'ar' && 'uppercase tracking-[0.16em]'
+            )}
+          >
+            {t('common.siteName')}
+          </span>
         </Link>
         {/* md+ only per the plan; mobile reaches the catalog via the bottom
             navbar's search entry. The header stays a server component —
