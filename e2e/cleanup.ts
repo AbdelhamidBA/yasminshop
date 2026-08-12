@@ -48,6 +48,12 @@ async function main() {
   await prisma.passwordResetToken.deleteMany({where: {user: E2E_SUB_ADMIN_USER}});
   await prisma.user.deleteMany({where: E2E_SUB_ADMIN_USER});
 
+  // Catalog fixtures: BOTH the rows e2e/fixtures.ts creates in global-setup
+  // (products E2E-CASQUE/E2E-MONTRE/E2E-CAFETIERE/E2E-TSHIRT, category
+  // 'e2e-fixtures', promo 'E2E10') and the rows the admin-catalog spec creates
+  // through the UI (E2E-PROD-1, 'e2e-maison'/'e2e-salon') fall under these
+  // prefixes. Their e2e orders were deleted above, so no OrderItem FK can
+  // block the product deletes. The owner's real rows never match any prefix.
   await prisma.productImage.deleteMany({where: {product: {reference: {startsWith: 'E2E-'}}}});
   await prisma.product.deleteMany({where: {reference: {startsWith: 'E2E-'}}});
   await prisma.category.deleteMany({where: {slug: {startsWith: 'e2e-'}}});

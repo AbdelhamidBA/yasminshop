@@ -1,10 +1,11 @@
 import {expect, type Page} from '@playwright/test';
 
 // Shared FR-locale journey helpers. The admin specs sign in through the real
-// login form; the order helper drives the seed-data storefront flow (product
-// page → cart → checkout) like e2e/storefront.spec.ts, minus the promo
-// detour. Fixture orders MUST use a customerName starting with 'E2E ' —
-// e2e/cleanup.ts deletes checkout fixtures by that prefix.
+// login form; the order helper drives the fixture-catalog storefront flow
+// (product page → cart → checkout, see e2e/fixture-data.ts) like
+// e2e/storefront.spec.ts, minus the promo detour. Fixture orders MUST use a
+// customerName starting with 'E2E ' — e2e/cleanup.ts deletes checkout
+// fixtures by that prefix.
 
 export async function login(page: Page, email: string, password: string) {
   await page.goto('/fr/login');
@@ -36,7 +37,7 @@ export async function openAccountMenu(page: Page, itemName: string) {
   }).toPass({timeout: 30_000});
 }
 
-// Places a COD order for ONE seed product and returns its sequential order
+// Places a COD order for ONE fixture product and returns its sequential order
 // number (the figure behind the '#N' the admin list and My Orders show).
 // Assumes the page context's cart starts empty; leaves it empty again (the
 // checkout clears it after placeOrder succeeds).

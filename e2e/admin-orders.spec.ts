@@ -1,4 +1,5 @@
 import {expect, test} from '@playwright/test';
+import {E2E_PRODUCTS} from './fixture-data';
 import {login, placeOrder, readStock} from './helpers';
 
 // Order status flow with REAL stock effects, end to end:
@@ -9,20 +10,21 @@ import {login, placeOrder, readStock} from './helpers';
 //      and sees NO admin-only controls on the way
 //   5. admin cancels the CONFIRMED order → stock restored to the baseline
 //      (exit criteria: confirm decrements, cancel restores), which also leaves
-//      the seed product's quantity unchanged for consecutive runs.
+//      the fixture product's quantity unchanged for consecutive runs.
 // Serial: later tests consume the order numbers and the stock baseline the
 // earlier ones captured.
 test.describe.configure({mode: 'serial'});
 
-// Seed product (prisma/seed.ts): in stock, and NOT the one the storefront
-// journey orders, so the two specs never dispute the same quantity row.
-const PRODUCT = {slug: 'cafetiere-italienne', reference: 'MAIS-002'};
+// Fixture product (e2e/fixture-data.ts): in stock (qty 50), and NOT the one
+// the storefront journey orders, so the two specs never dispute the same
+// quantity row.
+const PRODUCT = E2E_PRODUCTS.cafetiere;
 
 let firstOrder = '';
 let secondOrder = '';
 let baselineStock = 0;
 
-test('guest places an order for the seed cafetière', async ({page}) => {
+test('guest places an order for the fixture cafetière', async ({page}) => {
   firstOrder = await placeOrder(page, {
     slug: PRODUCT.slug,
     qty: 2,
