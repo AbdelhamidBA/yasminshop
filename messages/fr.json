@@ -35,10 +35,18 @@
     "checkout": "Commander",
     "continueShopping": "Continuer vos achats"
   },
+  "carousel": {
+    "previous": "Diapositive précédente",
+    "next": "Diapositive suivante",
+    "goToSlide": "Aller à la diapositive {index}"
+  },
   "home": {
     "heroEyebrow": "Tendances du moment",
     "heroTitle": "Découvrez des produits que vous allez adorer",
     "heroSubtitle": "Produits locaux et importés, livrés chez vous.",
+    "heroCarouselLabel": "À la une",
+    "heroSelection": "Notre sélection",
+    "heroViewProduct": "Découvrir le produit",
     "cta": "Voir tous les produits",
     "viewAll": "Tout voir",
     "categoriesTitle": "Achetez par catégorie",
