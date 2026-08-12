@@ -1,5 +1,6 @@
 import 'server-only';
 import type {Prisma} from '@prisma/client';
+import {fillWithFallback, orderByRankedIds} from '@/lib/best-sellers';
 import {prisma} from '@/lib/db';
 import {MAX_MILLIMES} from '@/lib/money';
 
@@ -34,20 +35,59 @@ const PRODUCT_CARD_SELECT = {
   }
 } satisfies Prisma.ProductSelect;
 
+export type ProductCardData = Prisma.ProductGetPayload<{
+  select: typeof PRODUCT_CARD_SELECT;
+}>;
+
 const HOME_SECTION_SIZE = 8;
+
+// REAL best-sellers (spec §6): rank products by total quantity sold, summed
+// from OrderItem lines of non-archived, non-canceled orders. PENDING,
+// CONFIRMED and DELIVERED all represent real demand and count; CANCELED does
+// not (and canceling restocks, so counting it would double-claim).
+// Honest fallback (§18, via fillWithFallback): with fewer than 4 products
+// having any sales, the section is topped up with featured products — real
+// merchandising data, never fabricated placeholders.
+export async function getBestSellers(limit: number): Promise<ProductCardData[]> {
+  const take =
+    Number.isInteger(limit) && limit > 0 && limit <= 50 ? limit : HOME_SECTION_SIZE;
+  const grouped = await prisma.orderItem.groupBy({
+    by: ['productId'],
+    where: {order: {archivedAt: null, status: {not: 'CANCELED'}}},
+    _sum: {qty: true},
+    // Stable ranking: quantity sold desc, productId asc as tiebreaker.
+    orderBy: [{_sum: {qty: 'desc'}}, {productId: 'asc'}],
+    // 3× headroom: top-ranked products may be archived/hidden and get
+    // filtered out by VISIBLE below.
+    take: take * 3
+  });
+  const rankedIds = grouped.map((row) => row.productId);
+  const sellers =
+    rankedIds.length === 0
+      ? []
+      : orderByRankedIds(
+          await prisma.product.findMany({
+            where: {AND: [VISIBLE, {id: {in: rankedIds}}]},
+            select: PRODUCT_CARD_SELECT
+          }),
+          rankedIds
+        );
+  const featured = await prisma.product.findMany({
+    where: {AND: [VISIBLE, {featured: true}]},
+    orderBy: [{createdAt: 'desc'}, {id: 'asc'}],
+    select: PRODUCT_CARD_SELECT,
+    take
+  });
+  return fillWithFallback(sellers, featured, take);
+}
 
 export async function getHomeSections(lastChanceThreshold: number) {
   const threshold =
     Number.isInteger(lastChanceThreshold) && lastChanceThreshold > 0 ? lastChanceThreshold : 0;
-  const [newest, featured, lastChance, mostSearched] = await Promise.all([
+  const [bestSellers, newest, lastChance, mostSearched] = await Promise.all([
+    getBestSellers(HOME_SECTION_SIZE),
     prisma.product.findMany({
       where: VISIBLE,
-      orderBy: [{createdAt: 'desc'}, {id: 'asc'}],
-      select: PRODUCT_CARD_SELECT,
-      take: HOME_SECTION_SIZE
-    }),
-    prisma.product.findMany({
-      where: {AND: [VISIBLE, {featured: true}]},
       orderBy: [{createdAt: 'desc'}, {id: 'asc'}],
       select: PRODUCT_CARD_SELECT,
       take: HOME_SECTION_SIZE
@@ -66,12 +106,8 @@ export async function getHomeSections(lastChanceThreshold: number) {
       take: HOME_SECTION_SIZE
     })
   ]);
-  return {newest, featured, lastChance, mostSearched};
+  return {bestSellers, newest, lastChance, mostSearched};
 }
-
-export type ProductCardData = Awaited<
-  ReturnType<typeof getHomeSections>
->['newest'][number];
 
 export type StorefrontSort = 'new' | 'priceAsc' | 'priceDesc';
 

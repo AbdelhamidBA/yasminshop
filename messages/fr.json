@@ -45,14 +45,14 @@
     "heroTitle": "Des produits uniques venus du monde entier",
     "heroSubtitle": "Découvrez une sélection soigneusement choisie pour votre quotidien.",
     "cta": "Découvrir la boutique",
-    "viewAll": "Tout voir",
+    "viewAll": "Voir tout",
     "categoriesTitle": "Parcourir par catégories",
     "allCategories": "Toutes",
     "sections": {
-      "newest": "Nouveautés",
-      "featured": "En vedette",
+      "bestSellers": "Meilleures ventes",
+      "newest": "Nouveaux produits",
       "lastChance": "Dernière chance",
-      "mostSearched": "Les plus recherchés"
+      "mostSearched": "Le plus recherché"
     }
   },
   "storefront": {
@@ -97,6 +97,8 @@
     "outOfStock": "Rupture de stock",
     "addToCart": "Ajouter au panier",
     "addedToCart": "Ajouté au panier.",
+    "quickAdd": "Ajouter",
+    "quickAddLabel": "Ajouter {name} au panier",
     "related": "Produits similaires",
     "quantity": "Quantité",
     "decreaseQuantity": "Diminuer la quantité",

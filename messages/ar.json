@@ -49,8 +49,8 @@
     "categoriesTitle": "تصفّح حسب الفئات",
     "allCategories": "الكل",
     "sections": {
-      "newest": "وصل حديثاً",
-      "featured": "مميزة",
+      "bestSellers": "الأكثر مبيعاً",
+      "newest": "منتجات جديدة",
       "lastChance": "فرصة أخيرة",
       "mostSearched": "الأكثر بحثاً"
     }
@@ -97,6 +97,8 @@
     "outOfStock": "نفد المخزون",
     "addToCart": "أضف إلى السلة",
     "addedToCart": "تمت الإضافة إلى السلة.",
+    "quickAdd": "أضف",
+    "quickAddLabel": "أضف {name} إلى السلة",
     "related": "منتجات مشابهة",
     "quantity": "الكمية",
     "decreaseQuantity": "إنقاص الكمية",

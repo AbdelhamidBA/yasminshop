@@ -142,6 +142,7 @@
   --border: #e3d8bf;
   --input: #e3d8bf;
   --ring: #a6843c; /* deep gold focus ring */
+  --brand-brown: #6e5a3a; /* deep brown — product card prices */
 }
 
 /* Dark variant: warm dark-brown surfaces, cream text, the same golds. */
@@ -164,6 +165,7 @@
   --border: rgb(241 232 214 / 0.14);
   --input: rgb(241 232 214 / 0.18);
   --ring: #c5a052;
+  --brand-brown: #cdb891; /* light warm tan — readable price on dark card */
 }
 
 @layer base {

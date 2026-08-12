@@ -1,13 +1,7 @@
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {ArrowRight} from 'lucide-react';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious
-} from '@/components/ui/carousel';
 import {ProductCard} from '@/components/storefront/product-card';
+import {SectionHeader} from '@/components/storefront/section-header';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
@@ -27,13 +21,17 @@ export default async function HomePage({
     getMassDiscountPct(),
     listVisibleCategoryTree()
   ]);
-  const {newest, featured, lastChance, mostSearched} = await getHomeSections(
+  const {bestSellers, newest, lastChance, mostSearched} = await getHomeSections(
     parameters.lastChanceThreshold
   );
 
+  // Section order per the redesign brief (§3). Every "Voir tout" links to
+  // /products: the catalog's searchParams (q/cat/sub/min/max/stock/sort/page)
+  // offer no filter that matches a section's semantics (stock=1 means "in
+  // stock", not "last chance"), so no section pretends to have one.
   const sections = [
+    {key: 'bestSellers', products: bestSellers},
     {key: 'newest', products: newest},
-    {key: 'featured', products: featured},
     {key: 'lastChance', products: lastChance},
     {key: 'mostSearched', products: mostSearched}
   ] as const;
@@ -118,55 +116,37 @@ export default async function HomePage({
         </section>
       )}
 
-      {/* PRODUCT SECTION CAROUSELS — below xl an embla strip with edge peek;
-          at xl+ embla deactivates (`active: false`) and the same children lay
-          out as the familiar 4-column grid, so all cards stay visible and
-          clickable at desktop widths (the e2e viewport is 1280px). */}
+      {/* FULL-WIDTH PRODUCT GRID SECTIONS (spec §6/§13) — no embla on the
+          home page anymore: plain responsive grids, 2/row on mobile (cards
+          stay comfortable ≈170px wide), 3/row on tablet, 4/row from lg.
+          Empty sections hide entirely (§18 — never fake placeholders); the
+          last section sits directly above the footer (§3/§7, no promotional
+          service strip in between). */}
       {sections.map(({key, products}) =>
         products.length > 0 ? (
-          <section key={key} className="mx-auto w-full max-w-6xl px-4 pb-14">
-            <div className="mb-5 flex items-end justify-between gap-4">
-              <h2 className="text-2xl font-bold tracking-tight">
-                {t(`sections.${key}`)}
-              </h2>
-              <Link
-                href="/products"
-                className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-              >
-                {t('viewAll')}
-                <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-              </Link>
+          <section
+            key={key}
+            aria-label={t(`sections.${key}`)}
+            className="mx-auto w-full max-w-6xl px-4 pb-14 sm:pb-16"
+          >
+            <SectionHeader
+              title={t(`sections.${key}`)}
+              href="/products"
+              linkLabel={t('viewAll')}
+              uppercase={!isAr}
+            />
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  locale={locale}
+                  massDiscountPct={massDiscountPct}
+                  currencyLabel={currencyLabel}
+                  outOfStockLabel={outOfStockLabel}
+                />
+              ))}
             </div>
-            <Carousel
-              aria-label={t(`sections.${key}`)}
-              opts={{
-                align: 'start',
-                slidesToScroll: 'auto',
-                breakpoints: {'(min-width: 1280px)': {active: false}}
-              }}
-            >
-              <CarouselContent
-                viewportClassName="-my-2 py-2 xl:overflow-visible"
-                className="-ms-4 xl:ms-0 xl:grid xl:grid-cols-4 xl:gap-4"
-              >
-                {products.map((product) => (
-                  <CarouselItem
-                    key={product.id}
-                    className="basis-[78%] ps-4 sm:basis-[46%] md:basis-1/3 lg:basis-[29.5%] xl:basis-auto xl:ps-0"
-                  >
-                    <ProductCard
-                      product={product}
-                      locale={locale}
-                      massDiscountPct={massDiscountPct}
-                      currencyLabel={currencyLabel}
-                      outOfStockLabel={outOfStockLabel}
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="absolute -start-3 top-1/2 -translate-y-1/2 xl:hidden" />
-              <CarouselNext className="absolute -end-3 top-1/2 -translate-y-1/2 xl:hidden" />
-            </Carousel>
           </section>
         ) : null
       )}
