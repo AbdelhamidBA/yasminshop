@@ -1,17 +1,6 @@
 import path from 'node:path';
-import {expect, test, type Page} from '@playwright/test';
-
-async function login(page: Page, email: string, password: string) {
-  await page.goto('/fr/login');
-  await page.getByLabel('E-mail').fill(email);
-  await page.getByLabel('Mot de passe').fill(password);
-  await page.getByRole('button', {name: 'Se connecter'}).click();
-  // The login action redirects to '/'; the client-side RSC fetch follows the
-  // locale redirect ('/' -> '/fr') internally, so the committed URL can stay
-  // '/'. Wait for having left /login, then for the authenticated header.
-  await page.waitForURL((url) => !url.pathname.endsWith('/login'));
-  await expect(page.getByRole('button', {name: 'Se déconnecter'})).toBeVisible({timeout: 30_000});
-}
+import {expect, test} from '@playwright/test';
+import {login} from './helpers';
 
 test.describe.configure({mode: 'serial'});
 
