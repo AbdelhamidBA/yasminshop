@@ -1,11 +1,15 @@
 import {expect, test, type Page} from '@playwright/test';
+import {E2E_PRODUCTS, E2E_PROMO} from './fixture-data';
 
 // The storefront journey is ONE continuous guest session: the cart lives in
 // localStorage, so the four serial tests share a single page/context — the
 // default per-test isolation would empty the cart between steps. All flows
-// use SEED data only; the order placed in the last test is the DB fixture,
-// deleted by e2e/cleanup.ts (customerName prefix 'E2E ').
+// use the suite-owned FIXTURES only (e2e/fixture-data.ts) — never the owner's
+// catalog; the order placed in the last test is the DB fixture, deleted by
+// e2e/cleanup.ts (customerName prefix 'E2E ').
 test.describe.configure({mode: 'serial'});
+
+const CASQUE = E2E_PRODUCTS.casque;
 
 let page: Page;
 
@@ -25,27 +29,39 @@ test.afterAll(async () => {
 // locator unambiguous while the drawer (aria-label 'Votre panier') is open.
 const cartBadge = () => page.getByLabel('Panier', {exact: true});
 
-test('guest browses home to a product and adds it to the cart twice', async () => {
+test('guest browses home to a fixture product and adds it to the cart twice', async () => {
   await page.goto('/fr');
-  // Phase 8 grid sections: "Meilleures ventes" (real best-sellers, topped up
-  // with featured products while the seed DB has few sales) leads, then
-  // "Nouveaux produits" (renamed from "Nouveautés"). Titles are uppercased by
-  // CSS only — getByRole name matching is case-insensitive.
-  await expect(page.getByRole('heading', {name: 'Meilleures ventes'})).toBeVisible();
-  await expect(page.getByRole('heading', {name: 'Nouveaux produits'})).toBeVisible();
+  // Owner-curation-independent home assertions: the hero (always rendered)
+  // and the 'Meilleures ventes' NAV link (always in the header). The
+  // 'Meilleures ventes' SECTION itself is honestly data-dependent (real
+  // sales topped up with owner-flagged featured products) and hides when
+  // empty — its presence is deliberately NOT asserted.
+  await expect(page.getByRole('heading', {level: 1})).toBeVisible();
+  await expect(
+    page
+      .getByRole('navigation', {name: 'Navigation principale'})
+      .getByRole('link', {name: 'Meilleures ventes'})
+  ).toBeVisible();
+
+  // 'Nouveaux produits' is createdAt-desc and always populated while ANY
+  // active product exists; the fixtures were created at suite start, so they
+  // are the newest products and are guaranteed inside this grid (8 slots).
+  // Scope every product locator to the section (role=region via aria-label)
+  // — the same card may also appear in other sections.
+  const newest = page.getByRole('region', {name: 'Nouveaux produits'});
+  await expect(newest.getByRole('heading', {name: 'Nouveaux produits'})).toBeVisible();
 
   // Card quick-add is present (aria-label interpolates the product name, so
   // it can never collide with the product page's exact 'Ajouter au panier').
   await expect(
-    page.getByRole('button', {name: 'Ajouter Casque sans fil au panier'}).first()
+    newest.getByRole('button', {name: `Ajouter ${CASQUE.nameFr} au panier`})
   ).toBeVisible();
 
-  // All seed products appear in "Nouveaux produits"; pick a known IN-STOCK
-  // one by name (a card link's accessible name includes the product name).
-  // It may also sit in other sections — first() stays stable.
-  await page.getByRole('link', {name: 'Casque sans fil'}).first().click();
-  await page.waitForURL('**/fr/products/casque-sans-fil');
-  await expect(page.getByRole('heading', {name: 'Casque sans fil'})).toBeVisible();
+  // Navigate from the fixture's card (a card link's accessible name includes
+  // the product name).
+  await newest.getByRole('link', {name: CASQUE.nameFr}).first().click();
+  await page.waitForURL(`**/fr/products/${CASQUE.slug}`);
+  await expect(page.getByRole('heading', {name: CASQUE.nameFr})).toBeVisible();
 
   // Two clicks with the stepper at 1 → the reducer merges into one line, qty 2.
   // Since Phase 7 every add opens the cart drawer as feedback; it is modal, so
@@ -54,7 +70,7 @@ test('guest browses home to a product and adds it to the cart twice', async () =
   const drawer = page.getByRole('dialog', {name: 'Votre panier'});
   await addToCart.click();
   await expect(drawer).toBeVisible();
-  await expect(drawer.getByText('Casque sans fil')).toBeVisible();
+  await expect(drawer.getByText(CASQUE.nameFr)).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(drawer).not.toBeVisible();
   await addToCart.click();
@@ -80,17 +96,19 @@ test('header search suggestion navigates to the product page', async () => {
     }
     await expect(searchInput).toBeVisible({timeout: 1500});
   }).toPass({timeout: 20_000});
-  await searchInput.fill('casque');
+  // 'E2E Casque' can only match the fixture (owner products never carry the
+  // 'E2E ' name prefix), keeping the suggestion unambiguous.
+  await searchInput.fill('E2E Casque');
   // Debounced fetch → listbox option; clicking records a search hit
   // (fire-and-forget, NOT asserted — heuristic) and navigates.
-  await page.getByRole('option', {name: 'Casque sans fil'}).click();
-  await page.waitForURL('**/fr/products/casque-sans-fil');
-  await expect(page.getByRole('heading', {name: 'Casque sans fil'})).toBeVisible();
+  await page.getByRole('option', {name: CASQUE.nameFr}).click();
+  await page.waitForURL(`**/fr/products/${CASQUE.slug}`);
+  await expect(page.getByRole('heading', {name: CASQUE.nameFr})).toBeVisible();
 });
 
-test('cart supports quantity changes and the BIENVENUE10 promo', async () => {
+test(`cart supports quantity changes and the ${E2E_PROMO.code} promo`, async () => {
   await page.goto('/fr/cart');
-  const line = page.getByRole('listitem').filter({hasText: 'Casque sans fil'});
+  const line = page.getByRole('listitem').filter({hasText: CASQUE.nameFr});
   await expect(line).toBeVisible();
   await expect(line.getByText('2', {exact: true})).toBeVisible();
 
@@ -99,9 +117,11 @@ test('cart supports quantity changes and the BIENVENUE10 promo', async () => {
   await expect(line.getByText('3', {exact: true})).toBeVisible();
   await expect(cartBadge()).toHaveText('3');
 
-  await page.getByLabel('Code promo').fill('BIENVENUE10');
+  // Suite-owned promo fixture (10%), created by e2e/fixtures.ts — the seed
+  // BIENVENUE10 is owner data the suite no longer depends on.
+  await page.getByLabel('Code promo').fill(E2E_PROMO.code);
   await page.getByRole('button', {name: 'Appliquer'}).click();
-  await expect(page.getByText('Code BIENVENUE10 appliqué (−10%).')).toBeVisible();
+  await expect(page.getByText(`Code ${E2E_PROMO.code} appliqué (−10%).`)).toBeVisible();
 
   // Totals panel: subtotal, the −10% promo line, delivery, and the
   // free-delivery sanity — exactly one of the free label or the
@@ -119,8 +139,8 @@ test('guest checkout places the order and empties the cart', async () => {
   // Continues straight from the cart page: the applied promo is client state
   // that the CTA link carries to checkout as ?promo=… (a reload would drop it).
   await page.getByRole('link', {name: 'Passer la commande'}).click();
-  await page.waitForURL('**/fr/checkout?promo=BIENVENUE10');
-  await expect(page.getByText('(BIENVENUE10)')).toBeVisible();
+  await page.waitForURL(`**/fr/checkout?promo=${E2E_PROMO.code}`);
+  await expect(page.getByText(`(${E2E_PROMO.code})`)).toBeVisible();
 
   await page.getByLabel('Nom complet').fill('E2E Client');
   await page.getByLabel('Téléphone').fill('21612345678');
@@ -135,15 +155,15 @@ test('guest checkout places the order and empties the cart', async () => {
     page.getByRole('heading', {name: 'Merci pour votre commande !'})
   ).toBeVisible();
   await expect(page.getByText(/Commande n° \d+/)).toBeVisible();
-  await expect(page.getByText(/Casque sans fil\s*×3/)).toBeVisible();
+  await expect(page.getByText(new RegExp(`${CASQUE.nameFr}\\s*×3`))).toBeVisible();
 
   // Money-value gate (spec §6d): the total row shows the exact frozen figure —
-  // 89.000 ×3 = 267.000, −10% (BIENVENUE10) = 240.300, delivery free above
+  // 129.000 ×3 = 387.000, −10% (E2E10) = 348.300, delivery free above
   // the 100 DT threshold. Guards the server-side pricing math end to end.
   const totalRow = page
     .locator('dl > div')
     .filter({has: page.getByText('Total', {exact: true})});
-  await expect(totalRow).toContainText('240.300 TND');
+  await expect(totalRow).toContainText('348.300 TND');
 
   await expect(cartBadge()).toHaveText('');
 });

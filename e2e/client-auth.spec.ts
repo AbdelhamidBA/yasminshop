@@ -1,4 +1,5 @@
 import {expect, test, type Page} from '@playwright/test';
+import {E2E_PRODUCTS} from './fixture-data';
 import {openAccountMenu, placeOrder} from './helpers';
 
 // Client account journey: register → lands signed in → places an order under
@@ -47,7 +48,7 @@ test('the signed-in client places an order', async () => {
   // The session pins clientId on the order; the customerName keeps the
   // 'E2E ' cleanup prefix (fill() overwrites the profile prefill).
   orderNumber = await placeOrder(page, {
-    slug: 't-shirt-coton-bio',
+    slug: E2E_PRODUCTS.tshirt.slug,
     qty: 1,
     customerName: 'E2E Client 3'
   });
@@ -58,12 +59,12 @@ test('my orders lists the new order', async () => {
   await expect(page.getByRole('heading', {name: 'Mes commandes'})).toBeVisible();
 
   // The order card: number, PENDING badge, the snapshot line, and the frozen
-  // total — 9.900 (seed t-shirt) + 7.000 delivery (under the 100 DT free
+  // total — 9.900 (fixture t-shirt) + 7.000 delivery (under the 100 DT free
   // threshold) = 16.900.
   const card = page.getByRole('listitem').filter({hasText: `#${orderNumber}`});
   await expect(card).toBeVisible();
   await expect(card.getByText('En attente')).toBeVisible();
-  await expect(card.getByText(/T-shirt coton bio\s*×1/)).toBeVisible();
+  await expect(card.getByText(new RegExp(`${E2E_PRODUCTS.tshirt.nameFr}\\s*×1`))).toBeVisible();
   await expect(card.getByText('16.900 TND')).toBeVisible();
 });
 

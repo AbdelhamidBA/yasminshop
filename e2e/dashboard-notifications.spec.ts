@@ -1,4 +1,5 @@
 import {expect, test} from '@playwright/test';
+import {E2E_PRODUCTS} from './fixture-data';
 import {login, placeOrder} from './helpers';
 
 // Phase 5 journey: dashboard + notifications + sub-admins + mass discount.
@@ -12,11 +13,12 @@ import {login, placeOrder} from './helpers';
 // the same run's later spec files are protected too.
 test.describe.configure({mode: 'serial'});
 
-// Seed product with discountPct 0 and a clean base price, used only for reads:
+// Fixture product (e2e/fixture-data.ts) with discountPct 0 and a clean base
+// price, used only for reads:
 // 249.000 TND → 224.100 TND at −10% (Math.round(249000 * 0.9)). Not ordered by
 // any spec, so its price line is stable.
 const DISCOUNT_PRODUCT = {
-  slug: 'montre-connectee',
+  slug: E2E_PRODUCTS.montre.slug,
   basePrice: '249.000 TND',
   discountedPrice: '224.100 TND'
 };
@@ -35,7 +37,7 @@ let orderNumber = '';
 // current window and the admin bell has an unread NEW_ORDER notification.
 test('guest places an order that feeds the dashboard and the bell', async ({page}) => {
   orderNumber = await placeOrder(page, {
-    slug: 'cafetiere-italienne',
+    slug: E2E_PRODUCTS.cafetiere.slug,
     qty: 1,
     customerName: 'E2E Dashboard'
   });
