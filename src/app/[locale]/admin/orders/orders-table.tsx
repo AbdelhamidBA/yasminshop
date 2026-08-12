@@ -1,7 +1,7 @@
 'use client';
 
 import {useState, useTransition} from 'react';
-import {Eye, MoreHorizontal} from 'lucide-react';
+import {Eye, MoreHorizontal, Plus} from 'lucide-react';
 import {useSearchParams} from 'next/navigation';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
@@ -73,7 +73,12 @@ export function OrdersTable({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center">
+      <div className="flex items-center gap-3">
+        {isAdmin && (
+          <Button render={<Link href="/admin/orders/new" />}>
+            <Plus className="size-4" /> {t('new.button')}
+          </Button>
+        )}
         <Link href={toggleHref} className="ms-auto text-sm underline-offset-4 hover:underline">
           {t('showArchived')}
         </Link>

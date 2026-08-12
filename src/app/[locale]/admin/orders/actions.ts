@@ -8,6 +8,8 @@ import {prisma} from '@/lib/db';
 import {canTransition, stockDelta, type OrderStatus} from '@/lib/orders';
 import {checkoutSchema} from '@/lib/schemas/checkout';
 import {requireAdmin, requireStaff} from '@/server/authz';
+import {createOrderCore, parseOrderLines} from '@/server/create-order';
+import {validatePromoCode} from '@/server/promo';
 
 const PATH = '/[locale]/admin/orders';
 
@@ -86,10 +88,13 @@ export async function changeOrderStatus(id: string, to: OrderStatus): Promise<Ac
           }
         }
         // Guarded status write: the WHERE pins the status we validated the
-        // transition from. A concurrent status change makes this count 0 —
-        // abort so the stock effects above roll back with it.
+        // transition from, plus the archived backstop (Task 3 review fix):
+        // archived orders are view-only in the UI, and this keeps a crafted
+        // staff POST from transitioning one either. A concurrent status
+        // change (or archive) makes this count 0 — abort so the stock
+        // effects above roll back with it.
         const updated = await tx.order.updateMany({
-          where: {id, status: order.status},
+          where: {id, status: order.status, archivedAt: null},
           data: {status: to}
         });
         if (updated.count === 0) throw new TransitionAbort('invalidTransition');
@@ -100,6 +105,62 @@ export async function changeOrderStatus(id: string, to: OrderStatus): Promise<Ac
     }
     revalidatePath(PATH, 'page');
     return success(undefined);
+  } catch (error) {
+    if (error instanceof AuthzError) return failure('forbidden');
+    throw error;
+  }
+}
+
+// Manual order creation (ADMIN): parses its own form — same guarded items
+// JSON + checkoutSchema field set as the storefront checkout — then delegates
+// to the SHARED createOrderCore (VISIBLE load, stock check, server-side
+// pricing, promo triple-check, bounded totals, snapshot transaction +
+// NEW_ORDER notification). clientId is null: the order is on behalf of a
+// walk-in customer, never attached to the admin's own account.
+export async function createManualOrder(
+  formData: FormData
+): Promise<ActionResult<{orderId: string}>> {
+  try {
+    await requireAdmin();
+    const lines = parseOrderLines(formData.get('items'));
+    if (lines === null) return failure('cartChanged');
+
+    const parsed = checkoutSchema.safeParse({
+      name: String(formData.get('name') ?? ''),
+      phone: String(formData.get('phone') ?? ''),
+      address: String(formData.get('address') ?? ''),
+      city: String(formData.get('city') ?? ''),
+      notes: String(formData.get('notes') ?? ''),
+      promoCode: String(formData.get('promoCode') ?? '')
+    });
+    if (!parsed.success) return failure('validation', fieldErrorsFromZod(parsed.error));
+    const customer = parsed.data;
+
+    const result = await createOrderCore({
+      lines,
+      customer,
+      promoCode: customer.promoCode,
+      clientId: null
+    });
+    if (result.ok) revalidatePath(PATH, 'page');
+    return result;
+  } catch (error) {
+    if (error instanceof AuthzError) return failure('forbidden');
+    throw error;
+  }
+}
+
+// Advisory promo validation for the manual-order builder's running totals —
+// the cart-page checkPromo idiom behind requireAdmin. createManualOrder
+// re-validates the code from scratch; validatePromoCode scalar-guards the
+// raw client value itself.
+export async function checkOrderPromo(
+  code: string
+): Promise<ActionResult<{code: string; percentOff: number}>> {
+  try {
+    await requireAdmin();
+    const promo = await validatePromoCode(code);
+    return promo === null ? failure('invalidPromo') : success(promo);
   } catch (error) {
     if (error instanceof AuthzError) return failure('forbidden');
     throw error;
