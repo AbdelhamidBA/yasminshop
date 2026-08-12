@@ -107,7 +107,7 @@ export default async function HomePage({
           <div className="mt-6 flex items-center gap-2.5 overflow-x-auto pb-2 sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0">
             <Link
               href="/products"
-              className="shrink-0 rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-(--primary-deep)"
+              className="shrink-0 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-(--primary-deep)"
             >
               {t('allCategories')}
             </Link>
@@ -115,7 +115,7 @@ export default async function HomePage({
               <Link
                 key={category.id}
                 href={`/products?cat=${encodeURIComponent(category.slug)}`}
-                className="shrink-0 rounded-full bg-secondary px-5 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:bg-primary focus-visible:text-primary-foreground"
+                className="shrink-0 rounded-lg bg-secondary px-5 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:bg-primary focus-visible:text-primary-foreground"
               >
                 {isAr ? category.nameAr : category.nameFr}
               </Link>

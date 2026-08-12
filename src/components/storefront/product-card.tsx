@@ -46,7 +46,7 @@ export function ProductCard({
   );
 
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-xs transition-shadow duration-300 hover:shadow-md">
+    <div className="group flex h-full flex-col overflow-hidden rounded-lg border bg-card shadow-xs transition-shadow duration-300 hover:shadow-md">
       <Link href={`/products/${product.slug}`} className="flex flex-1 flex-col">
         <div className="relative overflow-hidden bg-background">
           {/* Plain <img>: uploads are served same-origin from /api/uploads. */}
@@ -57,7 +57,7 @@ export function ProductCard({
             className="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           />
           {outOfStock && (
-            <span className="absolute start-3 top-3 rounded-full bg-background/90 px-2.5 py-0.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
+            <span className="absolute start-3 top-3 rounded-md bg-background/90 px-2.5 py-0.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
               {outOfStockLabel}
             </span>
           )}

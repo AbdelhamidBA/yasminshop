@@ -20,10 +20,10 @@ type GalleryProps = {
   name: string;
 };
 
-// Karina-soft image frame shared by both gallery modes: rounded-2xl over the
+// Karina-soft image frame shared by both gallery modes: rounded-lg over the
 // muted pastel backdrop token (dark-safe), image covering it edge to edge.
 const FRAME_CLASS =
-  'overflow-hidden rounded-2xl border bg-gradient-to-br from-muted/90 to-muted/40';
+  'overflow-hidden rounded-lg border bg-gradient-to-br from-muted/90 to-muted/40';
 const IMAGE_CLASS = 'aspect-square w-full object-cover';
 
 // Product image gallery (Phase 7). A product with >1 REAL image gets an
@@ -90,7 +90,7 @@ function GalleryThumbs({images, name}: {images: GalleryImage[]; name: string}) {
           aria-label={t('galleryThumb', {name, index: index + 1, count: images.length})}
           aria-current={index === selectedIndex}
           className={cn(
-            'overflow-hidden rounded-xl border bg-gradient-to-br from-muted/90 to-muted/40 transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+            'overflow-hidden rounded-lg border bg-gradient-to-br from-muted/90 to-muted/40 transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
             index === selectedIndex
               ? 'border-foreground ring-1 ring-foreground'
               : 'hover:border-foreground/30'

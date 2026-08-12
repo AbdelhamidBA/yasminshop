@@ -42,8 +42,8 @@ function SheetContent({
         className={cn(
           "fixed inset-y-0 z-50 flex h-full w-full max-w-sm flex-col bg-background text-sm text-foreground shadow-xl ring-1 ring-foreground/10 outline-none duration-300 data-open:animate-in data-closed:animate-out",
           side === "end"
-            ? "end-0 rounded-s-2xl data-open:slide-in-from-right data-closed:slide-out-to-right rtl:data-open:slide-in-from-left rtl:data-closed:slide-out-to-left"
-            : "start-0 rounded-e-2xl data-open:slide-in-from-left data-closed:slide-out-to-left rtl:data-open:slide-in-from-right rtl:data-closed:slide-out-to-right",
+            ? "end-0 rounded-s-lg data-open:slide-in-from-right data-closed:slide-out-to-right rtl:data-open:slide-in-from-left rtl:data-closed:slide-out-to-left"
+            : "start-0 rounded-e-lg data-open:slide-in-from-left data-closed:slide-out-to-left rtl:data-open:slide-in-from-right rtl:data-closed:slide-out-to-right",
           className
         )}
         {...props}

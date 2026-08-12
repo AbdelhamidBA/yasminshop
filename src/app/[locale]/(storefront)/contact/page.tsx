@@ -31,7 +31,7 @@ export default async function ContactPage({
       {hasDetails ? (
         <ul className="mt-10 flex flex-col gap-4">
           {phone !== '' && (
-            <li className="flex items-center gap-4 rounded-xl border bg-secondary/40 p-5">
+            <li className="flex items-center gap-4 rounded-lg border bg-secondary/40 p-5">
               <Phone className="size-5 shrink-0 text-primary" aria-hidden="true" />
               <div className="min-w-0">
                 <h2 className="text-sm font-semibold">{t('phoneTitle')}</h2>
@@ -46,7 +46,7 @@ export default async function ContactPage({
             </li>
           )}
           {email !== '' && (
-            <li className="flex items-center gap-4 rounded-xl border bg-secondary/40 p-5">
+            <li className="flex items-center gap-4 rounded-lg border bg-secondary/40 p-5">
               <Mail className="size-5 shrink-0 text-primary" aria-hidden="true" />
               <div className="min-w-0">
                 <h2 className="text-sm font-semibold">{t('emailTitle')}</h2>
@@ -62,7 +62,7 @@ export default async function ContactPage({
           )}
         </ul>
       ) : (
-        <p className="mt-10 rounded-xl border bg-secondary/40 p-5 text-center text-muted-foreground">
+        <p className="mt-10 rounded-lg border bg-secondary/40 p-5 text-center text-muted-foreground">
           {t('fallback')}
         </p>
       )}

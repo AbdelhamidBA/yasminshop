@@ -57,7 +57,7 @@ export function AddToCart({
       <div
         role="group"
         aria-labelledby={labelId}
-        className="flex h-12 items-center rounded-full border bg-card px-1"
+        className="flex h-12 items-center rounded-lg border bg-card px-1"
       >
         <Button
           type="button"
@@ -66,7 +66,7 @@ export function AddToCart({
           aria-label={t('decreaseQuantity')}
           disabled={outOfStock || qty <= 1}
           onClick={() => setQty((prev) => Math.max(1, prev - 1))}
-          className="rounded-full"
+          className="rounded-lg"
         >
           −
         </Button>
@@ -80,19 +80,19 @@ export function AddToCart({
           aria-label={t('increaseQuantity')}
           disabled={outOfStock || qty >= maxQty}
           onClick={() => setQty((prev) => Math.min(maxQty, prev + 1))}
-          className="rounded-full"
+          className="rounded-lg"
         >
           +
         </Button>
       </div>
-      {/* Confident CTA: taller rounded-full pill; text node stays t('addToCart')
+      {/* Confident CTA: taller rounded-lg CTA; text node stays t('addToCart')
           ('Ajouter au panier') and onAdd still ends in openDrawer(). */}
       <Button
         type="button"
         size="lg"
         disabled={outOfStock}
         onClick={onAdd}
-        className="h-12 w-full rounded-full px-10 text-sm font-semibold tracking-wide uppercase shadow-sm sm:w-auto"
+        className="h-12 w-full rounded-lg px-10 text-sm font-semibold tracking-wide uppercase shadow-sm sm:w-auto"
       >
         {outOfStock ? t('outOfStock') : t('addToCart')}
       </Button>
