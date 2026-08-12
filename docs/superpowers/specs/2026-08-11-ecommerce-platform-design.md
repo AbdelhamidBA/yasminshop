@@ -152,6 +152,13 @@ Phase 3 (Storefront & Checkout) merged clean — 16 commits, 11 tasks panel-revi
 - **Phase 5:** when the massDiscountPct control lands, cart lines hold add-time effective prices — re-price cart display or surface a notice on toggle. Delivery-cost-0 setting contradicts the free-delivery hint. UI polish batch needing catalog keys: stepper/breadcrumb/gallery aria labels, cart-stepper aria idiom, alt dedupe, pagination windowing/cap clamp, over-long-q behavior, stale promoInvalid message, silent invalid ?promo drop.
 - **Phase 6 (hardening):** rate limiting family — `checkPromo` (promo enumeration oracle) AND unauthenticated `placeOrder` (guest order/notification flooding); body-size caps on public POSTs; `Object.freeze(VISIBLE)`; cart-revival integer≥0 price + length caps; `isUniqueViolationOn` string-branch; searchHits inflation acceptance review.
 
+## 6e. Phase 4 carry-forward constraints (from the 2026-08-12 final branch review)
+
+Phase 4 (Orders & Clients) merged clean — 10 commits, 9 tasks panel-reviewed, 4 e2e specs 17/17 twice, no must-fix (both fix-wave candidates ride). Binding on later phases:
+
+- **Phase 5 (auth hardening — now doubly-relevant):** JWT revocation is the top carry — a live session survives BOTH a password reset AND a client archive/role change until token expiry (§6b rider, reinforced). Password reset currently `console.log`s the raw reset URL (DEV stub) — prod needs SMTP (§7); reset is non-functional + log-leaky until then. FIX-WAVE #1 rides here: `resetPassword` should invalidate the user's other outstanding tokens on success (OWASP one-liner inside the existing tx) — pair with the SMTP work. Rate-limit `registerClient`/`requestPasswordReset` (unbounded token/user creation; the `emailTaken` registration oracle is spec-sanctioned, stays).
+- **Phase 6 (polish/i18n pile):** FIX-WAVE #2 rides: archived-order crafted-POST rejection surfaces `invalidTransition` instead of `orderArchived` (correctly rejected + no stock effect; cosmetic). Multi-line confirm deadlock availability (sort items by productId, map P2034→retryable). Arabic gender agreement (adminOrders/adminClients blocks), `notProvided` fem. nuance, Base UI `type="button"`/`nativeButton` overlay warnings, `break-inside-avoid` on invoice print rows, My-Orders pagination when lists grow, move `OrderStatusBadge` to a shared dir if import sites multiply.
+
 ## 7. Owner decisions (resolved 2026-08-11)
 
 1. **Guest checkout** — ✅ allowed (name/phone/address; account optional).
