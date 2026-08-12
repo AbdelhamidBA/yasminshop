@@ -40,7 +40,8 @@ export function CartView({
   const {state, hydrated, setQty, remove} = useCart();
   const [promoInput, setPromoInput] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
-  const [promoInvalid, setPromoInvalid] = useState(false);
+  // null = no error; otherwise the message KEY to show ('promoInvalid' | 'rateLimited').
+  const [promoError, setPromoError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   // Server renders (and the client's first paint hydrates) nothing — the cart
@@ -76,10 +77,11 @@ export function CartView({
       const result = await checkPromo(code);
       if (result.ok) {
         setAppliedPromo(result.data);
-        setPromoInvalid(false);
+        setPromoError(null);
       } else {
         setAppliedPromo(null);
-        setPromoInvalid(true);
+        // 'rateLimited' gets its own copy; anything else is an invalid code.
+        setPromoError(result.error === 'rateLimited' ? 'rateLimited' : 'promoInvalid');
       }
     });
   }
@@ -191,7 +193,11 @@ export function CartView({
                 {t('promoApplied', {code: appliedPromo.code, pct: appliedPromo.percentOff})}
               </p>
             )}
-            {promoInvalid && <p className="text-sm text-destructive">{t('promoInvalid')}</p>}
+            {promoError && (
+              <p className="text-sm text-destructive">
+                {promoError === 'rateLimited' ? t('rateLimited') : t('promoInvalid')}
+              </p>
+            )}
           </div>
 
           <dl className="mt-4 flex flex-col gap-2 border-t pt-4 text-sm">

@@ -16,6 +16,10 @@ export function RequestResetForm() {
   const locale = useLocale();
   const [state, formAction, pending] = useActionState(requestPasswordReset, undefined);
 
+  function errorText(code: string): string {
+    return t.has(`errors.${code}` as never) ? t(`errors.${code}` as never) : code;
+  }
+
   if (state?.ok) {
     return (
       <div className="flex flex-col gap-4">
@@ -36,6 +40,11 @@ export function RequestResetForm() {
         <Label htmlFor="email">{t('reset.email')}</Label>
         <Input id="email" name="email" type="email" autoComplete="email" required dir="ltr" />
       </div>
+      {/* The action otherwise ALWAYS succeeds (no account-existence oracle); the
+          only failure it can return is a rate-limit, which is safe to show. */}
+      {state && !state.ok && (
+        <p className="text-sm text-destructive">{errorText(state.error)}</p>
+      )}
       <Button type="submit" disabled={pending}>
         {t('reset.sendLink')}
       </Button>

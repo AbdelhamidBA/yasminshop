@@ -10,7 +10,11 @@ export async function GET(
   {params}: {params: Promise<{path: string[]}>}
 ) {
   const {path: segments} = await params;
-  if (!isSafeUploadPath(segments)) {
+  // Only ever serve the .webp we wrote — every stored upload is normalised to
+  // webp by the POST handler. Refusing any other extension keeps this route from
+  // being coaxed into serving an arbitrary file type.
+  const last = segments[segments.length - 1] ?? '';
+  if (!isSafeUploadPath(segments) || !last.toLowerCase().endsWith('.webp')) {
     return NextResponse.json({error: 'badPath'}, {status: 400});
   }
   try {
@@ -18,7 +22,10 @@ export async function GET(
     return new NextResponse(new Uint8Array(file), {
       headers: {
         'Content-Type': 'image/webp',
-        'Cache-Control': 'public, max-age=31536000, immutable'
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        // Belt-and-suspenders against content-type sniffing on a user-supplied
+        // asset path.
+        'X-Content-Type-Options': 'nosniff'
       }
     });
   } catch {

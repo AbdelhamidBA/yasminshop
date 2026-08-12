@@ -1,11 +1,11 @@
 import {NextResponse} from 'next/server';
 import {auth} from '@/auth';
-import {getVapidPublicKey} from '@/lib/push';
+import {getVapidPublicKey} from '@/server/push';
 
 // GET /api/push/vapid-public-key — the browser needs the VAPID PUBLIC key to
 // create a push subscription. Staff-only (same route-boundary authz as the other
 // push endpoints). The key is the process-memoized one the send path also uses
-// (src/lib/push.ts), so subscribe and send always agree within a run. no-store:
+// (src/server/push.ts), so subscribe and send always agree within a run. no-store:
 // it is runtime config, never cache it.
 export async function GET() {
   const session = await auth();

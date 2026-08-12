@@ -35,6 +35,13 @@ export function RegisterForm() {
     return <p className="text-sm text-destructive">{errorText(message)}</p>;
   }
 
+  // A non-field failure (e.g. rate limiting) has no fieldErrors — surface it as a
+  // generic line above the submit button.
+  const formError =
+    state && !state.ok && !state.fieldErrors && !Object.keys(clientErrors).length
+      ? state.error
+      : null;
+
   // signIn refused after creation (edge case): the account exists — invite a
   // normal sign-in instead of re-submitting a duplicate registration.
   if (state?.ok) {
@@ -96,6 +103,7 @@ export function RegisterForm() {
         />
         {errorLine('confirmPassword')}
       </div>
+      {formError && <p className="text-sm text-destructive">{errorText(formError)}</p>}
       <Button type="submit" disabled={pending}>
         {t('register.submit')}
       </Button>

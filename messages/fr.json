@@ -78,6 +78,7 @@
     "promoApply": "Appliquer",
     "promoApplied": "Code {code} appliqué (−{pct}%).",
     "promoInvalid": "Code promo invalide.",
+    "rateLimited": "Trop de tentatives. Veuillez patienter un instant puis réessayer.",
     "subtotal": "Sous-total",
     "promoDiscount": "Remise",
     "delivery": "Livraison",
@@ -104,6 +105,7 @@
       "tooLong": "Trop long.",
       "invalidPromo": "Code promo invalide.",
       "cartChanged": "Votre panier a changé (stock ou produits). Vérifiez-le puis réessayez.",
+      "rateLimited": "Trop de tentatives. Veuillez patienter un instant puis réessayer.",
       "validation": "Veuillez corriger les champs en rouge."
     }
   },
@@ -169,6 +171,7 @@
       "passwordMismatch": "Les mots de passe ne correspondent pas.",
       "emailTaken": "Un compte existe déjà avec cet e-mail.",
       "invalidToken": "Ce lien de réinitialisation est invalide ou a expiré.",
+      "rateLimited": "Trop de tentatives. Veuillez patienter un instant puis réessayer.",
       "validation": "Veuillez corriger les champs en rouge."
     }
   },
