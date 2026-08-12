@@ -2,6 +2,7 @@ import {LanguageSwitcher} from '@/components/language-switcher';
 import {LogoutButton} from '@/components/logout-button';
 import {ThemeToggle} from '@/components/theme-toggle';
 import {NotificationBell} from '@/components/admin/notification-bell';
+import {PushToggle} from '@/components/admin/push-toggle';
 import {listNotifications, unreadCount} from '@/server/notifications';
 import {getParameters} from '@/server/settings';
 
@@ -25,6 +26,7 @@ export async function AdminHeader({userName}: {userName: string}) {
           items={items}
           currencyLabel={parameters.currency}
         />
+        <PushToggle />
         <LanguageSwitcher />
         <ThemeToggle />
         <span className="ms-2 text-sm font-medium">{userName}</span>

@@ -617,5 +617,13 @@
       "forbidden": "Action non autorisée.",
       "notFound": "Notification introuvable."
     }
+  },
+  "push": {
+    "enable": "Activer les notifications push",
+    "disable": "Désactiver les notifications push",
+    "enabled": "Notifications push activées.",
+    "disabled": "Notifications push désactivées.",
+    "denied": "Notifications bloquées dans les réglages du navigateur.",
+    "error": "Impossible d'activer les notifications push."
   }
 }

@@ -1,9 +1,12 @@
 import 'server-only';
+import {getLocale} from 'next-intl/server';
+import {routing} from '@/i18n/routing';
 import {failure, success, type ActionResult} from '@/lib/action-result';
 import {computeCartTotals} from '@/lib/checkout';
 import {prisma} from '@/lib/db';
-import {effectivePriceMillimes, MAX_MILLIMES} from '@/lib/money';
+import {effectivePriceMillimes, formatMillimes, MAX_MILLIMES} from '@/lib/money';
 import {validatePromoCode} from '@/server/promo';
+import {sendPushToAllStaff} from '@/server/push';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
 import {VISIBLE} from '@/server/storefront';
 
@@ -208,6 +211,25 @@ export async function createOrderCore(
     });
     return created;
   });
+
+  // ── Step 8b: best-effort staff push alert (Task 5). The $transaction has
+  // already committed, so this runs AFTER the order + NEW_ORDER notification are
+  // durable. Fire-and-forget (never awaited) and wrapped: a push failure — bad
+  // VAPID config, dead subscriptions, web-push throwing — must NEVER block or
+  // fail order creation. The in-app bell is the reliable channel. web-push stays
+  // in this server-only module and never enters a client bundle. ──
+  let locale: string = routing.defaultLocale;
+  try {
+    locale = await getLocale();
+  } catch {
+    // Outside an intl request scope — fall back to the default-locale prefix;
+    // the admin order route renders under any valid locale.
+  }
+  void sendPushToAllStaff({
+    title: `Nouvelle commande #${order.number}`,
+    body: `${formatMillimes(order.totalMillimes)} ${parameters.currency}`,
+    url: `/${locale}/admin/orders/${order.id}`
+  }).catch(() => {});
 
   // ── Step 9: the public confirmation URL uses the unguessable cuid id,
   // never the sequential number ──
