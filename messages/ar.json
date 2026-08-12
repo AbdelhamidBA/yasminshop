@@ -77,10 +77,12 @@
     "addToCart": "أضف إلى السلة",
     "addedToCart": "تمت الإضافة إلى السلة.",
     "related": "منتجات مشابهة",
-    "quantity": "الكمية"
+    "quantity": "الكمية",
+    "description": "الوصف"
   },
   "breadcrumb": {
-    "home": "الرئيسية"
+    "home": "الرئيسية",
+    "label": "مسار التنقل"
   },
   "cart": {
     "title": "السلة",

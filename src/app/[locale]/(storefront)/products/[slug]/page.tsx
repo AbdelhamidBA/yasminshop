@@ -80,7 +80,7 @@ export default async function ProductPage({params}: PageProps) {
     );
 
   const crumbSeparator = (
-    <li aria-hidden="true" className="select-none">
+    <li aria-hidden="true" className="select-none text-muted-foreground/50">
       /
     </li>
   );
@@ -88,7 +88,10 @@ export default async function ProductPage({params}: PageProps) {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
       {/* Breadcrumb: home / category / [subcategory] / product */}
-      <nav className="text-sm text-muted-foreground">
+      <nav
+        aria-label={tBreadcrumb('label')}
+        className="rounded-xl border bg-muted/40 px-4 py-2.5 text-sm text-muted-foreground"
+      >
         <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <li>
             <Link href="/" className="transition-colors hover:text-foreground">
@@ -127,9 +130,11 @@ export default async function ProductPage({params}: PageProps) {
           images={product.images.map((image) => ({id: image.id, url: image.url}))}
           name={name}
         />
-        <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">{name}</h1>
-          <div className="mt-3 text-2xl">
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{name}</h1>
+          {/* Price prominence: large effective figure; Price keeps its own muted
+              strikethrough + destructive -N% badge colors. */}
+          <div className="mt-4 text-3xl font-bold">
             <Price
               priceMillimes={product.priceMillimes}
               discountPct={product.discountPct}
@@ -138,7 +143,9 @@ export default async function ProductPage({params}: PageProps) {
             />
           </div>
           <div className="mt-2">{stockLine}</div>
-          <p className="mt-5 border-y py-5 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+          {/* Short-description teaser (single description field is shown in full
+              in the Description section below; clamped here to a lead). */}
+          <p className="mt-5 line-clamp-3 border-y py-5 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
             {description}
           </p>
           <div className="mt-6">
@@ -173,9 +180,26 @@ export default async function ProductPage({params}: PageProps) {
         </div>
       </div>
 
+      {/* Description: reference's tab area, honestly a SINGLE active tab (no
+          Reviews tab — reviews are not in the data model). Full description
+          text lives here; the info column above shows a clamped teaser. */}
+      <section className="mt-12" aria-labelledby="product-description-heading">
+        <div className="border-b">
+          <h2
+            id="product-description-heading"
+            className="inline-block border-b-2 border-foreground px-1 pb-3 text-sm font-semibold"
+          >
+            {t('description')}
+          </h2>
+        </div>
+        <p className="mt-6 max-w-3xl text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+          {description}
+        </p>
+      </section>
+
       {related.length > 0 && (
         <section className="mt-16">
-          <h2 className="text-center text-2xl font-semibold">{t('related')}</h2>
+          <h2 className="text-center text-2xl font-bold tracking-tight">{t('related')}</h2>
           {/* Decorative underline under the centered section title */}
           <div aria-hidden="true" className="mx-auto mt-3 h-1 w-16 rounded-full bg-primary" />
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

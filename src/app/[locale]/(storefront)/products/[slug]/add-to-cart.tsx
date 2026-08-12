@@ -53,7 +53,7 @@ export function AddToCart({
       <div
         role="group"
         aria-labelledby={labelId}
-        className="flex items-center rounded-lg border"
+        className="flex items-center rounded-lg border bg-card"
       >
         <Button
           type="button"
@@ -64,7 +64,7 @@ export function AddToCart({
         >
           −
         </Button>
-        <span aria-live="polite" className="w-10 text-center text-sm tabular-nums">
+        <span aria-live="polite" className="w-10 text-center text-sm font-medium tabular-nums">
           {outOfStock ? 0 : qty}
         </span>
         <Button
@@ -82,7 +82,7 @@ export function AddToCart({
         size="lg"
         disabled={outOfStock}
         onClick={onAdd}
-        className="px-8 font-semibold tracking-wide uppercase"
+        className="h-11 w-full px-8 text-sm font-semibold tracking-wide uppercase sm:w-auto"
       >
         {outOfStock ? t('outOfStock') : t('addToCart')}
       </Button>
