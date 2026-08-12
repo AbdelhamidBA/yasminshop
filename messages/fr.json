@@ -510,5 +510,50 @@
     "total": "Total",
     "codNote": "Paiement à la livraison — le montant total est à régler à la réception de la commande.",
     "print": "Imprimer"
+  },
+  "dashboard": {
+    "hero": {
+      "welcome": "Bienvenue, {name}",
+      "subtitle": "Voici un aperçu de votre boutique."
+    },
+    "rangeLabel": "Période",
+    "range": {
+      "day": "Journalier",
+      "week": "Hebdomadaire",
+      "month": "Mensuel",
+      "year": "Annuel"
+    },
+    "tiles": {
+      "revenue": "Chiffre d'affaires",
+      "orders": "Commandes",
+      "clients": "Clients",
+      "pending": "En attente"
+    },
+    "sales": {
+      "title": "Aperçu des ventes",
+      "subtitle": "{count} commandes sur la période",
+      "seriesLabel": "Commandes"
+    },
+    "empty": "Aucune donnée sur cette période.",
+    "status": {
+      "title": "Commandes par statut",
+      "total": "Total"
+    },
+    "recent": {
+      "title": "Commandes récentes",
+      "viewAll": "Tout voir",
+      "number": "N°",
+      "customer": "Client",
+      "date": "Date",
+      "amount": "Montant",
+      "status": "Statut",
+      "empty": "Aucune commande pour le moment."
+    },
+    "top": {
+      "title": "Meilleurs produits",
+      "viewAll": "Tout voir",
+      "sold": "{count} vendus",
+      "empty": "Aucune vente pour le moment."
+    }
   }
 }
