@@ -555,5 +555,22 @@
       "sold": "{count} vendus",
       "empty": "Aucune vente pour le moment."
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "open": "Ouvrir les notifications",
+    "heading": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "markedAllReadToast": "Toutes les notifications ont été marquées comme lues.",
+    "viewAll": "Voir toutes les notifications",
+    "empty": "Aucune notification.",
+    "newOrder": "Nouvelle commande #{number} — {total}",
+    "generic": "Nouvelle notification",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "errors": {
+      "forbidden": "Action non autorisée.",
+      "notFound": "Notification introuvable."
+    }
   }
 }
