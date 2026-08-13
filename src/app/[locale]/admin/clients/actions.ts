@@ -4,6 +4,7 @@ import {revalidatePath} from 'next/cache';
 import {z} from 'zod';
 import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/action-result';
 import {AuthzError} from '@/lib/authz';
+import {sanitizeIds} from '@/lib/bulk';
 import {prisma} from '@/lib/db';
 import {requireAdmin} from '@/server/authz';
 
@@ -129,6 +130,55 @@ export async function restoreClient(id: string): Promise<ActionResult> {
     if (updated.count === 0) return failure('notFound');
     revalidatePath(PATH, 'page');
     return success(undefined);
+  } catch (error) {
+    if (error instanceof AuthzError) return failure('forbidden');
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mass actions
+// ---------------------------------------------------------------------------
+
+/**
+ * Archive/restore a reviewed selection of clients. ADMIN only (every client
+ * mutation is), ids scalar-guarded and capped by sanitizeIds, and the write is
+ * a single updateMany so a partial batch cannot half-apply.
+ *
+ * Carries EVERY side effect the single-row archiveClient/restoreClient has:
+ *  - `role: 'CLIENT'` pinned in the WHERE, so a staff id in the selection is
+ *    silently skipped rather than archived — this surface can never touch an
+ *    ADMIN / SUB_ADMIN row, and the returned count is simply lower.
+ *  - `tokenVersion: {increment: 1}` in the SAME updateMany, so archiving kills
+ *    the clients' already-live sessions (archiving is the security event;
+ *    src/auth.ts also refuses login while archivedAt is non-null). Restore
+ *    bumps it too, belt-and-braces, keeping every archive/restore edge a clean
+ *    version boundary — same rationale as restoreClient.
+ *
+ * No bulk delete: clients are referenced by orders, so archive IS removal here.
+ */
+export async function archiveClients(ids: unknown): Promise<ActionResult<number>> {
+  return setClientsArchived(ids, new Date());
+}
+
+export async function restoreClients(ids: unknown): Promise<ActionResult<number>> {
+  return setClientsArchived(ids, null);
+}
+
+async function setClientsArchived(
+  ids: unknown,
+  archivedAt: Date | null
+): Promise<ActionResult<number>> {
+  const clean = sanitizeIds(ids);
+  if (!clean) return failure('invalidSelection');
+  try {
+    await requireAdmin();
+    const {count} = await prisma.user.updateMany({
+      where: {id: {in: clean}, role: 'CLIENT'},
+      data: {archivedAt, tokenVersion: {increment: 1}}
+    });
+    revalidatePath(PATH, 'page');
+    return success(count);
   } catch (error) {
     if (error instanceof AuthzError) return failure('forbidden');
     throw error;

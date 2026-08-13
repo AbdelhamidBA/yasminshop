@@ -8,6 +8,9 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   globalSetup: './e2e/global-setup.ts',
+  // Fixtures are removed at the end too, so the live storefront never shows
+  // the suite's test category and products between runs.
+  globalTeardown: './e2e/global-teardown.ts',
   use: {
     baseURL: 'http://localhost:3000',
     locale: 'fr-FR'

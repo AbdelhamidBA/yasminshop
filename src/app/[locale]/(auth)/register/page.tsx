@@ -7,15 +7,17 @@ export default async function RegisterPage() {
   const t = await getTranslations('authPages');
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-sm flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-semibold">{t('register.title')}</h1>
-      <RegisterForm />
-      <p className="text-center text-sm text-muted-foreground">
+    <>
+      <h1 className="text-3xl leading-none font-extrabold">{t('register.title')}</h1>
+      <div className="mt-8">
+        <RegisterForm />
+      </div>
+      <p className="mt-8 border-t border-dotted pt-6 text-sm text-muted-foreground">
         {t('links.haveAccount')}{' '}
         <Link href="/login" className="font-medium text-primary hover:underline">
           {t('links.signIn')}
         </Link>
       </p>
-    </main>
+    </>
   );
 }

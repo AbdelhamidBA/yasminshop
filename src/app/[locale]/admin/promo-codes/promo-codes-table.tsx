@@ -1,10 +1,9 @@
 'use client';
 
 import {useState, useTransition} from 'react';
-import {MoreHorizontal, Plus} from 'lucide-react';
+import {MoreHorizontal, Plus, Ticket} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
-import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -18,9 +17,19 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
-import {Link} from '@/i18n/navigation';
+import {
+  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
+  EntityCell
+} from '@/components/admin/list-shell';
+import {
+  RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
+} from '@/components/admin/selection';
+import {IconBox, StatusLabel} from '@/components/admin/ui';
 import type {PromoCodeRow} from '@/server/promo-codes';
-import {archivePromoCode, restorePromoCode, togglePromoCode} from './actions';
+import {
+  archivePromoCode, archivePromoCodes, disablePromoCodes, enablePromoCodes, restorePromoCode,
+  restorePromoCodes, togglePromoCode
+} from './actions';
 import {PromoCodeFormDialog, type EditablePromoCode} from './promo-code-form-dialog';
 
 export function PromoCodesTable({
@@ -33,20 +42,49 @@ export function PromoCodesTable({
   includeArchived: boolean;
 }) {
   const t = useTranslations('admin.promoCodesPage');
+  const tList = useTranslations('admin.list');
+  const tSel = useTranslations('admin.selection');
   const locale = useLocale();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<EditablePromoCode | null>(null);
   const [creating, setCreating] = useState(false);
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
+  // Mass actions are ADMIN-only, so the whole selection column is absent for a
+  // SUB_ADMIN — the server re-checks regardless.
+  const selection = useRowSelection(isAdmin ? promoCodes.map((row) => row.id) : []);
 
   const dateFormatter = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-TN' : 'fr-TN', {
     dateStyle: 'medium'
   });
 
+  function runBulk(
+    action: (ids: string[]) => Promise<{ok: boolean; error?: string}>,
+    okMessage: string,
+    tone: 'info' | 'success'
+  ) {
+    const ids = selection.ids;
+    startTransition(async () => {
+      const result = await action(ids);
+      if (result.ok) {
+        // Same severity split as the per-row actions: archiving/deactivating is
+        // a state change (info), restoring/activating an achievement (success).
+        toast[tone](okMessage);
+        selection.clear();
+      } else {
+        toast.error(t(`errors.${result.error}` as never));
+      }
+    });
+  }
+
   function runToggle(id: string, active: boolean) {
     startTransition(async () => {
       const result = await togglePromoCode(id, active);
-      if (result.ok) toast.success(t(active ? 'toggledOn' : 'toggledOff'));
+      // Activating is an achievement, deactivating is a state change — the
+      // severity follows the direction, the message strings are untouched.
+      if (result.ok) {
+        if (active) toast.success(t('toggledOn'));
+        else toast.info(t('toggledOff'));
+      }
       else toast.error(t(`errors.${result.error}` as never));
     });
   }
@@ -54,7 +92,8 @@ export function PromoCodesTable({
   function runArchive(id: string) {
     startTransition(async () => {
       const result = await archivePromoCode(id);
-      if (result.ok) toast.success(t('archivedToast'));
+      // Archiving hides a record rather than achieving something — info.
+      if (result.ok) toast.info(t('archivedToast'));
       else toast.error(t(`errors.${result.error}` as never));
     });
   }
@@ -68,28 +107,91 @@ export function PromoCodesTable({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        {isAdmin && (
-          <Button onClick={() => setCreating(true)}>
-            <Plus className="size-4" /> {t('add')}
-          </Button>
-        )}
-        <Link
-          href={includeArchived ? '/admin/promo-codes' : '/admin/promo-codes?archived=1'}
-          className="ms-auto text-sm underline-offset-4 hover:underline"
-        >
-          {t('showArchived')}
-        </Link>
-      </div>
+    <div className="flex flex-col gap-5">
+      <AdminListHeader
+        title={t('title')}
+        action={
+          isAdmin ? (
+            <Button onClick={() => setCreating(true)}>
+              <Plus className="size-4" /> {t('add')}
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {promoCodes.length === 0 ? (
-        <AdminEmptyState>{t('empty')}</AdminEmptyState>
-      ) : (
-        <div className="rounded-md border">
+      <AdminTableCard
+        toolbar={
+          selection.count > 0 ? (
+            // The selection bar REPLACES the toolbar: the actions appear where
+            // the operator is already looking, with the count always in view.
+            <SelectionBar
+              count={selection.count}
+              countLabel={tSel('count', {count: selection.count})}
+              clearLabel={tSel('clear')}
+              onClear={selection.clear}
+            >
+              {/* Enable/disable is the per-row Switch applied to the selection —
+                  same single `active` write, same two toasts. */}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={pending}
+                onClick={() => runBulk(enablePromoCodes, t('toggledOn'), 'success')}
+              >
+                {t('enable')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={pending}
+                onClick={() => runBulk(disablePromoCodes, t('toggledOff'), 'info')}
+              >
+                {t('disable')}
+              </Button>
+              {includeArchived ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => runBulk(restorePromoCodes, t('restoredToast'), 'success')}
+                >
+                  {tSel('restore')}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => runBulk(archivePromoCodes, t('archivedToast'), 'info')}
+                >
+                  {tSel('archive')}
+                </Button>
+              )}
+            </SelectionBar>
+          ) : (
+            <AdminToolbarEnd>
+              <AdminResultCount>{tList('results', {count: promoCodes.length})}</AdminResultCount>
+              <AdminFilterToggle
+                href={includeArchived ? '/admin/promo-codes' : '/admin/promo-codes?archived=1'}
+                active={includeArchived}
+              >
+                {t('showArchived')}
+              </AdminFilterToggle>
+            </AdminToolbarEnd>
+          )
+        }
+      >
+        {promoCodes.length === 0 ? (
+          <AdminEmptyState>{t('empty')}</AdminEmptyState>
+        ) : (
           <Table>
             <TableHeader>
               <TableRow>
+                {isAdmin && (
+                  <TableHead className="w-10">
+                    <SelectAllCheckbox selection={selection} label={tSel('selectAll')} />
+                  </TableHead>
+                )}
                 <TableHead>{t('code')}</TableHead>
                 <TableHead>{t('percentOff')}</TableHead>
                 <TableHead>{t('active')}</TableHead>
@@ -101,12 +203,43 @@ export function PromoCodesTable({
               {promoCodes.map((row) => {
                 const archived = row.archivedAt !== null;
                 return (
-                  <TableRow key={row.id}>
-                    <TableCell className="font-medium">
-                      <span dir="ltr" className="font-mono">{row.code}</span>
-                      {archived && <Badge variant="outline" className="ms-2">{t('archived')}</Badge>}
+                  <TableRow key={row.id} data-selected={selection.has(row.id) || undefined}>
+                    {isAdmin && (
+                      // aria-label on the CELL: a cell is named from its
+                      // contents, so an unlabelled one would announce (and be
+                      // matched by getByRole('cell', {name})) as
+                      // "Sélectionner <code>", colliding with the code cell of
+                      // the same row. The checkbox keeps its own precise label.
+                      <TableCell className="w-10" aria-label={tSel('column')}>
+                        <RowCheckbox
+                          selection={selection}
+                          id={row.id}
+                          label={tSel('selectRow', {name: row.code})}
+                        />
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <EntityCell
+                        media={
+                          <IconBox tone="primary" className="size-10 rounded-xl">
+                            <Ticket className="size-5" />
+                          </IconBox>
+                        }
+                        primary={
+                          <span dir="ltr" className="font-mono">
+                            {row.code}
+                          </span>
+                        }
+                        badge={
+                          archived ? <StatusLabel tone="neutral">{t('archived')}</StatusLabel> : undefined
+                        }
+                      />
                     </TableCell>
-                    <TableCell dir="ltr">-{row.percentOff}%</TableCell>
+                    <TableCell>
+                      <StatusLabel tone="primary">
+                        <span dir="ltr">-{row.percentOff}%</span>
+                      </StatusLabel>
+                    </TableCell>
                     <TableCell>
                       <Switch
                         checked={row.active}
@@ -117,7 +250,7 @@ export function PromoCodesTable({
                         aria-label={t('active')}
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-muted-foreground">
                       {row.expiresAt ? dateFormatter.format(row.expiresAt) : t('noExpiry')}
                     </TableCell>
                     {isAdmin && (
@@ -162,8 +295,8 @@ export function PromoCodesTable({
               })}
             </TableBody>
           </Table>
-        </div>
-      )}
+        )}
+      </AdminTableCard>
 
       {isAdmin && (
         <>

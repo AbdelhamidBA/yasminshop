@@ -6,6 +6,7 @@
     "cart": "Panier",
     "login": "Se connecter",
     "logout": "Se déconnecter",
+    "close": "Fermer",
     "welcome": "Bienvenue",
     "theme": {
       "toggle": "Changer le thème"
@@ -35,6 +36,7 @@
   "cartDrawer": {
     "title": "Votre panier",
     "close": "Fermer",
+    "itemCount": "{count, plural, =0 {aucun article} =1 {1 article} other {# articles}}",
     "note": "Livraison et codes promo calculés à l'étape suivante.",
     "viewCart": "Voir le panier",
     "checkout": "Commander",
@@ -52,6 +54,15 @@
     "viewAll": "Voir tout",
     "categoriesTitle": "Parcourir par catégories",
     "allCategories": "Toutes",
+    "lifecycle": {
+      "title": "De votre panier à votre porte",
+      "step1Title": "Vous commandez",
+      "step1Body": "Ajoutez vos articles au panier et validez. Aucun paiement en ligne, aucune carte demandée.",
+      "step2Title": "Nous confirmons",
+      "step2Body": "Nous vérifions la disponibilité et confirmons votre commande avant de l'expédier.",
+      "step3Title": "Vous payez à la réception",
+      "step3Body": "Le livreur vous remet le colis partout en Tunisie. Vous réglez en espèces, à ce moment-là."
+    },
     "sections": {
       "bestSellers": "Meilleures ventes",
       "newest": "Nouveaux produits",
@@ -61,16 +72,6 @@
   },
   "storefront": {
     "outOfStock": "Rupture de stock"
-  },
-  "trust": {
-    "shippingTitle": "Livraison à domicile",
-    "shippingSubtitle": "Partout en Tunisie",
-    "paymentTitle": "Paiement à la livraison",
-    "paymentSubtitle": "Payez à la réception",
-    "returnsTitle": "Retours faciles",
-    "returnsSubtitle": "Satisfait ou échangé",
-    "supportTitle": "Support client",
-    "supportSubtitle": "Une équipe à votre écoute"
   },
   "search": {
     "noResults": "Aucun résultat"
@@ -91,7 +92,9 @@
     "sortPriceAsc": "Prix croissant",
     "sortPriceDesc": "Prix décroissant",
     "clear": "Effacer les filtres",
+    "removeFilter": "Retirer le filtre {label}",
     "empty": "Aucun produit ne correspond.",
+    "emptyHint": "Élargissez votre recherche, ou repartez du catalogue complet.",
     "prev": "Précédent",
     "next": "Suivant"
   },
@@ -109,7 +112,8 @@
     "increaseQuantity": "Augmenter la quantité",
     "description": "Description",
     "galleryLabel": "Images du produit {name}",
-    "galleryThumb": "{name} — image {index} sur {count}"
+    "galleryThumb": "{name} — image {index} sur {count}",
+    "codStamp": "Payez à la réception"
   },
   "breadcrumb": {
     "home": "Accueil",
@@ -143,7 +147,11 @@
     "address": "Adresse",
     "city": "Ville",
     "notes": "Remarques (optionnel)",
+    "sectionContact": "Vos coordonnées",
+    "sectionDelivery": "Adresse de livraison",
+    "sectionPayment": "Paiement",
     "payOnDelivery": "Paiement à la livraison",
+    "codExplain": "Aucun paiement en ligne : ni carte bancaire, ni virement. Vous réglez le livreur en espèces, à la réception de votre colis.",
     "placeOrder": "Confirmer la commande",
     "summary": "Récapitulatif",
     "errors": {
@@ -160,7 +168,11 @@
   "confirmation": {
     "title": "Merci pour votre commande !",
     "number": "Commande n° {number}",
-    "codNote": "Vous paierez à la livraison. Nous vous contacterons pour confirmer.",
+    "deliverTo": "Livraison à",
+    "nextTitle": "La suite",
+    "stepPending": "Nous avons bien reçu votre commande. Nous vous appelons au {phone} pour la confirmer.",
+    "stepConfirmed": "Une fois confirmée, votre commande est préparée puis remise au livreur.",
+    "stepDelivered": "Vous réglez {amount} {currency} en espèces au livreur, à la réception du colis.",
     "backHome": "Retour à l'accueil"
   },
   "myOrders": {
@@ -265,10 +277,14 @@
     },
     "collapse": "Réduire le menu",
     "notifications": "Notifications",
+    "list": {
+      "results": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}"
+    },
     "categories": {
       "title": "Catégories",
       "add": "Ajouter une catégorie",
       "edit": "Modifier la catégorie",
+      "name": "Nom",
       "nameFr": "Nom (français)",
       "nameAr": "Nom (arabe)",
       "parent": "Catégorie parente",
@@ -291,6 +307,7 @@
       "errors": {
         "validation": "Veuillez corriger les champs en rouge.",
         "invalidParent": "Catégorie parente invalide.",
+        "invalidSelection": "Sélection invalide. Rechargez la page puis réessayez.",
         "hasChildren": "Une catégorie avec des sous-catégories ne peut pas avoir de parent.",
         "notFound": "Catégorie introuvable.",
         "forbidden": "Action non autorisée.",
@@ -335,12 +352,23 @@
         "notFound": "Produit introuvable.",
         "forbidden": "Action non autorisée.",
         "invalidCategory": "Catégorie invalide.",
-        "invalidSubCategory": "Sous-catégorie invalide."
-      }
+        "invalidSubCategory": "Sous-catégorie invalide.",
+        "soldProducts": "Impossible de supprimer : ces produits figurent dans des commandes. Archivez-les à la place.",
+        "invalidSelection": "Sélection invalide. Rechargez la page puis réessayez."
+      },
+      "deleteTitle": "Supprimer définitivement ?",
+      "deleteBody": "{count, plural, one {Ce produit sera supprimé définitivement.} other {Ces # produits seront supprimés définitivement.}} Cette action est irréversible.",
+      "deletedToast": "Produit(s) supprimé(s).",
+      "deletedDescription": "Les images associées ont été supprimées avec le produit.",
+      "bulkArchivedToast": "Produit(s) archivé(s).",
+      "bulkRestoredToast": "Produit(s) restauré(s)."
     },
     "productForm": {
       "createTitle": "Nouveau produit",
       "editTitle": "Modifier le produit",
+      "sectionInfo": "Informations",
+      "sectionPricing": "Prix et stock",
+      "sectionOrganization": "Classement",
       "reference": "Référence",
       "nameFr": "Nom (français)",
       "nameAr": "Nom (arabe)",
@@ -360,6 +388,7 @@
       "moveDown": "Descendre",
       "uploading": "Téléversement...",
       "uploadFailed": "Échec du téléversement.",
+      "uploadHint": "Formats acceptés : JPEG, PNG, WebP, AVIF — 8 Mo maximum.",
       "minOneImage": "Ajoutez au moins une image.",
       "save": "Enregistrer",
       "cancel": "Annuler",
@@ -400,6 +429,8 @@
       "cancel": "Annuler",
       "save": "Enregistrer",
       "saved": "Code promo enregistré.",
+      "enable": "Activer",
+      "disable": "Désactiver",
       "toggledOn": "Code activé.",
       "toggledOff": "Code désactivé.",
       "archivedToast": "Code archivé.",
@@ -411,6 +442,7 @@
         "validation": "Veuillez corriger les champs en rouge.",
         "codeTaken": "Ce code existe déjà.",
         "invalidDate": "Date invalide.",
+        "invalidSelection": "Sélection invalide. Rechargez la page puis réessayez.",
         "forbidden": "Action non autorisée.",
         "notFound": "Code introuvable.",
         "required": "Champ requis.",
@@ -463,11 +495,23 @@
       "active": "Remise globale active : −{pct}%.",
       "inactive": "Aucune remise globale active.",
       "applied": "Remise globale appliquée.",
+      "appliedDescription": "Elle remplace les remises par produit tant qu'elle est active.",
       "removed": "Remise globale retirée.",
+      "removedDescription": "Les remises par produit s'appliquent de nouveau.",
       "errors": {
         "invalidPct": "Pourcentage invalide (entier de 0 à 100).",
         "forbidden": "Action non autorisée."
       }
+    },
+    "selection": {
+      "count": "{count, plural, one {# sélectionné} other {# sélectionnés}}",
+      "clear": "Effacer la sélection",
+      "selectAll": "Tout sélectionner",
+      "selectRow": "Sélectionner {name}",
+      "column": "Sélection",
+      "archive": "Archiver",
+      "restore": "Restaurer",
+      "delete": "Supprimer"
     }
   },
   "adminOrders": {
@@ -498,7 +542,9 @@
     "prev": "Précédent",
     "next": "Suivant",
     "archivedToast": "Commande archivée.",
+    "archivedDescription": "Elle est masquée de la liste par défaut.",
     "restoredToast": "Commande restaurée.",
+    "restoredDescription": "Elle réapparaît dans la liste par défaut.",
     "confirmArchiveTitle": "Archiver cette commande ?",
     "confirmArchiveBody": "La commande sera masquée de la liste par défaut.",
     "cancel": "Annuler",
@@ -528,6 +574,8 @@
       "CANCELED": "Annuler la commande"
     },
     "statusChanged": "Statut mis à jour.",
+    "statusChangedStockOut": "Les quantités commandées ont été déduites du stock.",
+    "statusChangedStockIn": "Les quantités commandées ont été remises en stock.",
     "confirmCancelTitle": "Annuler cette commande ?",
     "confirmCancelBody": "Si la commande était confirmée, les quantités seront remises en stock. Cette action est définitive.",
     "confirmCancelAction": "Annuler la commande",
@@ -550,7 +598,8 @@
       "promoApply": "Appliquer",
       "promoApplied": "Code {code} appliqué (−{pct}%).",
       "submit": "Créer la commande",
-      "created": "Commande créée."
+      "created": "Commande créée.",
+      "createdDescription": "Elle est en attente : confirmez-la pour déduire le stock."
     },
     "errors": {
       "validation": "Veuillez corriger les champs en rouge.",
@@ -561,6 +610,7 @@
       "conflict": "Opération concurrente détectée. Veuillez réessayer.",
       "orderArchived": "Commande archivée — modification impossible.",
       "cartChanged": "Un produit n'est plus disponible ou le stock est insuffisant. Vérifiez les articles.",
+      "invalidSelection": "Sélection invalide. Rechargez la page puis réessayez.",
       "invalidPromo": "Code promo invalide.",
       "required": "Champ requis.",
       "invalidPhone": "Numéro de téléphone invalide.",
@@ -612,6 +662,7 @@
       "notFound": "Client introuvable.",
       "forbidden": "Action non autorisée.",
       "clientArchived": "Client archivé — modification impossible.",
+      "invalidSelection": "Sélection invalide. Rechargez la page puis réessayez.",
       "required": "Champ requis.",
       "invalidPhone": "Numéro de téléphone invalide.",
       "tooShort": "Trop court.",
@@ -635,6 +686,7 @@
     "passwordHint": "8 caractères minimum.",
     "create": "Créer",
     "createdToast": "Sous-admin créé.",
+    "createdDescription": "Il peut se connecter et gérer uniquement les statuts de commande et les quantités.",
     "archive": "Archiver",
     "restore": "Restaurer",
     "archived": "Archivé",
@@ -654,6 +706,7 @@
       "notFound": "Sous-admin introuvable.",
       "forbidden": "Action non autorisée.",
       "subAdminArchived": "Sous-admin archivé — modification impossible.",
+      "invalidSelection": "Sélection invalide. Rechargez la page puis réessayez.",
       "required": "Champ requis.",
       "invalidEmail": "Adresse e-mail invalide.",
       "invalidPhone": "Numéro de téléphone invalide.",
@@ -703,7 +756,8 @@
     "delta": {
       "increase": "En hausse de {value}% sur la période précédente",
       "decrease": "En baisse de {value}% sur la période précédente",
-      "unchanged": "Stable sur la période précédente"
+      "unchanged": "Stable sur la période précédente",
+      "caption": "vs période précédente"
     },
     "sales": {
       "title": "Aperçu des ventes",

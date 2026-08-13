@@ -1,5 +1,8 @@
+import {ArrowLeft} from 'lucide-react';
 import {getLocale, getTranslations} from 'next-intl/server';
-import {redirect} from '@/i18n/navigation';
+import {PageHeader, PageTitle} from '@/components/admin/form';
+import {Button} from '@/components/ui/button';
+import {Link, redirect} from '@/i18n/navigation';
 import {requirePageStaff} from '@/server/authz';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
 import {ManualOrderForm} from './manual-order-form';
@@ -19,7 +22,20 @@ export default async function NewOrderPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">{t('new.title')}</h1>
+      <PageHeader
+        back={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-10 rounded-full"
+            aria-label={t('backToList')}
+            render={<Link href="/admin/orders" />}
+          >
+            <ArrowLeft className="rtl:rotate-180" />
+          </Button>
+        }
+        title={<PageTitle>{t('new.title')}</PageTitle>}
+      />
       <ManualOrderForm
         deliveryCostMillimes={parameters.deliveryCostMillimes}
         freeDeliveryThresholdMillimes={parameters.freeDeliveryThresholdMillimes}

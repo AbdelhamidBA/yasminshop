@@ -178,6 +178,142 @@
   --brand-brown: #cdb891; /* light warm tan — readable price on dark card */
 }
 
+/* Admin dashboard theme (scoped): a Minimal-UI-flavoured system — the #00a76f
+   green, borderless cards that separate by soft shadow rather than rules,
+   tinted "soft" status labels, and a slate-grey text ramp. Scoped to the admin
+   subtree so the storefront's champagne-gold brand and the auth screens are
+   untouched. Semantic colours are exposed as solid + /16 soft pairs because
+   every label, icon box and chart series in this design uses both. */
+.theme-minimal {
+  /* `@theme inline` maps --font-sans onto itself, so the variable is only ever
+     given a value inside .theme-yasmine — every font-sans / font-heading
+     utility in the dashboard was falling back to the browser's serif. Minimal
+     UI is a grotesque-sans system: define the stack once here, scoped to the
+     admin subtree (portalled admin surfaces carry .theme-minimal, so they pick
+     it up too) and leave the storefront's Baloo untouched. */
+  font-family: var(--font-sans);
+  --font-sans:
+    ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans Arabic', 'Segoe UI Emoji', sans-serif;
+  /* The SHOP's palette (same values as .theme-yasmine) so the dashboard and
+     the storefront read as one product — only the structure stays Minimal. */
+  --background: #f6f1e7; /* cream page — white cards lift off it */
+  --foreground: #33302b; /* primary text */
+  --card: #ffffff;
+  --card-foreground: #33302b;
+  --popover: #ffffff;
+  --popover-foreground: #33302b;
+  --primary: #c5a052; /* champagne gold */
+  --primary-foreground: #ffffff;
+  --primary-deep: #a6843c; /* deep gold — hover */
+  --secondary: #e9dfca; /* soft beige */
+  --secondary-foreground: #33302b;
+  --muted: #f1ebdd;
+  --muted-foreground: #8e877a; /* secondary text */
+  --accent: #e9dfca;
+  --accent-foreground: #33302b;
+  --destructive: #b71d18;
+  --border: rgb(110 90 58 / 0.16); /* warm divider */
+  --input: rgb(110 90 58 / 0.22);
+  --ring: #a6843c;
+  --brand-brown: #6e5a3a;
+  --radius: 0.5rem; /* controls; cards use rounded-2xl */
+
+}
+
+/* The semantic palette and shadows live at the ROOT, not inside
+   .theme-minimal: toasts and other portalled surfaces render at body level,
+   outside the admin subtree, and still need these colours. Only the shadcn
+   theme tokens above are scoped. */
+:root {
+  --admin-primary-dark: #6e5a3a;
+  --admin-primary-soft: rgb(197 160 82 / 0.20);
+  --admin-info: #00b8d9;
+  --admin-info-soft: rgb(0 184 217 / 0.16);
+  --admin-success: #118d57;
+  --admin-success-soft: rgb(34 197 94 / 0.16);
+  --admin-warning: #b76e00;
+  --admin-warning-soft: rgb(255 171 0 / 0.16);
+  --admin-error: #b71d18;
+  --admin-error-soft: rgb(255 86 48 / 0.16);
+  --admin-neutral-soft: rgb(110 90 58 / 0.14);
+
+  /* GRAPHIC hues. The vars above are the INK variants — deliberately darkened
+     so soft labels clear contrast on their own 16% wash — which renders muddy
+     as a chart fill (warning ink is burnt ochre, not amber). Charts, dots and
+     legend swatches use these full-strength hues instead; they are decorative
+     fills, never text. */
+  --admin-primary-main: #c5a052;
+  --admin-info-main: #00b8d9;
+  --admin-success-main: #22c55e;
+  --admin-warning-main: #ffab00;
+  --admin-error-main: #ff5630;
+
+  --shadow-card: 0 0 2px 0 rgb(110 90 58 / 0.16), 0 12px 24px -4px rgb(110 90 58 / 0.10);
+  --shadow-float: 0 0 2px 0 rgb(110 90 58 / 0.20), -20px 20px 40px -4px rgb(110 90 58 / 0.22);
+  --shadow-primary: 0 8px 16px 0 rgb(197 160 82 / 0.28);
+}
+
+/* Dark keeps the tints but lifts the ink so soft labels stay legible. */
+.dark {
+  --admin-primary-dark: #cdb891;
+  --admin-info: #61f3f3;
+  --admin-success: #77ed8b;
+  --admin-warning: #ffd666;
+  --admin-error: #ffac82;
+
+  --shadow-card: 0 0 2px 0 rgb(0 0 0 / 0.2), 0 12px 24px -4px rgb(0 0 0 / 0.24);
+  --shadow-float: 0 0 2px 0 rgb(0 0 0 / 0.24), -20px 20px 40px -4px rgb(0 0 0 / 0.24);
+}
+
+.dark .theme-minimal {
+  --background: #1a150e;
+  --foreground: #f1e8d6;
+  --card: #241d13;
+  --card-foreground: #f1e8d6;
+  --popover: #241d13;
+  --popover-foreground: #f1e8d6;
+  --primary: #c5a052;
+  --primary-foreground: #ffffff;
+  --primary-deep: #a6843c;
+  --secondary: #38301f;
+  --secondary-foreground: #f1e8d6;
+  --muted: #332b1c;
+  --muted-foreground: #b5aa91;
+  --accent: #38301f;
+  --accent-foreground: #f1e8d6;
+  --destructive: #ffac82;
+  --border: rgb(241 232 214 / 0.14);
+  --input: rgb(241 232 214 / 0.18);
+  --ring: #c5a052;
+  --brand-brown: #cdb891;
+}
+
+/* Minimal's cards separate by shadow, not by a border. */
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+.shadow-float {
+  box-shadow: var(--shadow-float);
+}
+
+/* Delivery-slip edge: scallops in the surface colour hang below the panel so
+   an order summary reads as the torn paper note that comes with the parcel
+   (see the Slip primitive). Purely decorative — the panel keeps its own
+   bottom padding, and browsers without radial-gradient support simply get a
+   flat edge. var(--card) resolves per theme scope, so light and dark both
+   land on the right colour. */
+.y-slip::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  height: 9px;
+  background-image: radial-gradient(circle at 50% 0, var(--card) 0 5.5px, transparent 6px);
+  background-size: 18px 9px;
+  background-repeat: repeat-x;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

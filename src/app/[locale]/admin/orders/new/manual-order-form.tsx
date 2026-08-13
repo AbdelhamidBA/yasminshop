@@ -3,6 +3,9 @@
 import {useEffect, useId, useRef, useState, useTransition} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
+import {
+  adminControl, adminPrimaryAction, adminTextarea, Field, FormSection, Panel
+} from '@/components/admin/form';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -231,7 +234,9 @@ export function ManualOrderForm({
     startTransition(async () => {
       const result = await createManualOrder(formData);
       if (result.ok) {
-        toast.success(t('new.created'));
+        // createOrderCore writes every new order as PENDING; stock only moves
+        // on the PENDING → CONFIRMED transition (lib/orders stockDelta).
+        toast.success(t('new.created'), {description: t('new.createdDescription')});
         router.push(`/admin/orders/${result.data.orderId}`);
       } else {
         setFieldErrors(result.fieldErrors ?? {});
@@ -251,18 +256,18 @@ export function ManualOrderForm({
   const panelOpen = open && suggestions !== null && query.trim().length >= MIN_QUERY_LENGTH;
 
   return (
-    <form action={submit} className="flex flex-col items-start gap-8 lg:flex-row">
+    <form action={submit} className="flex flex-col items-start gap-6 lg:flex-row">
       <div className="flex w-full min-w-0 flex-1 flex-col gap-6">
         {/* Line builder */}
-        <section className="rounded-lg border bg-card p-6">
-          <h2 className="text-base font-semibold">{t('itemsCard')}</h2>
-          <div className="relative mt-3">
+        <Panel title={t('itemsCard')} bodyClassName="flex flex-col gap-4">
+          <div className="relative">
             <Label htmlFor={`${id}-search`} className="sr-only">
               {t('new.searchLabel')}
             </Label>
             <Input
               id={`${id}-search`}
               value={query}
+              className={adminControl}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={onSearchKeyDown}
               onFocus={() => {
@@ -289,7 +294,7 @@ export function ManualOrderForm({
                 // Keep clicks on the panel from blurring the input before the
                 // option's onClick fires (blur closes the panel).
                 onMouseDown={(event) => event.preventDefault()}
-                className="absolute start-0 end-0 top-full z-50 mt-1 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
+                className="shadow-float absolute start-0 end-0 top-full z-50 mt-2 overflow-hidden rounded-xl bg-popover p-1 text-popover-foreground"
               >
                 <ul role="listbox" id={listboxId} aria-label={t('new.searchLabel')}>
                   {suggestions.length > 0 ? (
@@ -302,20 +307,20 @@ export function ManualOrderForm({
                         onClick={() => addLine(suggestion)}
                         onMouseEnter={() => setActiveIndex(index)}
                         className={cn(
-                          'flex cursor-pointer items-center gap-3 px-3 py-2',
-                          index === activeIndex && 'bg-accent'
+                          'flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2',
+                          index === activeIndex && 'bg-(--admin-neutral-soft)'
                         )}
                       >
                         <img
                           src={suggestion.imageUrl ?? '/placeholder-product.svg'}
                           alt=""
                           loading="lazy"
-                          className="size-9 shrink-0 rounded-md border object-cover"
+                          className="size-10 shrink-0 rounded-lg bg-(--admin-neutral-soft) object-cover"
                         />
-                        <span className="min-w-0 flex-1 truncate text-sm">
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium">
                           {locale === 'ar' ? suggestion.nameAr : suggestion.nameFr}
                         </span>
-                        <span className="shrink-0 text-sm font-medium">
+                        <span className="shrink-0 text-sm font-bold tabular-nums">
                           {formatMillimes(
                             effectivePriceMillimes(
                               suggestion.priceMillimes,
@@ -333,7 +338,7 @@ export function ManualOrderForm({
                       role="option"
                       aria-disabled="true"
                       aria-selected={false}
-                      className="px-3 py-2 text-sm text-muted-foreground"
+                      className="px-2 py-3 text-sm text-muted-foreground"
                     >
                       {t('new.noResults')}
                     </li>
@@ -344,20 +349,25 @@ export function ManualOrderForm({
           </div>
 
           {lines.length === 0 ? (
-            <p className="mt-4 text-sm text-muted-foreground">{t('new.empty')}</p>
+            <p className="rounded-xl bg-(--admin-neutral-soft) px-4 py-6 text-center text-sm text-muted-foreground">
+              {t('new.empty')}
+            </p>
           ) : (
-            <ul className="mt-4 divide-y rounded-md border">
+            <ul className="flex flex-col gap-2">
               {lines.map((line) => {
                 const name = locale === 'ar' ? line.nameAr : line.nameFr;
                 return (
-                  <li key={line.productId} className="flex flex-wrap items-center gap-3 p-3">
+                  <li
+                    key={line.productId}
+                    className="flex flex-wrap items-center gap-3 rounded-xl bg-(--admin-neutral-soft) p-3"
+                  >
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{name}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="truncate text-sm font-semibold">{name}</p>
+                      <p className="text-xs text-muted-foreground">
                         {t('unitPrice')}: {formatMillimes(line.unitPriceMillimes)} {currencyLabel}
                       </p>
                     </div>
-                    <div className="flex items-center rounded-lg border">
+                    <div className="flex items-center rounded-lg bg-card">
                       <Button
                         type="button"
                         variant="ghost"
@@ -368,7 +378,10 @@ export function ManualOrderForm({
                       >
                         −
                       </Button>
-                      <span aria-live="polite" className="w-10 text-center text-sm tabular-nums">
+                      <span
+                        aria-live="polite"
+                        className="w-9 text-center text-sm font-semibold tabular-nums"
+                      >
                         {line.qty}
                       </span>
                       <Button
@@ -382,7 +395,7 @@ export function ManualOrderForm({
                         +
                       </Button>
                     </div>
-                    <p className="w-28 text-end text-sm font-semibold tabular-nums whitespace-nowrap">
+                    <p className="w-28 text-end text-sm font-bold tabular-nums whitespace-nowrap">
                       <span className="sr-only">{t('lineTotal')}: </span>
                       {formatMillimes(line.unitPriceMillimes * line.qty)} {currencyLabel}
                     </p>
@@ -400,50 +413,66 @@ export function ManualOrderForm({
               })}
             </ul>
           )}
-        </section>
+        </Panel>
 
         {/* Customer fields — the checkout field set */}
-        <section className="rounded-lg border bg-card p-6">
-          <h2 className="text-base font-semibold">{t('customerCard')}</h2>
-          <fieldset disabled={pending} className="mt-3 grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-2 sm:col-span-2">
-              <Label htmlFor={`${id}-name`}>{t('name')}</Label>
-              <Input id={`${id}-name`} name="name" autoComplete="off" />
-              {errorLine('name')}
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor={`${id}-phone`}>{t('phone')}</Label>
-              <Input id={`${id}-phone`} name="phone" dir="ltr" inputMode="tel" autoComplete="off" />
-              {errorLine('phone')}
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor={`${id}-city`}>{t('city')}</Label>
-              <Input id={`${id}-city`} name="city" autoComplete="off" />
-              {errorLine('city')}
-            </div>
-            <div className="flex flex-col gap-2 sm:col-span-2">
-              <Label htmlFor={`${id}-address`}>{t('address')}</Label>
-              <Input id={`${id}-address`} name="address" autoComplete="off" />
-              {errorLine('address')}
-            </div>
-            <div className="flex flex-col gap-2 sm:col-span-2">
-              <Label htmlFor={`${id}-notes`}>{t('notes')}</Label>
-              <Textarea id={`${id}-notes`} name="notes" rows={3} />
-              {errorLine('notes')}
-            </div>
-          </fieldset>
-        </section>
+        <fieldset disabled={pending} className="contents">
+          <FormSection title={t('customerCard')}>
+            <Field
+              label={t('name')}
+              htmlFor={`${id}-name`}
+              error={errorLine('name')}
+              className="sm:col-span-2"
+            >
+              <Input id={`${id}-name`} name="name" className={adminControl} autoComplete="off" />
+            </Field>
+            <Field label={t('phone')} htmlFor={`${id}-phone`} error={errorLine('phone')}>
+              <Input
+                id={`${id}-phone`}
+                name="phone"
+                dir="ltr"
+                inputMode="tel"
+                className={adminControl}
+                autoComplete="off"
+              />
+            </Field>
+            <Field label={t('city')} htmlFor={`${id}-city`} error={errorLine('city')}>
+              <Input id={`${id}-city`} name="city" className={adminControl} autoComplete="off" />
+            </Field>
+            <Field
+              label={t('address')}
+              htmlFor={`${id}-address`}
+              error={errorLine('address')}
+              className="sm:col-span-2"
+            >
+              <Input
+                id={`${id}-address`}
+                name="address"
+                className={adminControl}
+                autoComplete="off"
+              />
+            </Field>
+            <Field
+              label={t('notes')}
+              htmlFor={`${id}-notes`}
+              error={errorLine('notes')}
+              className="sm:col-span-2"
+            >
+              <Textarea id={`${id}-notes`} name="notes" rows={3} className={adminTextarea} />
+            </Field>
+          </FormSection>
+        </fieldset>
       </div>
 
       {/* Promo + running totals + submit */}
       <aside className="w-full shrink-0 lg:sticky lg:top-24 lg:w-80">
-        <div className="rounded-lg border bg-card p-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor={`${id}-promo`}>{t('new.promoLabel')}</Label>
+        <Panel bodyClassName="flex flex-col gap-5">
+          <Field label={t('new.promoLabel')} htmlFor={`${id}-promo`}>
             <div className="flex gap-2">
               <Input
                 id={`${id}-promo`}
                 dir="ltr"
+                className={adminControl}
                 value={promoInput}
                 onChange={(event) => setPromoInput(event.target.value)}
                 onKeyDown={(event) => {
@@ -455,7 +484,8 @@ export function ManualOrderForm({
               />
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
+                className="h-11 shrink-0 bg-(--admin-neutral-soft) px-4"
                 disabled={promoPending || promoInput.trim() === ''}
                 onClick={applyPromo}
               >
@@ -463,39 +493,39 @@ export function ManualOrderForm({
               </Button>
             </div>
             {appliedPromo !== null && (
-              <p className="text-sm text-primary">
+              <p className="text-sm font-medium text-(--admin-success)">
                 {t('new.promoApplied', {code: appliedPromo.code, pct: appliedPromo.percentOff})}
               </p>
             )}
             {promoInvalid && <p className="text-sm text-destructive">{errorText('invalidPromo')}</p>}
-          </div>
+          </Field>
 
-          <dl className="mt-4 flex flex-col gap-2 border-t pt-4 text-sm">
+          <dl className="flex flex-col gap-3 text-sm">
             <div className="flex items-center justify-between">
               <dt className="text-muted-foreground">{t('subtotal')}</dt>
-              <dd className="tabular-nums">
+              <dd className="font-semibold tabular-nums">
                 {formatMillimes(totals.subtotalMillimes)} {currencyLabel}
               </dd>
             </div>
             {totals.promoDiscountMillimes > 0 && (
               <div className="flex items-center justify-between">
                 <dt className="text-muted-foreground">{t('promoDiscount')}</dt>
-                <dd dir="ltr" className="tabular-nums text-primary">
+                <dd dir="ltr" className="font-semibold tabular-nums text-(--admin-success)">
                   -{formatMillimes(totals.promoDiscountMillimes)} {currencyLabel}
                 </dd>
               </div>
             )}
             <div className="flex items-center justify-between">
               <dt className="text-muted-foreground">{t('delivery')}</dt>
-              <dd className="tabular-nums">
+              <dd className="font-semibold tabular-nums">
                 {totals.deliveryCostMillimes === 0
                   ? t('deliveryFree')
                   : `${formatMillimes(totals.deliveryCostMillimes)} ${currencyLabel}`}
               </dd>
             </div>
-            <div className="flex items-center justify-between border-t pt-2 text-base font-semibold">
-              <dt>{t('totalLabel')}</dt>
-              <dd className="tabular-nums">
+            <div className="flex items-center justify-between border-t pt-3 text-base">
+              <dt className="font-semibold">{t('totalLabel')}</dt>
+              <dd className="text-lg font-bold tabular-nums">
                 {formatMillimes(totals.totalMillimes)} {currencyLabel}
               </dd>
             </div>
@@ -503,13 +533,12 @@ export function ManualOrderForm({
 
           <Button
             type="submit"
-            size="lg"
-            className="mt-4 w-full"
+            className={`w-full ${adminPrimaryAction}`}
             disabled={pending || lines.length === 0}
           >
             {t('new.submit')}
           </Button>
-        </div>
+        </Panel>
       </aside>
     </form>
   );

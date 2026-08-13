@@ -1,8 +1,10 @@
 'use client';
 
 import {useTransition} from 'react';
+import {ShoppingBag, Sparkles} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {markNotificationRead} from '@/app/[locale]/admin/notifications/actions';
+import {IconBox} from '@/components/admin/ui';
 import {Link} from '@/i18n/navigation';
 import {formatMillimes} from '@/lib/money';
 import {NEW_ORDER, parseNewOrderPayload} from '@/lib/notifications';
@@ -16,6 +18,10 @@ import type {NotificationRow} from '@/server/notifications';
 // the destination re-renders the admin header with a fresh unread count, so no
 // explicit refresh is needed here. Real-time delivery is push's job (Task 5);
 // this channel updates on navigation / popover-open / mark-read only.
+//
+// Minimal-UI shape: a tinted icon box, the message on one line (kept as a
+// single text node — the e2e suite matches it with a regex), the timestamp
+// muted beneath, and an unread dot on the inline end.
 export function NotificationItem({
   item,
   currencyLabel,
@@ -59,17 +65,26 @@ export function NotificationItem({
       href={href}
       onClick={handleClick}
       className={cn(
-        'flex flex-col gap-1 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent',
-        unread && 'bg-accent/40'
+        'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50',
+        unread && 'bg-(--admin-neutral-soft)'
       )}
     >
-      <span className="flex items-center gap-2">
-        {unread && <span aria-hidden className="size-2 shrink-0 rounded-full bg-primary" />}
-        <span className={cn('font-medium', !unread && 'ps-4')}>{message}</span>
+      <IconBox tone={newOrder ? 'primary' : 'neutral'} className="size-10 rounded-full">
+        {newOrder ? (
+          <ShoppingBag className="size-4" strokeWidth={2} />
+        ) : (
+          <Sparkles className="size-4" strokeWidth={2} />
+        )}
+      </IconBox>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className={cn('text-sm', unread ? 'font-semibold' : 'font-medium')}>{message}</span>
+        <span className="text-xs text-muted-foreground">
+          {dateFormatter.format(item.createdAt)}
+        </span>
       </span>
-      <span className="ps-4 text-xs text-muted-foreground">
-        {dateFormatter.format(item.createdAt)}
-      </span>
+      {unread && (
+        <span aria-hidden className="size-2 shrink-0 rounded-full bg-primary" />
+      )}
     </Link>
   );
 }

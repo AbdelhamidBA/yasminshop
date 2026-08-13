@@ -6,6 +6,7 @@ import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/act
 import {AuthzError} from '@/lib/authz';
 import {requireAdmin, requireStaff} from '@/server/authz';
 import {prisma} from '@/lib/db';
+import {sanitizeIds} from '@/lib/bulk';
 import {parseDinarsToMillimes} from '@/lib/money';
 import {productSchema, quantitySchema} from '@/lib/schemas/catalog';
 import {ensureUniqueSlug, slugify} from '@/lib/slugify';
@@ -194,3 +195,93 @@ export async function restoreProduct(id: string): Promise<ActionResult> {
     throw error;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Mass actions
+// ---------------------------------------------------------------------------
+
+/**
+ * Archive/restore a reviewed selection. ADMIN only (a SUB_ADMIN may change
+ * product quantity and nothing else), ids scalar-guarded and capped, and the
+ * write is a single updateMany so a partial batch cannot half-apply.
+ */
+export async function archiveProducts(ids: unknown): Promise<ActionResult<number>> {
+  return setProductsArchived(ids, new Date());
+}
+
+export async function restoreProducts(ids: unknown): Promise<ActionResult<number>> {
+  return setProductsArchived(ids, null);
+}
+
+async function setProductsArchived(
+  ids: unknown,
+  archivedAt: Date | null
+): Promise<ActionResult<number>> {
+  const clean = sanitizeIds(ids);
+  if (!clean) return failure('invalidSelection');
+  try {
+    await requireAdmin();
+    const {count} = await prisma.product.updateMany({
+      where: {id: {in: clean}},
+      data: {archivedAt}
+    });
+    revalidatePath(PATH, 'page');
+    return success(count);
+  } catch (error) {
+    if (error instanceof AuthzError) return failure('forbidden');
+    throw error;
+  }
+}
+
+/**
+ * Permanently delete products — the one irreversible action in the admin.
+ *
+ * A product that has ever been ordered CANNOT be deleted: OrderItem holds a
+ * required FK to Product (no onDelete rule, so Postgres restricts), and past
+ * orders must keep resolving to the product they were placed against. Rather
+ * than let the database throw, this checks first and refuses the whole batch
+ * with `soldProducts`, telling the operator to archive those instead — archive
+ * is what "remove it from the shop" actually means here.
+ *
+ * ProductImage rows cascade. The uploaded FILES are intentionally left on disk
+ * (documented in the README's known limitations): they are content-addressed
+ * uploads that no longer have a DB reference, and deleting them during a bulk
+ * action risks removing a file another record still points at.
+ */
+export async function deleteProducts(ids: unknown): Promise<ActionResult<number>> {
+  const clean = sanitizeIds(ids);
+  if (!clean) return failure('invalidSelection');
+  try {
+    await requireAdmin();
+
+    const sold = await prisma.orderItem.findMany({
+      where: {productId: {in: clean}},
+      select: {productId: true},
+      distinct: ['productId']
+    });
+    if (sold.length > 0) return failure('soldProducts');
+
+    // Re-checked inside the transaction: an order could land between the read
+    // above and the delete, and order history must win over a bulk cleanup.
+    const count = await prisma.$transaction(async (tx) => {
+      const raced = await tx.orderItem.count({where: {productId: {in: clean}}});
+      if (raced > 0) throw new SoldProductError();
+      const result = await tx.product.deleteMany({where: {id: {in: clean}}});
+      return result.count;
+    });
+
+    revalidatePath(PATH, 'page');
+    return success(count);
+  } catch (error) {
+    if (error instanceof SoldProductError) return failure('soldProducts');
+    if (error instanceof AuthzError) return failure('forbidden');
+    // Belt and braces: a FK violation that slipped past both checks is still
+    // "this product has been ordered", never an unhandled 500.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+      return failure('soldProducts');
+    }
+    throw error;
+  }
+}
+
+class SoldProductError extends Error {}

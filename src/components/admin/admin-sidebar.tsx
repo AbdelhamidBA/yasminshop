@@ -15,9 +15,19 @@ import {
 } from 'lucide-react';
 import {useTranslations} from 'next-intl';
 import {Link, usePathname} from '@/i18n/navigation';
+import {Overline} from '@/components/admin/ui';
 import {cn} from '@/lib/utils';
 
 const STORAGE_KEY = 'admin-sidebar-collapsed';
+
+// Minimal-UI nav rail: paper-white, separated from the page by a dashed
+// hairline rather than a solid rule, nav grouped under Overline captions, and
+// an active item that reads as a soft primary wash behind primary ink.
+//
+// Two collapse mechanisms, deliberately: the persisted `collapsed` toggle
+// (desktop, localStorage) and a CSS-only mini rail below `lg` — the rail is
+// never wide enough to eat a phone screen, and no new affordance was invented
+// to achieve that (the toggle simply hides where it has nothing to do).
 
 type NavItem = {
   href: string;
@@ -55,35 +65,43 @@ export function AdminSidebar({isAdmin}: {isAdmin: boolean}) {
     {href: '/admin/parameters', labelKey: 'parameters', icon: Settings}
   ];
 
+  // Expanded-only pieces (captions, labels) stay mounted and hide with CSS so
+  // the mini rail below `lg` needs no extra state.
+  const expandedOnly = collapsed ? 'hidden' : 'hidden lg:block';
+
   function renderBlock(title: string, items: NavItem[]) {
     return (
-      <div className="px-2 py-3">
-        {!collapsed && (
-          <p className="px-2 pb-2 text-xs font-semibold uppercase text-muted-foreground">
-            {title}
-          </p>
-        )}
+      <div className="px-3 py-2">
+        <p className={cn('mb-2 px-3', expandedOnly)}>
+          <Overline>{title}</Overline>
+        </p>
         <ul className="flex flex-col gap-1">
           {items.map((item) => {
             const active =
               item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
             const Icon = item.icon;
+            const label = t(`nav.${item.labelKey}`);
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  title={t(`nav.${item.labelKey}`)}
+                  title={label}
+                  aria-label={label}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'flex items-center gap-3 rounded-md px-2 py-2 text-sm transition-colors',
+                    'flex h-11 items-center rounded-lg text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                    collapsed
+                      ? 'justify-center'
+                      : 'justify-center lg:justify-start lg:gap-3 lg:px-3',
                     active
-                      ? 'bg-primary/10 font-medium text-primary'
-                      : 'text-foreground hover:bg-accent',
-                    collapsed && 'justify-center'
+                      ? 'bg-(--admin-primary-soft) font-semibold text-(--admin-primary-dark)'
+                      : 'font-medium text-muted-foreground hover:bg-(--admin-neutral-soft) hover:text-foreground'
                   )}
                 >
-                  <Icon className="size-4 shrink-0" />
-                  {!collapsed && <span className="truncate">{t(`nav.${item.labelKey}`)}</span>}
+                  <Icon className="size-5 shrink-0" strokeWidth={active ? 2.2 : 1.8} />
+                  <span className={cn('truncate', collapsed ? 'hidden' : 'hidden lg:inline')}>
+                    {label}
+                  </span>
                 </Link>
               </li>
             );
@@ -96,34 +114,64 @@ export function AdminSidebar({isAdmin}: {isAdmin: boolean}) {
   return (
     <aside
       className={cn(
-        'flex shrink-0 flex-col border-e bg-background transition-all',
-        collapsed ? 'w-16' : 'w-64'
+        'relative flex w-16 shrink-0 flex-col border-e border-dashed border-border bg-card transition-[width] duration-200 lg:w-20',
+        !collapsed && 'lg:w-[264px]'
       )}
     >
       <div
         className={cn(
-          'flex h-16 items-center gap-2 border-b px-3',
-          collapsed ? 'justify-center' : 'justify-between'
+          'flex h-16 items-center px-3 lg:h-[72px]',
+          collapsed ? 'justify-center' : 'justify-center lg:justify-start lg:px-5'
         )}
       >
-        {!collapsed && (
-          <Link href="/admin" title={t('brand')} className="flex min-w-0 items-center gap-2">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <ShoppingBag className="size-4" />
-            </span>
-            <span className="truncate font-heading text-base font-semibold">{t('brand')}</span>
-          </Link>
-        )}
-        <button
-          type="button"
-          aria-label={t('collapse')}
-          onClick={toggle}
-          className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-accent"
+        <Link
+          href="/admin"
+          aria-label={t('brand')}
+          className="flex min-w-0 items-center gap-3 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          {collapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
-        </button>
+          {/* The shop's own mark, not a generic icon — the dashboard is the
+              same product as the storefront. Decorative: the link already
+              carries an aria-label. */}
+          <img src="/brand/yasmine-logo.webp" alt="" className="size-10 shrink-0 object-contain" />
+          <span
+            className={cn(
+              'flex min-w-0 flex-col',
+              collapsed ? 'hidden' : 'hidden lg:flex'
+            )}
+          >
+            <span className="font-(family-name:--font-betterlett) truncate text-xl leading-none">
+              Yasmine
+            </span>
+            <span className="mt-1 flex items-center gap-1.5 text-[10px] leading-none font-semibold tracking-[0.28em] text-foreground/70 uppercase">
+              <span aria-hidden="true" className="h-px w-3 bg-foreground/40" />
+              Shop
+              <span aria-hidden="true" className="h-px w-3 bg-foreground/40" />
+            </span>
+          </span>
+        </Link>
       </div>
+
+      {/* Rail-edge collapse handle (Minimal's mini-nav toggle). Hidden below
+          `lg`, where the rail is already mini and the toggle has no job.
+          z-50 keeps it above the translucent sticky header it overlaps. */}
+      <button
+        type="button"
+        aria-label={t('collapse')}
+        onClick={toggle}
+        className="shadow-card absolute top-6 -end-3 z-50 hidden size-6 items-center justify-center rounded-full bg-card text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 lg:flex"
+      >
+        {collapsed ? (
+          <PanelLeftOpen className="size-3.5 rtl:-scale-x-100" />
+        ) : (
+          <PanelLeftClose className="size-3.5 rtl:-scale-x-100" />
+        )}
+      </button>
+
       {renderBlock(t('blocks.dashboard'), DASHBOARD_ITEMS)}
+      {/* Stands in for the group caption while it is hidden (mini rail). */}
+      <div
+        className={cn('mx-auto h-px w-6 rounded-full bg-border', collapsed ? 'block' : 'lg:hidden')}
+      />
       {renderBlock(t('blocks.settings'), settingsItems)}
     </aside>
   );

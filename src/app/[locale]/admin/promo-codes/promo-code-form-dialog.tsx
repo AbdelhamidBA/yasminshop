@@ -77,7 +77,7 @@ export function PromoCodeFormDialog({
         <DialogHeader>
           <DialogTitle>{promoCode ? t('edit') : t('add')}</DialogTitle>
         </DialogHeader>
-        <form action={submit} className="flex flex-col gap-4">
+        <form action={submit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <Label htmlFor="code">{t('code')}</Label>
             <Input
@@ -120,10 +120,16 @@ export function PromoCodeFormDialog({
             {errorLine('expiresAt')}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="px-4"
+              onClick={() => onOpenChange(false)}
+            >
               {t('cancel')}
             </Button>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" size="lg" className="px-4" disabled={pending}>
               {t('save')}
             </Button>
           </DialogFooter>

@@ -63,7 +63,11 @@ export function ProductCard({
           )}
         </div>
         <div className="flex flex-1 flex-col gap-1 px-3 pt-3 sm:px-4">
-          <h3 className="truncate text-sm font-medium transition-colors group-hover:text-primary">
+          {/* Two lines, not one: real product names here run long ("Shampooing
+              très doux 2 en 1 DOP") and a single truncated line hides the part
+              that distinguishes one variant from another. Prices stay aligned
+              across the row because the price block keeps mt-auto. */}
+          <h3 className="line-clamp-2 text-sm leading-snug font-medium transition-colors group-hover:text-primary">
             {name}
           </h3>
           {/* Deep-brown price (spec §11); Price keeps its own muted

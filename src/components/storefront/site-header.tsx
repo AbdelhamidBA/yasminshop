@@ -2,6 +2,7 @@ import {getLocale} from 'next-intl/server';
 import {auth, signOut} from '@/auth';
 import {Link} from '@/i18n/navigation';
 import {CartBadge} from '@/components/cart/cart-badge';
+import {BrandLockup} from '@/components/storefront/brand';
 import {AccountMenu} from '@/components/storefront/account-menu';
 import {MainNav} from '@/components/storefront/main-nav';
 import {MobileMenu} from '@/components/storefront/mobile-menu';
@@ -44,19 +45,7 @@ export async function SiteHeader() {
             link's accessible name "Yasmine Shop" (the flanking rules are
             decorative, aria-hidden). Below sm the lockup goes sr-only
             (logo-only brand) so the crowded mobile row can never overflow. */}
-        <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <img src="/brand/yasmine-logo.webp" alt="" className="h-9 w-auto" />
-          <span className="flex flex-col items-center max-sm:sr-only">
-            <span className="font-(family-name:--font-betterlett) text-2xl leading-none">
-              Yasmine
-            </span>
-            <span className="mt-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.28em] text-foreground/70">
-              <span aria-hidden="true" className="h-px w-4 bg-foreground/40" />
-              Shop
-              <span aria-hidden="true" className="h-px w-4 bg-foreground/40" />
-            </span>
-          </span>
-        </Link>
+        <BrandLockup hideTextBelowSm />
         {/* Centered nav links, lg+ only (mobile/tablet use the hamburger). */}
         <MainNav categories={categories} />
         {/* Mockup icon group: search, account, cart — locale switcher and

@@ -1,7 +1,8 @@
 'use client';
 
 import {useState, useTransition} from 'react';
-import {useTranslations} from 'next-intl';
+import {useLocale, useTranslations} from 'next-intl';
+import {Eyebrow} from '@/components/storefront/brand';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -15,6 +16,7 @@ import {resetPassword} from '../actions';
 // server re-validates via newPasswordSchema regardless.
 export function ResetPasswordForm({token}: {token: string}) {
   const t = useTranslations('authPages');
+  const isAr = useLocale() === 'ar';
   const [pending, startTransition] = useTransition();
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -36,7 +38,9 @@ export function ResetPasswordForm({token}: {token: string}) {
     return (
       <div className="flex flex-col gap-4">
         <p className="text-sm">{t('reset.successBody')}</p>
-        <Button render={<Link href="/login" />}>{t('links.signIn')}</Button>
+        <Button className="h-12 w-full text-sm font-semibold" render={<Link href="/login" />}>
+          {t('links.signIn')}
+        </Button>
       </div>
     );
   }
@@ -67,9 +71,11 @@ export function ResetPasswordForm({token}: {token: string}) {
   }
 
   return (
-    <form action={submit} className="flex flex-col gap-4">
+    <form action={submit} className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="password">{t('reset.newPassword')}</Label>
+        <Label htmlFor="password" className="text-muted-foreground">
+          <Eyebrow tracked={!isAr}>{t('reset.newPassword')}</Eyebrow>
+        </Label>
         <Input
           id="password"
           name="password"
@@ -77,12 +83,15 @@ export function ResetPasswordForm({token}: {token: string}) {
           autoComplete="new-password"
           required
           dir="ltr"
+          className="h-11"
         />
         <p className="text-xs text-muted-foreground">{t('register.passwordHint')}</p>
         {errorLine('password')}
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="confirmPassword">{t('reset.confirmPassword')}</Label>
+        <Label htmlFor="confirmPassword" className="text-muted-foreground">
+          <Eyebrow tracked={!isAr}>{t('reset.confirmPassword')}</Eyebrow>
+        </Label>
         <Input
           id="confirmPassword"
           name="confirmPassword"
@@ -90,6 +99,7 @@ export function ResetPasswordForm({token}: {token: string}) {
           autoComplete="new-password"
           required
           dir="ltr"
+          className="h-11"
         />
         {errorLine('confirmPassword')}
       </div>
@@ -103,7 +113,11 @@ export function ResetPasswordForm({token}: {token: string}) {
           )}
         </div>
       )}
-      <Button type="submit" disabled={pending}>
+      <Button
+        type="submit"
+        disabled={pending}
+        className="mt-1 h-12 w-full text-sm font-semibold"
+      >
         {t('reset.submit')}
       </Button>
     </form>

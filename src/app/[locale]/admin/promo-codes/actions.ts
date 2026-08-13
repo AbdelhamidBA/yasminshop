@@ -5,6 +5,7 @@ import {revalidatePath} from 'next/cache';
 import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/action-result';
 import {AuthzError} from '@/lib/authz';
 import {requireAdmin} from '@/server/authz';
+import {sanitizeIds} from '@/lib/bulk';
 import {prisma} from '@/lib/db';
 import {promoCodeSchema} from '@/lib/schemas/catalog';
 
@@ -105,6 +106,77 @@ export async function restorePromoCode(id: string): Promise<ActionResult> {
     await prisma.promoCode.update({where: {id}, data: {archivedAt: null}});
     revalidatePath(PATH, 'page');
     return success(undefined);
+  } catch (error) {
+    if (error instanceof AuthzError) return failure('forbidden');
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mass actions
+// ---------------------------------------------------------------------------
+
+/**
+ * Archive/restore a reviewed selection. ADMIN only, ids scalar-guarded and
+ * capped, and the write is a single updateMany so a partial batch cannot
+ * half-apply. NO delete: a promo code is referenced by the orders it discounted.
+ */
+export async function archivePromoCodes(ids: unknown): Promise<ActionResult<number>> {
+  return setPromoCodesArchived(ids, new Date());
+}
+
+export async function restorePromoCodes(ids: unknown): Promise<ActionResult<number>> {
+  return setPromoCodesArchived(ids, null);
+}
+
+async function setPromoCodesArchived(
+  ids: unknown,
+  archivedAt: Date | null
+): Promise<ActionResult<number>> {
+  const clean = sanitizeIds(ids);
+  if (!clean) return failure('invalidSelection');
+  try {
+    await requireAdmin();
+    const {count} = await prisma.promoCode.updateMany({
+      where: {id: {in: clean}},
+      data: {archivedAt}
+    });
+    revalidatePath(PATH, 'page');
+    return success(count);
+  } catch (error) {
+    if (error instanceof AuthzError) return failure('forbidden');
+    throw error;
+  }
+}
+
+/**
+ * Bulk enable/disable — the SAME toggle the per-row Switch already performs
+ * (togglePromoCode above), applied to a selection: `active` is the only column
+ * written, with no extra WHERE, so a row reached in bulk lands in exactly the
+ * state a row toggled one by one would.
+ */
+export async function enablePromoCodes(ids: unknown): Promise<ActionResult<number>> {
+  return setPromoCodesActive(ids, true);
+}
+
+export async function disablePromoCodes(ids: unknown): Promise<ActionResult<number>> {
+  return setPromoCodesActive(ids, false);
+}
+
+async function setPromoCodesActive(
+  ids: unknown,
+  active: boolean
+): Promise<ActionResult<number>> {
+  const clean = sanitizeIds(ids);
+  if (!clean) return failure('invalidSelection');
+  try {
+    await requireAdmin();
+    const {count} = await prisma.promoCode.updateMany({
+      where: {id: {in: clean}},
+      data: {active}
+    });
+    revalidatePath(PATH, 'page');
+    return success(count);
   } catch (error) {
     if (error instanceof AuthzError) return failure('forbidden');
     throw error;

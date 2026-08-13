@@ -2,6 +2,7 @@
 
 import {useTranslations} from 'next-intl';
 import {Input} from '@/components/ui/input';
+import {AdminSearchField, adminSearchInputClass} from '@/components/admin/list-shell';
 import {useRouter} from '@/i18n/navigation';
 import type {OrderStatus} from '@/lib/orders';
 
@@ -30,9 +31,17 @@ export function OrdersSearch({
         if (includeArchived) params.set('archived', '1');
         router.replace(`/admin/orders${params.size ? `?${params}` : ''}`);
       }}
-      className="max-w-sm"
+      className="w-full sm:max-w-xs"
     >
-      <Input name="q" defaultValue={initialValue} placeholder={t('search')} aria-label={t('search')} />
+      <AdminSearchField>
+        <Input
+          name="q"
+          defaultValue={initialValue}
+          placeholder={t('search')}
+          aria-label={t('search')}
+          className={adminSearchInputClass}
+        />
+      </AdminSearchField>
     </form>
   );
 }

@@ -10,6 +10,7 @@ import {getParameters} from '@/server/settings';
 
 export default async function StorefrontLayout({children}: {children: ReactNode}) {
   const [session, parameters] = await Promise.all([auth(), getParameters()]);
+  const role = session?.user.role;
 
   return (
     <CartProvider>
@@ -22,7 +23,10 @@ export default async function StorefrontLayout({children}: {children: ReactNode}
         <AnnouncementBar />
         <SiteHeader />
         <main className="flex-1">{children}</main>
-        <SiteFooter />
+        <SiteFooter
+          isAuthenticated={session !== null}
+          isStaff={role === 'ADMIN' || role === 'SUB_ADMIN'}
+        />
       </div>
       {/* Portal-based drawer + fixed bottom navbar live outside the column so
           the flex layout never has to account for them. */}

@@ -1,4 +1,5 @@
 import {getLocale, getTranslations} from 'next-intl/server';
+import {PageHeader, PageTitle} from '@/components/admin/form';
 import {redirect} from '@/i18n/navigation';
 import {requirePageStaff} from '@/server/authz';
 import {listCategoryTree} from '@/server/categories';
@@ -13,8 +14,10 @@ export default async function NewProductPage() {
   const categories = await listCategoryTree();
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold">{t('createTitle')}</h1>
+    <div className="flex max-w-4xl flex-col gap-6">
+      {/* The form's own Cancel link is the way back to the list — no duplicate
+          back affordance in the header. */}
+      <PageHeader title={<PageTitle>{t('createTitle')}</PageTitle>} />
       <ProductForm product={null} categories={categories} readOnly={false} />
     </div>
   );

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {Button} from '@/components/ui/button';
 import {useRouter} from '@/i18n/navigation';
-import {ALLOWED_TRANSITIONS, type OrderStatus} from '@/lib/orders';
+import {ALLOWED_TRANSITIONS, stockDelta, type OrderStatus} from '@/lib/orders';
 import {changeOrderStatus} from '../actions';
 
 // Allowed-next transition buttons (requireStaff-backed action: sub-admin sees
@@ -28,7 +28,18 @@ export function StatusControl({orderId, status}: {orderId: string; status: Order
     startTransition(async () => {
       const result = await changeOrderStatus(orderId, to);
       if (result.ok) {
-        toast.success(t('statusChanged'));
+        // The one fact the operator cannot see from the badge: what the
+        // transition did to stock. stockDelta is the SAME pure rule the action
+        // applied server-side, so the description can never drift from reality.
+        const delta = stockDelta(status, to);
+        toast.success(t('statusChanged'), {
+          description:
+            delta === 'decrement'
+              ? t('statusChangedStockOut')
+              : delta === 'restock'
+                ? t('statusChangedStockIn')
+                : undefined
+        });
         // changeOrderStatus revalidates the list route; refresh re-renders
         // this detail route so badge and buttons follow the new status.
         router.refresh();
@@ -45,20 +56,26 @@ export function StatusControl({orderId, status}: {orderId: string; status: Order
           <Button
             key={to}
             variant="destructive"
+            className="h-11"
             disabled={pending}
             onClick={() => setConfirmCancel(true)}
           >
             {t(`transitionTo.${to}` as never)}
           </Button>
         ) : (
-          <Button key={to} disabled={pending} onClick={() => run(to)}>
+          <Button
+            key={to}
+            className="h-11 shadow-[var(--shadow-primary)]"
+            disabled={pending}
+            onClick={() => run(to)}
+          >
             {t(`transitionTo.${to}` as never)}
           </Button>
         )
       )}
 
       <AlertDialog open={confirmCancel} onOpenChange={setConfirmCancel}>
-        <AlertDialogContent>
+        <AlertDialogContent className="theme-minimal">
           <AlertDialogHeader>
             <AlertDialogTitle>{t('confirmCancelTitle')}</AlertDialogTitle>
             <AlertDialogDescription>{t('confirmCancelBody')}</AlertDialogDescription>

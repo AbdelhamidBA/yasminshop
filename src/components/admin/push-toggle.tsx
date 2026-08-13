@@ -46,12 +46,14 @@ export function PushToggle() {
 
   async function enable() {
     if (Notification.permission === 'denied') {
-      toast.error(t('denied'));
+      // The browser refused the permission — nothing failed in the app.
+      toast.warning(t('denied'));
       return;
     }
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
-      toast.error(t('denied'));
+      // The browser refused the permission — nothing failed in the app.
+      toast.warning(t('denied'));
       return;
     }
     const registration = await navigator.serviceWorker.register('/sw.js');
@@ -94,7 +96,7 @@ export function PushToggle() {
       }).catch(() => {});
     }
     setEnabled(false);
-    toast.success(t('disabled'));
+    toast.info(t('disabled'));
   }
 
   async function onClick() {
@@ -123,14 +125,14 @@ export function PushToggle() {
       aria-label={label}
       title={label}
       aria-pressed={enabled}
-      className="relative flex size-9 items-center justify-center rounded-md border hover:bg-accent disabled:opacity-50"
+      className="relative flex size-8 items-center justify-center rounded-full text-muted-foreground sm:size-9 transition-colors outline-none hover:bg-(--admin-neutral-soft) hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
     >
       {pending ? (
-        <LoaderCircle className="size-4 animate-spin" />
+        <LoaderCircle className="size-5 animate-spin" />
       ) : enabled ? (
-        <BellRing className="size-4 text-primary" />
+        <BellRing className="size-5 text-primary" strokeWidth={1.8} />
       ) : (
-        <BellOff className="size-4 text-muted-foreground" />
+        <BellOff className="size-5" strokeWidth={1.8} />
       )}
     </button>
   );

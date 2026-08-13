@@ -9,9 +9,11 @@ import {
   CarouselNext,
   CarouselPrevious
 } from '@/components/ui/carousel';
+import {Eyebrow, Stamp} from '@/components/storefront/brand';
 import {ProductCard} from '@/components/storefront/product-card';
 import {Price} from '@/components/storefront/price';
 import {Link} from '@/i18n/navigation';
+import {cn} from '@/lib/utils';
 import {effectivePriceMillimes} from '@/lib/money';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
 import {getRelatedProducts, getStorefrontProduct} from '@/server/storefront';
@@ -75,30 +77,40 @@ export default async function ProductPage({params}: PageProps) {
     massDiscountPct
   );
 
-  const stockLine =
-    product.quantity === 0 ? (
-      <p className="text-sm font-medium text-destructive">{t('outOfStock')}</p>
-    ) : product.quantity <= parameters.lastChanceThreshold ? (
-      <p className="text-sm font-medium text-destructive">
-        {t('lowStock', {count: product.quantity})}
-      </p>
-    ) : (
-      <p className="text-sm text-muted-foreground">{t('inStock')}</p>
-    );
+  // Stock is stated from the real quantity against the owner's configured
+  // lastChanceThreshold — never a manufactured urgency figure. Brown reads
+  // "available", destructive reads "hurry / gone".
+  const stockLine = (
+    <span
+      className={cn(
+        'inline-flex items-center gap-2',
+        product.quantity === 0 || product.quantity <= parameters.lastChanceThreshold
+          ? 'text-destructive'
+          : 'text-(--brand-brown)'
+      )}
+    >
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+      <Eyebrow tracked={!isAr}>
+        {product.quantity === 0
+          ? t('outOfStock')
+          : product.quantity <= parameters.lastChanceThreshold
+            ? t('lowStock', {count: product.quantity})
+            : t('inStock')}
+      </Eyebrow>
+    </span>
+  );
 
   const crumbSeparator = (
-    <li aria-hidden="true" className="select-none text-muted-foreground/50">
+    <li aria-hidden="true" className="select-none text-muted-foreground/40">
       /
     </li>
   );
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8">
-      {/* Breadcrumb: home / category / [subcategory] / product */}
-      <nav
-        aria-label={tBreadcrumb('label')}
-        className="rounded-lg border bg-muted/40 px-5 py-3 text-sm text-muted-foreground"
-      >
+    <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
+      {/* Breadcrumb: home / category / [subcategory] / product. Unboxed — it
+          is navigation, not a panel competing with the product. */}
+      <nav aria-label={tBreadcrumb('label')} className="text-xs text-muted-foreground">
         <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <li>
             <Link href="/" className="transition-colors hover:text-foreground">
@@ -131,30 +143,30 @@ export default async function ProductPage({params}: PageProps) {
         </ol>
       </nav>
 
-      {/* Two-column on lg: gallery | info (reference layout) */}
-      <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-12">
-        <Gallery
-          images={product.images.map((image) => ({id: image.id, url: image.url}))}
-          name={name}
-        />
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{name}</h1>
-          {/* Price prominence: large effective figure; Price keeps its own muted
-              strikethrough + destructive -N% badge colors. */}
-          <div className="mt-4 text-3xl font-bold">
+      {/* Asymmetric 7/5: the gallery earns the width, the decision panel is
+          narrow, decisive and follows the reader down the page. */}
+      <div className="mt-6 grid gap-8 lg:grid-cols-12 lg:gap-12">
+        <div className="lg:col-span-7">
+          <Gallery
+            images={product.images.map((image) => ({id: image.id, url: image.url}))}
+            name={name}
+          />
+        </div>
+        <div className="flex flex-col lg:col-span-5 lg:sticky lg:top-24 lg:self-start">
+          <h1 className="text-3xl leading-[1.1] font-extrabold text-balance sm:text-4xl">
+            {name}
+          </h1>
+          <div className="mt-5 text-(--brand-brown)">
             <Price
               priceMillimes={product.priceMillimes}
               discountPct={product.discountPct}
               massDiscountPct={massDiscountPct}
               currencyLabel={parameters.currency}
+              size="lg"
             />
           </div>
-          <div className="mt-2">{stockLine}</div>
-          {/* Short-description teaser (single description field is shown in full
-              in the Description section below; clamped here to a lead). */}
-          <p className="mt-5 line-clamp-3 border-y py-5 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
-            {description}
-          </p>
+          <div className="mt-4">{stockLine}</div>
+          <hr className="mt-6 border-dotted" />
           <div className="mt-6">
             <AddToCart
               productId={product.id}
@@ -166,8 +178,13 @@ export default async function ProductPage({params}: PageProps) {
               quantity={product.quantity}
             />
           </div>
-          {/* Category/tag line, as in the reference footer of the info column */}
-          <p className="mt-8 border-t pt-4 text-sm text-muted-foreground">
+          {/* The signature, placed where hesitation peaks: the promise that
+              no money leaves anyone's hands until the parcel is in them. */}
+          <div className="mt-7">
+            <Stamp tracked={!isAr}>{t('codStamp')}</Stamp>
+          </div>
+          {/* Category/tag line — quiet, at the foot of the decision panel. */}
+          <p className="mt-8 border-t pt-4 text-xs text-muted-foreground">
             {tCatalog('categories')}:{' '}
             <Link href={categoryHref} className="transition-colors hover:text-foreground">
               {categoryName}
@@ -190,16 +207,14 @@ export default async function ProductPage({params}: PageProps) {
       {/* Description: reference's tab area, honestly a SINGLE active tab (no
           Reviews tab — reviews are not in the data model). Full description
           text lives here; the info column above shows a clamped teaser. */}
-      <section className="mt-14" aria-labelledby="product-description-heading">
-        <div className="border-b">
-          <h2
-            id="product-description-heading"
-            className="inline-block border-b-2 border-foreground px-1 pb-3 text-sm font-semibold"
-          >
-            {t('description')}
+      <section className="mt-16" aria-labelledby="product-description-heading">
+        <div className="flex items-center gap-4">
+          <h2 id="product-description-heading" className="shrink-0">
+            <Eyebrow tracked={!isAr}>{t('description')}</Eyebrow>
           </h2>
+          <span aria-hidden="true" className="h-px flex-1 bg-border" />
         </div>
-        <p className="mt-6 max-w-3xl text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+        <p className="mt-6 max-w-[68ch] leading-[1.75] whitespace-pre-line text-foreground/80">
           {description}
         </p>
       </section>
@@ -210,13 +225,18 @@ export default async function ProductPage({params}: PageProps) {
           at the edges (and both disabled when everything already fits). */}
       {related.length > 0 && (
         <section className="mt-16">
-          <h2 className="text-center text-2xl font-bold tracking-tight">{t('related')}</h2>
-          {/* Decorative underline under the centered section title */}
-          <div aria-hidden="true" className="mx-auto mt-3 h-1 w-16 rounded-full bg-primary" />
+          {/* Same heading treatment as Description: the page reads as one
+              document rather than a stack of differently-styled blocks. */}
+          <div className="flex items-center gap-4">
+            <h2 className="shrink-0">
+              <Eyebrow tracked={!isAr}>{t('related')}</Eyebrow>
+            </h2>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+          </div>
           <Carousel
             aria-label={t('related')}
             opts={{align: 'start', slidesToScroll: 'auto'}}
-            className="mt-8"
+            className="mt-7"
           >
             <CarouselContent viewportClassName="-my-2 py-2" className="-ms-4">
               {related.map((relatedProduct) => (

@@ -33,7 +33,9 @@ export function ImageUploader({
       const {url} = (await response.json()) as {url: string};
       onChange(renumber([...images, {url, sortOrder: images.length}]));
     } catch {
-      toast.error(t('uploadFailed'));
+      // The hint names exactly what /api/uploads accepts (lib/uploads.ts):
+      // the four image types and MAX_UPLOAD_BYTES.
+      toast.error(t('uploadFailed'), {description: t('uploadHint')});
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';
@@ -49,33 +51,37 @@ export function ImageUploader({
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <ul className="flex flex-wrap gap-3">
-        {images.map((image, index) => (
-          <li key={image.url} className="relative rounded-md border p-1">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={image.url} alt="" className="size-24 rounded object-cover" />
-            {!disabled && (
-              <div className="mt-1 flex justify-center gap-1">
-                <Button type="button" size="icon" variant="ghost" aria-label={t('moveUp')}
-                  onClick={() => move(index, -1)} disabled={index === 0}>
-                  <ArrowUp className="size-3" />
-                </Button>
-                <Button type="button" size="icon" variant="ghost" aria-label={t('moveDown')}
-                  onClick={() => move(index, 1)} disabled={index === images.length - 1}>
-                  <ArrowDown className="size-3" />
-                </Button>
-                <Button type="button" size="icon" variant="ghost" aria-label={t('removeImage')}
-                  onClick={() => onChange(renumber(images.filter((_, i) => i !== index)))}>
-                  <X className="size-3" />
-                </Button>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+    <ul className="flex flex-wrap gap-3">
+      {images.map((image, index) => (
+        <li
+          key={image.url}
+          className="relative size-28 overflow-hidden rounded-xl bg-(--admin-neutral-soft)"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={image.url} alt="" className="size-full object-cover" />
+          {!disabled && (
+            // Always rendered (never hover-only) so the reorder/remove controls
+            // stay keyboard reachable and visibly focusable.
+            <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-0.5 bg-card p-1 text-foreground">
+              <Button type="button" size="icon-xs" variant="ghost" aria-label={t('moveUp')}
+                onClick={() => move(index, -1)} disabled={index === 0}>
+                <ArrowUp />
+              </Button>
+              <Button type="button" size="icon-xs" variant="ghost" aria-label={t('moveDown')}
+                onClick={() => move(index, 1)} disabled={index === images.length - 1}>
+                <ArrowDown />
+              </Button>
+              <Button type="button" size="icon-xs" variant="ghost" aria-label={t('removeImage')}
+                className="text-muted-foreground hover:text-destructive"
+                onClick={() => onChange(renumber(images.filter((_, i) => i !== index)))}>
+                <X />
+              </Button>
+            </div>
+          )}
+        </li>
+      ))}
       {!disabled && (
-        <div>
+        <li>
           <input
             ref={inputRef}
             type="file"
@@ -86,12 +92,18 @@ export function ImageUploader({
               if (file) void upload(file);
             }}
           />
-          <Button type="button" variant="outline" disabled={uploading}
-            onClick={() => inputRef.current?.click()}>
-            <ImagePlus className="size-4" /> {uploading ? t('uploading') : t('addImage')}
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={uploading}
+            className="size-28 flex-col gap-1.5 rounded-xl bg-(--admin-neutral-soft) px-2 text-center text-xs leading-tight font-semibold whitespace-normal text-muted-foreground hover:bg-(--admin-primary-soft) hover:text-(--admin-primary-dark)"
+            onClick={() => inputRef.current?.click()}
+          >
+            <ImagePlus className="size-5" />
+            {uploading ? t('uploading') : t('addImage')}
           </Button>
-        </div>
+        </li>
       )}
-    </div>
+    </ul>
   );
 }

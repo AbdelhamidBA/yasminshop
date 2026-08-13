@@ -4,6 +4,7 @@ import {Prisma} from '@prisma/client';
 import {revalidatePath} from 'next/cache';
 import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/action-result';
 import {AuthzError} from '@/lib/authz';
+import {sanitizeIds} from '@/lib/bulk';
 import {prisma} from '@/lib/db';
 import {canTransition, stockDelta, type OrderStatus} from '@/lib/orders';
 import {checkoutSchema} from '@/lib/schemas/checkout';
@@ -265,6 +266,53 @@ export async function restoreOrder(id: string): Promise<ActionResult> {
   } catch (error) {
     if (error instanceof AuthzError) return failure('forbidden');
     if (isPrismaError(error, 'P2025')) return failure('notFound');
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mass actions
+// ---------------------------------------------------------------------------
+
+/**
+ * Archive/restore a reviewed selection of orders. ADMIN only (archiving is an
+ * admin affordance here exactly as the single-row action is — a SUB_ADMIN may
+ * change status and nothing else), ids scalar-guarded and capped by
+ * sanitizeIds, and the write is a single updateMany so a partial batch cannot
+ * half-apply.
+ *
+ * Archive/restore is DELIBERATELY the only mass action on orders. A status
+ * transition is not a flag flip: it moves stock (confirm decrements, cancel
+ * restocks) and is legal only from certain states, all of which
+ * changeOrderStatus enforces per order inside its own transaction. A blind mass
+ * transition would either corrupt stock or need to be a loop of transactions
+ * with a partial-failure story — neither belongs behind a one-click bar.
+ * Archiving touches no stock and no status, so it is safe in bulk.
+ */
+export async function archiveOrders(ids: unknown): Promise<ActionResult<number>> {
+  return setOrdersArchived(ids, new Date());
+}
+
+export async function restoreOrders(ids: unknown): Promise<ActionResult<number>> {
+  return setOrdersArchived(ids, null);
+}
+
+async function setOrdersArchived(
+  ids: unknown,
+  archivedAt: Date | null
+): Promise<ActionResult<number>> {
+  const clean = sanitizeIds(ids);
+  if (!clean) return failure('invalidSelection');
+  try {
+    await requireAdmin();
+    const {count} = await prisma.order.updateMany({
+      where: {id: {in: clean}},
+      data: {archivedAt}
+    });
+    revalidatePath(PATH, 'page');
+    return success(count);
+  } catch (error) {
+    if (error instanceof AuthzError) return failure('forbidden');
     throw error;
   }
 }

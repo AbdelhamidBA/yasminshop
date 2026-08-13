@@ -54,43 +54,57 @@ export default async function OrdersPage({
     return `/admin/orders${search.size ? `?${search}` : ''}`;
   };
 
+  // Minimal-UI tabs: no chrome, just a solid indicator under the active label.
   const tabClass = (active: boolean) =>
     cn(
-      'inline-flex h-8 items-center rounded-md px-3 text-sm font-medium transition-colors',
-      active ? 'bg-primary text-primary-foreground' : 'border hover:bg-accent'
+      'relative inline-flex h-12 shrink-0 items-center text-sm font-semibold transition-colors',
+      'after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full',
+      'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+      active
+        ? 'text-foreground after:bg-foreground'
+        : 'text-muted-foreground after:bg-transparent hover:text-foreground'
     );
 
   const paginationParams = {...baseParams};
   if (status) paginationParams.status = status;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">{t('title')}</h1>
-      <div className="flex flex-wrap items-center gap-2" role="navigation" aria-label={t('statusHeader')}>
-        <Link href={tabHref(undefined)} className={tabClass(status === undefined)}>
-          {t('tabs.all')}
-        </Link>
-        {ORDER_STATUSES.map((s) => (
-          <Link key={s} href={tabHref(s)} className={tabClass(status === s)}>
-            {t(`status.${s}` as never)}
+    <OrdersTable
+      orders={orders}
+      total={total}
+      isAdmin={session.user.role === 'ADMIN'}
+      includeArchived={includeArchived}
+      currencyLabel={parameters.currency}
+      tabs={
+        <nav
+          className="flex gap-6 overflow-x-auto px-4"
+          role="navigation"
+          aria-label={t('statusHeader')}
+        >
+          <Link href={tabHref(undefined)} className={tabClass(status === undefined)}>
+            {t('tabs.all')}
           </Link>
-        ))}
-      </div>
-      <OrdersSearch initialValue={q} status={status} includeArchived={includeArchived} />
-      <OrdersTable
-        orders={orders}
-        isAdmin={session.user.role === 'ADMIN'}
-        includeArchived={includeArchived}
-        currencyLabel={parameters.currency}
-      />
-      <AdminPagination
-        basePath="/admin/orders"
-        page={page}
-        totalPages={Math.ceil(total / PAGE_SIZE)}
-        params={paginationParams}
-        prevLabel={t('prev')}
-        nextLabel={t('next')}
-      />
-    </div>
+          {ORDER_STATUSES.map((s) => (
+            <Link key={s} href={tabHref(s)} className={tabClass(status === s)}>
+              {t(`status.${s}` as never)}
+            </Link>
+          ))}
+        </nav>
+      }
+      search={<OrdersSearch initialValue={q} status={status} includeArchived={includeArchived} />}
+      pagination={
+        totalPages > 1 ? (
+          <AdminPagination
+            basePath="/admin/orders"
+            page={page}
+            totalPages={totalPages}
+            params={paginationParams}
+            prevLabel={t('prev')}
+            nextLabel={t('next')}
+          />
+        ) : null
+      }
+    />
   );
 }

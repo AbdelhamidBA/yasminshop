@@ -1,4 +1,5 @@
 import {getTranslations} from 'next-intl/server';
+import {PageHeader, PageTitle, SoftNote} from '@/components/admin/form';
 import {requirePageStaff} from '@/server/authz';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
 import {MassDiscountControl} from './mass-discount-control';
@@ -11,9 +12,9 @@ export default async function ParametersPage() {
   const isAdmin = session.user.role === 'ADMIN';
 
   return (
-    <div className="flex max-w-2xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold">{t('title')}</h1>
-      {!isAdmin && <p className="text-sm text-muted-foreground">{t('readOnly')}</p>}
+    <div className="flex max-w-4xl flex-col gap-6">
+      <PageHeader title={<PageTitle>{t('title')}</PageTitle>} />
+      {!isAdmin && <SoftNote>{t('readOnly')}</SoftNote>}
       <ParametersForm parameters={parameters} readOnly={!isAdmin} />
       {isAdmin && <MassDiscountControl currentPct={massDiscountPct} />}
     </div>

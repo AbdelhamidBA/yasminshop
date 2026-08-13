@@ -1,15 +1,13 @@
 import {ArrowLeft, Printer} from 'lucide-react';
 import {notFound} from 'next/navigation';
 import {getTranslations} from 'next-intl/server';
-import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
-import {
-  Card, CardContent, CardHeader, CardTitle
-} from '@/components/ui/card';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
+import {PageHeader, PageTitle, Panel} from '@/components/admin/form';
 import {OrderStatusBadge} from '@/components/admin/order-status-badge';
+import {Overline, StatusLabel} from '@/components/admin/ui';
 import {Link} from '@/i18n/navigation';
 import {formatMillimes} from '@/lib/money';
 import {requirePageStaff} from '@/server/authz';
@@ -42,178 +40,178 @@ export default async function OrderDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <Button variant="ghost" size="icon" aria-label={t('backToList')} render={<Link href="/admin/orders" />}>
-          <ArrowLeft className="size-4 rtl:rotate-180" />
-        </Button>
-        <h1 dir="ltr" className="text-2xl font-semibold">#{order.number}</h1>
-        <OrderStatusBadge status={order.status} />
-        {archived && <Badge variant="outline">{t('archived')}</Badge>}
-        <span className="text-sm text-muted-foreground">
-          {dateFormatter.format(order.createdAt)}
-        </span>
-        <div className="ms-auto flex items-center gap-2">
-          {/* Invoice lives OUTSIDE /admin (print-clean, no chrome — see the
-              routing note in [locale]/invoice/[id]/page.tsx); new tab so the
-              admin keeps the detail page open while printing. */}
+      <PageHeader
+        back={
           <Button
-            variant="outline"
-            render={<Link href={`/invoice/${order.id}`} target="_blank" rel="noopener" />}
+            variant="ghost"
+            size="icon"
+            className="size-10 rounded-full"
+            aria-label={t('backToList')}
+            render={<Link href="/admin/orders" />}
           >
-            <Printer className="size-4" /> {t('invoice')}
+            <ArrowLeft className="rtl:rotate-180" />
           </Button>
-          {isAdmin && (
-            <OrderAdminActions
-              order={{
-                id: order.id,
-                customerName: order.customerName,
-                customerPhone: order.customerPhone,
-                customerAddress: order.customerAddress,
-                notes: order.notes,
-                archived
-              }}
-            />
-          )}
-        </div>
-      </div>
+        }
+        title={
+          <PageTitle dir="ltr" className="text-2xl">
+            #{order.number}
+          </PageTitle>
+        }
+        badges={
+          <>
+            <OrderStatusBadge status={order.status} />
+            {archived && <StatusLabel tone="neutral">{t('archived')}</StatusLabel>}
+          </>
+        }
+        meta={dateFormatter.format(order.createdAt)}
+        actions={
+          <>
+            {/* Invoice lives OUTSIDE /admin (print-clean, no chrome — see the
+                routing note in [locale]/invoice/[id]/page.tsx); new tab so the
+                admin keeps the detail page open while printing. */}
+            <Button
+              variant="ghost"
+              className="h-10 bg-(--admin-neutral-soft) px-4"
+              render={<Link href={`/invoice/${order.id}`} target="_blank" rel="noopener" />}
+            >
+              <Printer /> {t('invoice')}
+            </Button>
+            {isAdmin && (
+              <OrderAdminActions
+                order={{
+                  id: order.id,
+                  customerName: order.customerName,
+                  customerPhone: order.customerPhone,
+                  customerAddress: order.customerAddress,
+                  notes: order.notes,
+                  archived
+                }}
+              />
+            )}
+          </>
+        }
+      />
 
+      {/* min-w-0 on the grid children: without it a grid item's automatic
+          minimum size is its content's min-content width, and the items table
+          would widen the whole page instead of scrolling inside its card. */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="flex flex-col gap-6 lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('itemsCard')}</CardTitle>
-            </CardHeader>
-            <CardContent className="px-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="ps-4">{t('product')}</TableHead>
-                    <TableHead>{t('unitPrice')}</TableHead>
-                    <TableHead>{t('qty')}</TableHead>
-                    <TableHead className="pe-4 text-end">{t('lineTotal')}</TableHead>
+        <div className="flex min-w-0 flex-col gap-6 lg:col-span-2">
+          <Panel title={t('itemsCard')} flush>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="ps-5 sm:ps-6">{t('product')}</TableHead>
+                  <TableHead>{t('unitPrice')}</TableHead>
+                  <TableHead>{t('qty')}</TableHead>
+                  <TableHead className="pe-5 text-end sm:pe-6">{t('lineTotal')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {order.items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="ps-5 font-semibold sm:ps-6">
+                      {/* Snapshot names — Arabic views prefer the Arabic
+                          snapshot, || falls back for pre-Task-1 items. */}
+                      {locale === 'ar'
+                        ? item.nameArSnapshot || item.nameSnapshot
+                        : item.nameSnapshot}
+                    </TableCell>
+                    <TableCell className="tabular-nums text-muted-foreground">
+                      {formatMillimes(item.unitPriceMillimes)} {currencyLabel}
+                    </TableCell>
+                    <TableCell className="tabular-nums">{item.qty}</TableCell>
+                    <TableCell className="pe-5 text-end font-semibold tabular-nums sm:pe-6">
+                      {formatMillimes(item.lineTotalMillimes)} {currencyLabel}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {order.items.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="ps-4 font-medium">
-                        {/* Snapshot names — Arabic views prefer the Arabic
-                            snapshot, || falls back for pre-Task-1 items. */}
-                        {locale === 'ar'
-                          ? item.nameArSnapshot || item.nameSnapshot
-                          : item.nameSnapshot}
-                      </TableCell>
-                      <TableCell className="tabular-nums">
-                        {formatMillimes(item.unitPriceMillimes)} {currencyLabel}
-                      </TableCell>
-                      <TableCell>{item.qty}</TableCell>
-                      <TableCell className="pe-4 text-end tabular-nums">
-                        {formatMillimes(item.lineTotalMillimes)} {currencyLabel}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                ))}
+              </TableBody>
+            </Table>
+          </Panel>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('totalsCard')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="flex flex-col gap-2 text-sm">
+          <Panel title={t('totalsCard')}>
+            <dl className="flex flex-col gap-3 text-sm">
+              <div className="flex items-center justify-between">
+                <dt className="text-muted-foreground">{t('subtotal')}</dt>
+                <dd className="font-semibold tabular-nums">
+                  {formatMillimes(order.subtotalMillimes)} {currencyLabel}
+                </dd>
+              </div>
+              {order.promoDiscountMillimes > 0 && (
                 <div className="flex items-center justify-between">
-                  <dt className="text-muted-foreground">{t('subtotal')}</dt>
-                  <dd className="tabular-nums">
-                    {formatMillimes(order.subtotalMillimes)} {currencyLabel}
+                  <dt className="text-muted-foreground">
+                    {t('promoDiscount')}
+                    {order.promoCode !== null && (
+                      <>
+                        {' '}
+                        <span dir="ltr" className="text-xs">({order.promoCode})</span>
+                      </>
+                    )}
+                  </dt>
+                  <dd dir="ltr" className="font-semibold tabular-nums text-(--admin-success)">
+                    -{formatMillimes(order.promoDiscountMillimes)} {currencyLabel}
                   </dd>
-                </div>
-                {order.promoDiscountMillimes > 0 && (
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground">
-                      {t('promoDiscount')}
-                      {order.promoCode !== null && (
-                        <>
-                          {' '}
-                          <span dir="ltr" className="text-xs">({order.promoCode})</span>
-                        </>
-                      )}
-                    </dt>
-                    <dd dir="ltr" className="tabular-nums text-primary">
-                      -{formatMillimes(order.promoDiscountMillimes)} {currencyLabel}
-                    </dd>
-                  </div>
-                )}
-                <div className="flex items-center justify-between">
-                  <dt className="text-muted-foreground">{t('delivery')}</dt>
-                  <dd className="tabular-nums">
-                    {order.deliveryCostMillimes === 0
-                      ? t('deliveryFree')
-                      : `${formatMillimes(order.deliveryCostMillimes)} ${currencyLabel}`}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between border-t pt-2 text-base font-semibold">
-                  <dt>{t('totalLabel')}</dt>
-                  <dd className="tabular-nums">
-                    {formatMillimes(order.totalMillimes)} {currencyLabel}
-                  </dd>
-                </div>
-              </dl>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('statusCard')}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <div>
-                <OrderStatusBadge status={order.status} />
-              </div>
-              {/* Task 2 carry-forward (binding): archived orders are view-only —
-                  no status-transition buttons, restore lives in the admin
-                  actions above. */}
-              {!archived && <StatusControl orderId={order.id} status={order.status} />}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('customerCard')}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3 text-sm">
-              <div>
-                <div className="font-medium">{order.customerName}</div>
-                <div dir="ltr" className="text-muted-foreground">{order.customerPhone}</div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">{t('address')}</div>
-                <div>{order.customerAddress}</div>
-              </div>
-              {order.notes !== null && (
-                <div>
-                  <div className="text-xs text-muted-foreground">{t('notes')}</div>
-                  <div>{order.notes}</div>
                 </div>
               )}
-              <div>
-                <div className="text-xs text-muted-foreground">{t('clientAccount')}</div>
-                {order.client ? (
-                  <Link
-                    href={`/admin/clients/${order.client.id}`}
-                    className="underline-offset-4 hover:underline"
-                  >
-                    {order.client.name} <span dir="ltr">({order.client.email})</span>
-                  </Link>
-                ) : (
-                  <div className="text-muted-foreground">{t('guest')}</div>
-                )}
+              <div className="flex items-center justify-between">
+                <dt className="text-muted-foreground">{t('delivery')}</dt>
+                <dd className="font-semibold tabular-nums">
+                  {order.deliveryCostMillimes === 0
+                    ? t('deliveryFree')
+                    : `${formatMillimes(order.deliveryCostMillimes)} ${currencyLabel}`}
+                </dd>
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex items-center justify-between border-t pt-3 text-base">
+                <dt className="font-semibold">{t('totalLabel')}</dt>
+                <dd className="text-lg font-bold tabular-nums">
+                  {formatMillimes(order.totalMillimes)} {currencyLabel}
+                </dd>
+              </div>
+            </dl>
+          </Panel>
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-6">
+          <Panel title={t('statusCard')} bodyClassName="flex flex-col gap-4">
+            <div>
+              <OrderStatusBadge status={order.status} />
+            </div>
+            {/* Task 2 carry-forward (binding): archived orders are view-only —
+                no status-transition buttons, restore lives in the admin
+                actions above. */}
+            {!archived && <StatusControl orderId={order.id} status={order.status} />}
+          </Panel>
+
+          <Panel title={t('customerCard')} bodyClassName="flex flex-col gap-4 text-sm">
+            <div>
+              <div className="font-semibold">{order.customerName}</div>
+              <div dir="ltr" className="text-muted-foreground">{order.customerPhone}</div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Overline>{t('address')}</Overline>
+              <div>{order.customerAddress}</div>
+            </div>
+            {order.notes !== null && (
+              <div className="flex flex-col gap-1">
+                <Overline>{t('notes')}</Overline>
+                <div>{order.notes}</div>
+              </div>
+            )}
+            <div className="flex flex-col gap-1">
+              <Overline>{t('clientAccount')}</Overline>
+              {order.client ? (
+                <Link
+                  href={`/admin/clients/${order.client.id}`}
+                  className="font-medium text-(--admin-primary-dark) underline-offset-4 hover:underline"
+                >
+                  {order.client.name} <span dir="ltr">({order.client.email})</span>
+                </Link>
+              ) : (
+                <div className="text-muted-foreground">{t('guest')}</div>
+              )}
+            </div>
+          </Panel>
         </div>
       </div>
     </div>
