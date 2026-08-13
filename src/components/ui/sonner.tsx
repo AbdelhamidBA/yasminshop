@@ -63,6 +63,11 @@ const Toaster = ({...props}: ToasterProps) => {
         classNames: {
           toast:
             'group cn-toast !w-full !items-center !gap-3 !rounded-xl !border-0 !bg-popover !p-4 !text-popover-foreground shadow-float',
+          // Sonner pins [data-icon] to 16x16 with its own margins. The tinted
+          // 40px icon box overflowed that slot and ran underneath the message,
+          // so the slot is resized to the box and the margins are dropped —
+          // the toast's own gap-3 does the spacing.
+          icon: '!m-0 !size-10 !shrink-0 !items-center !justify-center',
           content: '!gap-0.5',
           title: '!text-sm !font-bold !leading-snug',
           description: '!text-[13px] !leading-snug !text-muted-foreground',
