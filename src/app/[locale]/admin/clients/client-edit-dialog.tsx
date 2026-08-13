@@ -21,17 +21,24 @@ export type EditableClient = {
   city: string | null;
 };
 
-// ADMIN-only profile edit (category-form-dialog idiom; the action re-checks
-// requireAdmin anyway). Email is shown read-only — it is the login identity
-// and updateClient deliberately cannot touch it (nor the password).
+// Staff profile edit — ADMIN and SUB_ADMIN alike (category-form-dialog idiom;
+// updateClient re-checks requireStaff anyway). Email is shown read-only — it is
+// the login identity and updateClient deliberately cannot touch it (nor the
+// password), so neither role can take an account over from here.
+//
+// `onSaved` exists for the callers that are NOT the clients list: updateClient
+// revalidates the list route only, so the profile page passes router.refresh()
+// to see its own values update (OrderAdminActions idiom).
 export function ClientEditDialog({
   open,
   onOpenChange,
-  client
+  client,
+  onSaved
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   client: EditableClient | null;
+  onSaved?: () => void;
 }) {
   const t = useTranslations('adminClients');
   const [pending, startTransition] = useTransition();
@@ -81,6 +88,7 @@ export function ClientEditDialog({
       if (result.ok) {
         toast.success(t('saved'));
         onOpenChange(false);
+        onSaved?.();
       } else {
         setFieldErrors(result.fieldErrors ?? {});
         restoreTypedValues();

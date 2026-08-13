@@ -6,7 +6,7 @@ import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/act
 import {AuthzError} from '@/lib/authz';
 import {sanitizeIds} from '@/lib/bulk';
 import {prisma} from '@/lib/db';
-import {requireAdmin} from '@/server/authz';
+import {requireAdmin, requireStaff} from '@/server/authz';
 
 const PATH = '/[locale]/admin/clients';
 
@@ -43,16 +43,21 @@ const clientProfileSchema = z.object({
     .refine((v) => v === '' || v.length >= 2, {message: 'tooShort'})
 });
 
-// All client mutations are ADMIN-only (plan binding: pages requirePageStaff,
-// mutations requireAdmin) and pin role CLIENT in every WHERE — a staff
-// account id behaves exactly like an unknown id (notFound), so this surface
-// can never touch ADMIN / SUB_ADMIN rows. The role pin forces updateMany
-// (update needs a unique WHERE), so the orders' P2025→notFound mapping
-// becomes a count === 0 check here — same outcome, no throw involved.
+// Every client mutation pins role CLIENT in its WHERE — a staff account id
+// behaves exactly like an unknown id (notFound), so this surface can never
+// touch ADMIN / SUB_ADMIN rows. The role pin forces updateMany (update needs a
+// unique WHERE), so the orders' P2025→notFound mapping becomes a count === 0
+// check here — same outcome, no throw involved.
+//
+// SPLIT (revised): editing a profile is requireStaff — a sub-admin fixing a
+// customer's phone or address is the same clerical work as fixing it on the
+// order. Archive/restore stay requireAdmin: archiving a client revokes their
+// session and blocks their login, which is an account-lifecycle decision, not
+// order handling. Email and password are out of reach of BOTH roles.
 
 export async function updateClient(id: string, formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin();
+    await requireStaff();
     if (typeof id !== 'string' || !ID_PATTERN.test(id)) return failure('notFound');
 
     // Pre-load for the precise failure split (notFound vs clientArchived) —

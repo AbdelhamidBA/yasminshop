@@ -76,18 +76,20 @@ export default async function OrderDetailPage({
             >
               <Printer /> {t('invoice')}
             </Button>
-            {isAdmin && (
-              <OrderAdminActions
-                order={{
-                  id: order.id,
-                  customerName: order.customerName,
-                  customerPhone: order.customerPhone,
-                  customerAddress: order.customerAddress,
-                  notes: order.notes,
-                  archived
-                }}
-              />
-            )}
+            {/* Staff-wide: a SUB_ADMIN may correct the customer details on a
+                live order. The component itself keeps archive/restore behind
+                canArchive, and both server actions re-check their own role. */}
+            <OrderAdminActions
+              canArchive={isAdmin}
+              order={{
+                id: order.id,
+                customerName: order.customerName,
+                customerPhone: order.customerPhone,
+                customerAddress: order.customerAddress,
+                notes: order.notes,
+                archived
+              }}
+            />
           </>
         }
       />

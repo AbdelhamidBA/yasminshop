@@ -13,6 +13,7 @@ import {formatMillimes} from '@/lib/money';
 import {requirePageStaff} from '@/server/authz';
 import {getClient} from '@/server/clients';
 import {getParameters} from '@/server/settings';
+import {ClientProfileActions} from './client-profile-actions';
 
 export default async function ClientDetailPage({
   params
@@ -72,6 +73,22 @@ export default async function ClientDetailPage({
           </span>
         }
         badges={archived ? <StatusLabel tone="neutral">{t('archived')}</StatusLabel> : undefined}
+        actions={
+          // Archived clients are view-only (updateClient refuses them), so the
+          // edit affordance is absent there — restore from the list first.
+          archived ? undefined : (
+            <ClientProfileActions
+              client={{
+                id: client.id,
+                name: client.name,
+                email: client.email,
+                phone: client.phone,
+                address: client.address,
+                city: client.city
+              }}
+            />
+          )
+        }
       />
 
       <div className="grid gap-6 lg:grid-cols-3">

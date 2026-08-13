@@ -6,8 +6,8 @@ import {login, placeOrder, readStock} from './helpers';
 //   1. guest places an order (E2E Client 2, cleaned up by customerName prefix)
 //   2. admin CONFIRMs it → products page shows the stock decremented
 //   3. guest places a second order
-//   4. sub-admin (status-only role) cancels it from PENDING — no stock change —
-//      and sees NO admin-only controls on the way
+//   4. sub-admin corrects the customer details, then cancels it from PENDING —
+//      no stock change — and sees NO admin-only control on the way
 //   5. admin cancels the CONFIRMED order → stock restored to the baseline
 //      (exit criteria: confirm decrements, cancel restores), which also leaves
 //      the fixture product's quantity unchanged for consecutive runs.
@@ -19,6 +19,11 @@ test.describe.configure({mode: 'serial'});
 // the storefront journey orders, so the two specs never dispute the same
 // quantity row.
 const PRODUCT = E2E_PRODUCTS.cafetiere;
+
+// Written into the order's notes by the sub-admin edit below. Prefixed like
+// every other fixture value so it is obvious where it came from if it is ever
+// seen in the database.
+const SUB_ADMIN_NOTE = 'E2E note sous-admin';
 
 let firstOrder = '';
 let secondOrder = '';
@@ -63,7 +68,7 @@ test('guest places a second order', async ({page}) => {
   });
 });
 
-test('sub-admin cancels the pending order without stock change and sees no admin controls', async ({
+test('sub-admin edits the customer, then cancels the pending order without stock change', async ({
   page
 }) => {
   await login(page, 'subadmin@local.test', 'subadmin123!');
@@ -79,10 +84,24 @@ test('sub-admin cancels the pending order without stock change and sees no admin
   await expect(page.getByRole('button', {name: 'Confirmer la commande'})).toBeVisible();
   const cancelButton = page.getByRole('button', {name: 'Annuler la commande'});
   await expect(cancelButton).toBeVisible();
-  // …but the ADMIN-only affordances are not. Asserted only after the status
-  // buttons proved the detail rendered — no vacuous zero-counts.
-  await expect(page.getByRole('button', {name: 'Modifier le client'})).toHaveCount(0);
+  // …and so is correcting the customer details (updateOrderCustomer is
+  // requireStaff). Archiving is the one ADMIN-only affordance left on this
+  // page; asserted absent only after the status buttons proved the detail
+  // rendered — no vacuous zero-counts.
   await expect(page.getByRole('button', {name: 'Archiver'})).toHaveCount(0);
+
+  // Save a real edit rather than only opening the dialog: the point is that the
+  // SERVER accepts a sub-admin's write, not that the button renders. Only the
+  // notes are touched, so customerName keeps the 'E2E ' prefix that
+  // e2e/cleanup.ts deletes these orders by.
+  const editButton = page.getByRole('button', {name: 'Modifier le client'});
+  await expect(editButton).toBeVisible();
+  await editButton.click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Notes').fill(SUB_ADMIN_NOTE);
+  await dialog.getByRole('button', {name: 'Enregistrer'}).click();
+  await expect(page.getByText('Commande mise à jour.').first()).toBeVisible();
+  await expect(page.getByText(SUB_ADMIN_NOTE)).toBeVisible();
 
   // PENDING → CANCELED goes through the AlertDialog confirm; a never-confirmed
   // order never touched stock, so the figure must not move.

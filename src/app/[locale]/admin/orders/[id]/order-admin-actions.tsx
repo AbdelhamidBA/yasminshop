@@ -36,10 +36,19 @@ function splitAddress(customerAddress: string): {address: string; city: string} 
   return {address: customerAddress.slice(0, idx), city: customerAddress.slice(idx + 2)};
 }
 
-// ADMIN-only controls (the server page renders this only for ADMIN; the
-// actions re-check requireAdmin anyway). Archived orders are view-only:
-// restore is the single affordance — no edit, no archive.
-export function OrderAdminActions({order}: {order: EditableOrderCustomer}) {
+// Staff controls, split by role. Editing the customer details is open to both
+// (updateOrderCustomer re-checks requireStaff); archive/restore is ADMIN-only,
+// so `canArchive` hides those two buttons from a SUB_ADMIN — the actions
+// re-check requireAdmin regardless. Archived orders are view-only: restore is
+// the single affordance — no edit, no archive — which leaves a SUB_ADMIN
+// nothing to render on one.
+export function OrderAdminActions({
+  order,
+  canArchive
+}: {
+  order: EditableOrderCustomer;
+  canArchive: boolean;
+}) {
   const t = useTranslations('adminOrders');
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -100,6 +109,7 @@ export function OrderAdminActions({order}: {order: EditableOrderCustomer}) {
   }
 
   if (order.archived) {
+    if (!canArchive) return null;
     return (
       <Button
         variant="ghost"
@@ -122,14 +132,16 @@ export function OrderAdminActions({order}: {order: EditableOrderCustomer}) {
       >
         {t('editCustomer')}
       </Button>
-      <Button
-        variant="destructive"
-        className="h-10 px-4"
-        disabled={pending}
-        onClick={() => setConfirmArchive(true)}
-      >
-        {t('archive')}
-      </Button>
+      {canArchive && (
+        <Button
+          variant="destructive"
+          className="h-10 px-4"
+          disabled={pending}
+          onClick={() => setConfirmArchive(true)}
+        >
+          {t('archive')}
+        </Button>
+      )}
 
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent className="theme-minimal">

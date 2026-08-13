@@ -53,9 +53,9 @@ export function ClientsTable({
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<EditableClient | null>(null);
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
-  // Every client mutation is ADMIN-only, so the whole selection column is
-  // absent for a SUB_ADMIN — the server re-checks regardless. Page-scoped:
-  // only the ids on this page.
+  // The only mass action here is archive/restore, which is ADMIN-only, so the
+  // whole selection column is absent for a SUB_ADMIN — the server re-checks
+  // regardless. Page-scoped: only the ids on this page.
   const selection = useRowSelection(isAdmin ? clients.map((c) => c.id) : []);
 
   const dateFormatter = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-TN' : 'fr-TN', {
@@ -218,7 +218,11 @@ export function ClientsTable({
                         >
                           <Eye className="size-4" />
                         </Button>
-                        {isAdmin && (
+                        {/* Edit is staff-wide; archive/restore is ADMIN-only.
+                            An archived row therefore has nothing to offer a
+                            SUB_ADMIN (it is view-only, so no edit either) —
+                            render no menu rather than an empty one. */}
+                        {(isAdmin || !archived) && (
                           <RowActions label={t('actions')} disabled={pending}>
                             {archived ? (
                               <RowActionItem action="restore" onClick={() => runRestore(client.id)}>
@@ -241,13 +245,17 @@ export function ClientsTable({
                                 >
                                   {t('edit')}
                                 </RowActionItem>
-                                <RowActionSeparator />
-                                <RowActionItem
-                                  action="archive"
-                                  onClick={() => setConfirmArchiveId(client.id)}
-                                >
-                                  {t('archive')}
-                                </RowActionItem>
+                                {isAdmin && (
+                                  <>
+                                    <RowActionSeparator />
+                                    <RowActionItem
+                                      action="archive"
+                                      onClick={() => setConfirmArchiveId(client.id)}
+                                    >
+                                      {t('archive')}
+                                    </RowActionItem>
+                                  </>
+                                )}
                               </>
                             )}
                           </RowActions>
@@ -262,36 +270,36 @@ export function ClientsTable({
         )}
       </AdminTableCard>
 
+      {/* The edit dialog follows the edit action: staff-wide. Only the archive
+          confirmation stays behind isAdmin. */}
+      <ClientEditDialog
+        open={editing !== null}
+        onOpenChange={(open) => !open && setEditing(null)}
+        client={editing}
+      />
       {isAdmin && (
-        <>
-          <ClientEditDialog
-            open={editing !== null}
-            onOpenChange={(open) => !open && setEditing(null)}
-            client={editing}
-          />
-          <AlertDialog
-            open={confirmArchiveId !== null}
-            onOpenChange={(open) => !open && setConfirmArchiveId(null)}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{t('confirmArchiveTitle')}</AlertDialogTitle>
-                <AlertDialogDescription>{t('confirmArchiveBody')}</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    if (confirmArchiveId) runArchive(confirmArchiveId);
-                    setConfirmArchiveId(null);
-                  }}
-                >
-                  {t('archive')}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </>
+        <AlertDialog
+          open={confirmArchiveId !== null}
+          onOpenChange={(open) => !open && setConfirmArchiveId(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('confirmArchiveTitle')}</AlertDialogTitle>
+              <AlertDialogDescription>{t('confirmArchiveBody')}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (confirmArchiveId) runArchive(confirmArchiveId);
+                  setConfirmArchiveId(null);
+                }}
+              >
+                {t('archive')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </div>
   );

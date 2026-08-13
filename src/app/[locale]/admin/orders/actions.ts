@@ -41,7 +41,9 @@ class TransitionAbort extends Error {
   }
 }
 
-// Status change is the one order mutation open to SUB_ADMIN (requireStaff).
+// Open to SUB_ADMIN (requireStaff), like updateOrderCustomer below. The order
+// mutations that remain ADMIN-only are the ones that create or remove records:
+// manual creation, archive/restore, and the mass actions.
 export async function changeOrderStatus(id: string, to: OrderStatus): Promise<ActionResult> {
   try {
     await requireStaff();
@@ -205,9 +207,14 @@ export async function checkOrderPromo(
 // never editable (honor-the-snapshot policy above).
 const orderCustomerSchema = checkoutSchema.omit({promoCode: true});
 
+// Correcting the delivery details on a live order is day-to-day order handling
+// — the same job as moving its status — so it is open to SUB_ADMIN
+// (requireStaff). It edits the customer SNAPSHOT on this one order only: no
+// money moves (totals and the promo snapshot are untouchable here), no stock
+// moves, and the client's own account record is not reachable from this action.
 export async function updateOrderCustomer(id: string, formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin();
+    await requireStaff();
     if (typeof id !== 'string' || !ID_PATTERN.test(id)) return failure('notFound');
     const existing = await prisma.order.findUnique({where: {id}, select: {archivedAt: true}});
     if (!existing) return failure('notFound');
