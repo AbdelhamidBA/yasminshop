@@ -30,6 +30,38 @@ Prisma 7 note: the seed command is registered in `prisma.config.ts`, and the cli
 | Sub-admin | subadmin@local.test | subadmin123! |
 | Client    | client@local.test   | client123!   |
 
+## Seed data (the real catalogue)
+
+`prisma/seed-data.json` is a dump of the shop's own content — categories,
+products, promo codes and settings — with the product images alongside it in
+`prisma/seed-assets/`. `npx prisma db seed` replays it, so a fresh database
+(new machine, rebuilt container, the VPS) comes up with the real shop instead
+of placeholders. It upserts on natural keys (category slug, product reference,
+promo code, setting key), so running it twice changes nothing and running it
+over an existing shop refreshes content without touching orders.
+
+Re-dump after changing the catalogue in the admin:
+
+```bash
+npx tsx scripts/export-seed-data.ts   # rewrites seed-data.json + seed-assets/
+```
+
+**Not included, deliberately** — this data is committed to git:
+
+- **orders and order items**, which carry customer PII (names, phone numbers,
+  addresses)
+- **user accounts**: real password hashes stay out of the repository; the seed
+  creates the three dev accounts above from plaintext passwords, so change
+  them immediately after the first sign-in on a real deployment
+- notifications, push subscriptions, reset tokens, search counters — per-install
+  runtime state
+
+This is a *content* dump, not a backup. For disaster recovery use `pg_dump`
+against the container, which keeps the orders this intentionally drops.
+
+Images are copied into the git-ignored `uploads/` only when absent, so a
+locally re-uploaded image is never clobbered by a stale copy.
+
 ## Commands
 
 - `npm run dev` — dev server (Turbopack)

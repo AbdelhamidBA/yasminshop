@@ -1,25 +1,31 @@
 import 'dotenv/config';
-import {access, mkdir, writeFile} from 'node:fs/promises';
+import {access, copyFile, mkdir, readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {Prisma, PrismaClient} from '@prisma/client';
 import {PrismaPg} from '@prisma/adapter-pg';
-import sharp from 'sharp';
 import {hashPassword} from '../src/lib/password';
+
+/**
+ * Replays the shop's real catalogue from prisma/seed-data.json (dumped from a
+ * live database by `npx tsx scripts/export-seed-data.ts`) plus the product
+ * images that ride alongside it in prisma/seed-assets/.
+ *
+ * Idempotent: everything is upserted on its natural key (category slug,
+ * product reference, promo code, setting key), so running it twice changes
+ * nothing and running it against an existing shop refreshes content without
+ * touching orders, users or any runtime state.
+ *
+ * The three local accounts below are DEV credentials created here, not
+ * exported: real password hashes never enter the repository. On a real
+ * deployment, change these passwords immediately after the first sign-in.
+ */
 
 const adapter = new PrismaPg({connectionString: process.env.DATABASE_URL});
 const prisma = new PrismaClient({adapter});
 
-const SETTINGS: Record<string, unknown> = {
-  deliveryCostMillimes: 7000,
-  freeDeliveryThresholdMillimes: 100_000,
-  currency: 'TND',
-  lastChanceThreshold: 5,
-  massDiscountPct: null,
-  socialLinks: {facebook: '', instagram: '', tiktok: ''},
-  copyright: '© 2026 Ma Boutique',
-  siteDescription: '',
-  keywords: ''
-};
+const DATA_FILE = path.join(process.cwd(), 'prisma', 'seed-data.json');
+const ASSET_DIR = path.join(process.cwd(), 'prisma', 'seed-assets');
+const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
 const USERS = [
   {name: 'Admin', email: 'admin@local.test', password: 'admin123!', role: 'ADMIN'},
@@ -27,176 +33,80 @@ const USERS = [
   {name: 'Client Démo', email: 'client@local.test', password: 'client123!', role: 'CLIENT'}
 ] as const;
 
-const CATEGORIES = [
-  {slug: 'electronique', nameFr: 'Électronique', nameAr: 'إلكترونيات', parentSlug: null},
-  {slug: 'maison', nameFr: 'Maison', nameAr: 'منزل', parentSlug: null},
-  {slug: 'mode', nameFr: 'Mode', nameAr: 'موضة', parentSlug: null},
-  {slug: 'audio', nameFr: 'Audio', nameAr: 'صوتيات', parentSlug: 'electronique'},
-  {slug: 'cuisine', nameFr: 'Cuisine', nameAr: 'مطبخ', parentSlug: 'maison'}
-] as const;
-
-type SeedColor = {r: number; g: number; b: number};
-
-type SeedProduct = {
-  reference: string;
-  slug: string;
-  nameFr: string;
-  nameAr: string;
-  descriptionFr: string;
-  descriptionAr: string;
-  priceMillimes: number;
-  discountPct: number;
-  quantity: number;
-  featured: boolean;
-  categorySlug: string;
-  subCategorySlug: string | null;
-  color: SeedColor;
+type SeedData = {
+  exportedAt: string;
+  categories: Array<{
+    slug: string;
+    nameFr: string;
+    nameAr: string;
+    parentSlug: string | null;
+    archived: boolean;
+  }>;
+  products: Array<{
+    reference: string;
+    slug: string;
+    nameFr: string;
+    nameAr: string;
+    descriptionFr: string;
+    descriptionAr: string;
+    priceMillimes: number;
+    discountPct: number;
+    quantity: number;
+    featured: boolean;
+    archived: boolean;
+    categorySlug: string;
+    subCategorySlug: string | null;
+    images: Array<{url: string; sortOrder: number}>;
+  }>;
+  promoCodes: Array<{
+    code: string;
+    percentOff: number;
+    active: boolean;
+    archived: boolean;
+    expiresAt: string | null;
+  }>;
+  settings: Record<string, unknown>;
 };
 
-// Mix required by the plan: 2 featured, 2 low-stock (qty <= 5, > 0), 1 with
-// discountPct > 0, 1 out-of-stock (qty 0), prices spread 9.900 -> 899.000 DT.
-const PRODUCTS: SeedProduct[] = [
-  {
-    reference: 'DEMO-001',
-    slug: 'casque-sans-fil',
-    nameFr: 'Casque sans fil',
-    nameAr: 'سماعات لاسلكية',
-    descriptionFr: 'Casque Bluetooth avec réduction de bruit.',
-    descriptionAr: 'سماعات بلوتوث مع خاصية عزل الضوضاء.',
-    priceMillimes: 89_000,
-    discountPct: 0,
-    quantity: 25,
-    featured: true,
-    categorySlug: 'electronique',
-    subCategorySlug: 'audio',
-    color: {r: 59, g: 130, b: 246}
-  },
-  {
-    reference: 'ELEC-002',
-    slug: 'enceinte-bluetooth',
-    nameFr: 'Enceinte Bluetooth',
-    nameAr: 'مكبر صوت بلوتوث',
-    descriptionFr: "Enceinte portable étanche avec 12 heures d'autonomie.",
-    descriptionAr: 'مكبر صوت محمول مقاوم للماء مع بطارية تدوم 12 ساعة.',
-    priceMillimes: 59_900,
-    discountPct: 0,
-    quantity: 4,
-    featured: false,
-    categorySlug: 'electronique',
-    subCategorySlug: 'audio',
-    color: {r: 16, g: 185, b: 129}
-  },
-  {
-    reference: 'ELEC-003',
-    slug: 'montre-connectee',
-    nameFr: 'Montre connectée',
-    nameAr: 'ساعة ذكية',
-    descriptionFr: "Montre connectée avec suivi d'activité et GPS intégré.",
-    descriptionAr: 'ساعة ذكية مع تتبع النشاط ونظام تحديد المواقع المدمج.',
-    priceMillimes: 249_000,
-    discountPct: 0,
-    quantity: 12,
-    featured: true,
-    categorySlug: 'electronique',
-    subCategorySlug: null,
-    color: {r: 139, g: 92, b: 246}
-  },
-  {
-    reference: 'ELEC-004',
-    slug: 'televiseur-4k-55',
-    nameFr: 'Téléviseur 4K 55 pouces',
-    nameAr: 'تلفزيون 4K مقاس 55 بوصة',
-    descriptionFr: 'Téléviseur intelligent 4K UHD de 55 pouces avec HDR.',
-    descriptionAr: 'تلفزيون ذكي بدقة 4K مقاس 55 بوصة مع تقنية HDR.',
-    priceMillimes: 899_000,
-    discountPct: 0,
-    quantity: 3,
-    featured: false,
-    categorySlug: 'electronique',
-    subCategorySlug: null,
-    color: {r: 30, g: 41, b: 59}
-  },
-  {
-    reference: 'MAIS-001',
-    slug: 'robot-de-cuisine',
-    nameFr: 'Robot de cuisine',
-    nameAr: 'روبوت مطبخ',
-    descriptionFr: 'Robot multifonction 1000 W avec bol en inox de 4,5 litres.',
-    descriptionAr: 'روبوت مطبخ متعدد الوظائف بقوة 1000 واط مع وعاء ستانلس 4.5 لتر.',
-    priceMillimes: 329_000,
-    discountPct: 15,
-    quantity: 8,
-    featured: false,
-    categorySlug: 'maison',
-    subCategorySlug: 'cuisine',
-    color: {r: 239, g: 68, b: 68}
-  },
-  {
-    reference: 'MAIS-002',
-    slug: 'cafetiere-italienne',
-    nameFr: 'Cafetière italienne',
-    nameAr: 'ركوة قهوة إيطالية',
-    descriptionFr: 'Cafetière moka en aluminium pour 6 tasses.',
-    descriptionAr: 'ركوة قهوة موكا من الألومنيوم لست فناجين.',
-    priceMillimes: 24_500,
-    discountPct: 0,
-    quantity: 30,
-    featured: false,
-    categorySlug: 'maison',
-    subCategorySlug: 'cuisine',
-    color: {r: 217, g: 119, b: 6}
-  },
-  {
-    reference: 'MODE-001',
-    slug: 't-shirt-coton-bio',
-    nameFr: 'T-shirt coton bio',
-    nameAr: 'قميص قطن عضوي',
-    descriptionFr: 'T-shirt unisexe en coton biologique, coupe classique.',
-    descriptionAr: 'قميص للجنسين من القطن العضوي بقصة كلاسيكية.',
-    priceMillimes: 9_900,
-    discountPct: 0,
-    quantity: 50,
-    featured: false,
-    categorySlug: 'mode',
-    subCategorySlug: null,
-    color: {r: 20, g: 184, b: 166}
-  },
-  {
-    reference: 'MODE-002',
-    slug: 'sac-a-main-cuir',
-    nameFr: 'Sac à main en cuir',
-    nameAr: 'حقيبة يد جلدية',
-    descriptionFr: 'Sac à main en cuir véritable avec bandoulière amovible.',
-    descriptionAr: 'حقيبة يد من الجلد الطبيعي مع حزام كتف قابل للفصل.',
-    priceMillimes: 189_000,
-    discountPct: 0,
-    quantity: 0,
-    featured: false,
-    categorySlug: 'mode',
-    subCategorySlug: null,
-    color: {r: 120, g: 53, b: 15}
-  }
-];
+/** '/api/uploads/products/x.webp' -> 'products/x.webp' */
+function uploadRelativePath(url: string): string | null {
+  const prefix = '/api/uploads/';
+  return url.startsWith(prefix) ? url.slice(prefix.length) : null;
+}
 
-const UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'products');
-
-// Same visual pipeline as real uploads (sharp -> webp into uploads/products/,
-// served via /api/uploads/products/*): generates a small colored placeholder
-// if the file does not already exist.
-async function ensureSeedImage(slug: string, color: SeedColor): Promise<string> {
-  const name = `seed-${slug}.webp`;
-  const file = path.join(UPLOAD_DIR, name);
-  try {
-    await access(file);
-  } catch {
-    const buffer = await sharp({
-      create: {width: 512, height: 512, channels: 3, background: color}
-    })
-      .webp({quality: 82})
-      .toBuffer();
-    await writeFile(file, buffer);
+/**
+ * Restores the catalogue's images into uploads/ (git-ignored runtime storage,
+ * served by /api/uploads/*). Existing files are left alone so a locally
+ * re-uploaded image is never clobbered by a stale copy.
+ */
+async function restoreImages(data: SeedData): Promise<{copied: number; missing: number}> {
+  const wanted = new Set<string>();
+  for (const product of data.products) {
+    for (const image of product.images) {
+      const rel = uploadRelativePath(image.url);
+      if (rel) wanted.add(rel);
+    }
   }
-  return `/api/uploads/products/${name}`;
+
+  let copied = 0;
+  let missing = 0;
+  for (const rel of wanted) {
+    const target = path.join(UPLOAD_DIR, rel);
+    try {
+      await access(target);
+      continue; // already present
+    } catch {
+      // not there yet — fall through and copy
+    }
+    try {
+      await mkdir(path.dirname(target), {recursive: true});
+      await copyFile(path.join(ASSET_DIR, rel), target);
+      copied += 1;
+    } catch {
+      missing += 1;
+    }
+  }
+  return {copied, missing};
 }
 
 async function main() {
@@ -205,6 +115,8 @@ async function main() {
     process.exitCode = 1;
     return;
   }
+
+  const data = JSON.parse(await readFile(DATA_FILE, 'utf8')) as SeedData;
 
   for (const u of USERS) {
     await prisma.user.upsert({
@@ -219,31 +131,45 @@ async function main() {
     });
   }
 
-  for (const [key, value] of Object.entries(SETTINGS)) {
+  for (const [key, value] of Object.entries(data.settings)) {
+    const json = value === null ? Prisma.JsonNull : (value as Prisma.InputJsonValue);
     await prisma.setting.upsert({
       where: {key},
-      update: {},
-      create: {
-        key,
-        value: value === null ? Prisma.JsonNull : (value as Prisma.InputJsonValue)
-      }
+      update: {value: json},
+      create: {key, value: json}
     });
   }
 
+  // Roots first: a child's parentId must already exist when it is written.
   const categoryIds = new Map<string, string>();
-  for (const c of CATEGORIES) {
-    const parentId = c.parentSlug ? categoryIds.get(c.parentSlug)! : null;
+  const ordered = [
+    ...data.categories.filter((c) => c.parentSlug === null),
+    ...data.categories.filter((c) => c.parentSlug !== null)
+  ];
+  for (const c of ordered) {
+    const parentId = c.parentSlug ? (categoryIds.get(c.parentSlug) ?? null) : null;
+    const fields = {
+      nameFr: c.nameFr,
+      nameAr: c.nameAr,
+      parentId,
+      archivedAt: c.archived ? new Date() : null
+    };
     const category = await prisma.category.upsert({
       where: {slug: c.slug},
-      update: {nameFr: c.nameFr, nameAr: c.nameAr, parentId, archivedAt: null},
-      create: {nameFr: c.nameFr, nameAr: c.nameAr, slug: c.slug, parentId}
+      update: fields,
+      create: {slug: c.slug, ...fields}
     });
     categoryIds.set(c.slug, category.id);
   }
 
-  await mkdir(UPLOAD_DIR, {recursive: true});
-  for (const p of PRODUCTS) {
-    const url = await ensureSeedImage(p.slug, p.color);
+  const {copied, missing} = await restoreImages(data);
+
+  for (const p of data.products) {
+    const categoryId = categoryIds.get(p.categorySlug);
+    if (!categoryId) {
+      console.warn(`Skipping ${p.reference}: unknown category "${p.categorySlug}".`);
+      continue;
+    }
     const fields = {
       slug: p.slug,
       nameFr: p.nameFr,
@@ -254,28 +180,38 @@ async function main() {
       discountPct: p.discountPct,
       quantity: p.quantity,
       featured: p.featured,
-      categoryId: categoryIds.get(p.categorySlug)!,
-      subCategoryId: p.subCategorySlug ? categoryIds.get(p.subCategorySlug)! : null,
-      archivedAt: null
+      categoryId,
+      subCategoryId: p.subCategorySlug ? (categoryIds.get(p.subCategorySlug) ?? null) : null,
+      archivedAt: p.archived ? new Date() : null
     };
+    const images = p.images.map((i) => ({url: i.url, sortOrder: i.sortOrder}));
     await prisma.product.upsert({
       where: {reference: p.reference},
-      update: {...fields, images: {deleteMany: {}, create: [{url, sortOrder: 0}]}},
-      create: {
-        reference: p.reference,
-        ...fields,
-        images: {create: [{url, sortOrder: 0}]}
-      }
+      update: {...fields, images: {deleteMany: {}, create: images}},
+      create: {reference: p.reference, ...fields, images: {create: images}}
     });
   }
 
-  await prisma.promoCode.upsert({
-    where: {code: 'BIENVENUE10'},
-    update: {percentOff: 10, active: true, expiresAt: null, archivedAt: null},
-    create: {code: 'BIENVENUE10', percentOff: 10, active: true, expiresAt: null}
-  });
+  for (const c of data.promoCodes) {
+    const fields = {
+      percentOff: c.percentOff,
+      active: c.active,
+      expiresAt: c.expiresAt ? new Date(c.expiresAt) : null,
+      archivedAt: c.archived ? new Date() : null
+    };
+    await prisma.promoCode.upsert({
+      where: {code: c.code},
+      update: fields,
+      create: {code: c.code, ...fields}
+    });
+  }
 
-  console.log('Seed complete.');
+  console.log(
+    `Seed complete — ${data.categories.length} categories, ${data.products.length} products, ` +
+      `${data.promoCodes.length} promo codes, ${Object.keys(data.settings).length} settings ` +
+      `(dump of ${data.exportedAt}).`
+  );
+  console.log(`Images: ${copied} restored into uploads/, ${missing} missing from seed-assets.`);
 }
 
 main()
