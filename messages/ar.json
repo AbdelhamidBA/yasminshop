@@ -629,7 +629,8 @@
       "invalidPhone": "رقم هاتف غير صالح.",
       "tooShort": "قصير جداً.",
       "tooLong": "طويل جداً."
-    }
+    },
+    "orderTitle": "طلب #{number}"
   },
   "adminClients": {
     "title": "العملاء",

@@ -320,6 +320,19 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Tailwind v4 resets buttons to cursor:default. Anything clickable should
+     say so — including role="button" elements (Base UI renders several) and
+     labels wired to a control. Disabled controls keep the not-allowed cue. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  label[for],
+  summary {
+    @apply cursor-pointer;
+  }
+  button:disabled,
+  [role='button'][aria-disabled='true'] {
+    @apply cursor-not-allowed;
+  }
   body {
     @apply bg-background text-foreground;
   }

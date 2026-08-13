@@ -629,7 +629,8 @@
       "invalidPhone": "Numéro de téléphone invalide.",
       "tooShort": "Trop court.",
       "tooLong": "Trop long."
-    }
+    },
+    "orderTitle": "Commande #{number}"
   },
   "adminClients": {
     "title": "Clients",
