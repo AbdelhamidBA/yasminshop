@@ -21,11 +21,16 @@ import {
   AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
   EntityCell
 } from '@/components/admin/list-shell';
+import {
+  RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
+} from '@/components/admin/selection';
 import {StatusLabel} from '@/components/admin/ui';
 import {Link} from '@/i18n/navigation';
 import {effectivePriceMillimes, formatMillimes} from '@/lib/money';
 import type {ProductRow} from '@/server/products';
-import {archiveProduct, restoreProduct} from './actions';
+import {
+  archiveProduct, archiveProducts, deleteProducts, restoreProduct, restoreProducts
+} from './actions';
 import {QuantityCell} from './quantity-cell';
 
 export function ProductsTable({
@@ -49,6 +54,29 @@ export function ProductsTable({
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const tSel = useTranslations('admin.selection');
+  // Mass actions are ADMIN-only (a SUB_ADMIN may edit quantity and nothing
+  // else), so the whole selection column is absent for them — the server
+  // re-checks regardless.
+  const selection = useRowSelection(isAdmin ? products.map((p) => p.id) : []);
+
+  function runBulk(
+    action: (ids: string[]) => Promise<{ok: boolean; error?: string}>,
+    okMessage: string,
+    okDescription?: string
+  ) {
+    const ids = selection.ids;
+    startTransition(async () => {
+      const result = await action(ids);
+      if (result.ok) {
+        toast.success(okMessage, okDescription ? {description: okDescription} : undefined);
+        selection.clear();
+      } else {
+        toast.error(t(`errors.${result.error}` as never));
+      }
+    });
+  }
 
   const name = (row: {nameFr: string; nameAr: string}) => (locale === 'ar' ? row.nameAr : row.nameFr);
 
@@ -90,6 +118,44 @@ export function ProductsTable({
 
       <AdminTableCard
         toolbar={
+          selection.count > 0 ? (
+            // The selection bar REPLACES the toolbar: the actions appear where
+            // the operator is already looking, with the count always in view.
+            <SelectionBar
+              count={selection.count}
+              countLabel={tSel('count', {count: selection.count})}
+              clearLabel={tSel('clear')}
+              onClear={selection.clear}
+            >
+              {includeArchived ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => runBulk(restoreProducts, t('bulkRestoredToast'))}
+                >
+                  {tSel('restore')}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => runBulk(archiveProducts, t('bulkArchivedToast'))}
+                >
+                  {tSel('archive')}
+                </Button>
+              )}
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={pending}
+                onClick={() => setConfirmDelete(true)}
+              >
+                {tSel('delete')}
+              </Button>
+            </SelectionBar>
+          ) : (
           <>
             {/* The search field is created by the server page and handed down;
                 wrapping it here keeps it out of a bare array slot (React key
@@ -102,6 +168,7 @@ export function ProductsTable({
               </AdminFilterToggle>
             </AdminToolbarEnd>
           </>
+          )
         }
       >
         {products.length === 0 ? (
@@ -110,6 +177,11 @@ export function ProductsTable({
           <Table>
             <TableHeader>
               <TableRow>
+                {isAdmin && (
+                  <TableHead className="w-10">
+                    <SelectAllCheckbox selection={selection} label={tSel('selectAll')} />
+                  </TableHead>
+                )}
                 <TableHead>{t('name')}</TableHead>
                 <TableHead>{t('category')}</TableHead>
                 <TableHead>{t('price')}</TableHead>
@@ -123,7 +195,16 @@ export function ProductsTable({
                 const archived = product.archivedAt !== null;
                 const discounted = product.discountPct > 0;
                 return (
-                  <TableRow key={product.id}>
+                  <TableRow key={product.id} data-selected={selection.has(product.id) || undefined}>
+                    {isAdmin && (
+                      <TableCell className="w-10">
+                        <RowCheckbox
+                          selection={selection}
+                          id={product.id}
+                          label={tSel('selectRow', {name: name(product)})}
+                        />
+                      </TableCell>
+                    )}
                     {/* Thumbnail + name over reference: the reference keeps its own
                         text node, so a row's accessible name still contains it. */}
                     <TableCell>
@@ -245,6 +326,33 @@ export function ProductsTable({
                 }}
               >
                 {t('archive')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {/* Permanent delete — the only irreversible action in the admin, so it
+          always confirms and always names the count. The server refuses the
+          batch outright if any product has ever been ordered. */}
+      {isAdmin && (
+        <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('deleteTitle')}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t('deleteBody', {count: selection.count})}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  runBulk(deleteProducts, t('deletedToast'), t('deletedDescription'));
+                  setConfirmDelete(false);
+                }}
+              >
+                {tSel('delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

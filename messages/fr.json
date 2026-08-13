@@ -351,8 +351,16 @@
         "notFound": "Produit introuvable.",
         "forbidden": "Action non autorisée.",
         "invalidCategory": "Catégorie invalide.",
-        "invalidSubCategory": "Sous-catégorie invalide."
-      }
+        "invalidSubCategory": "Sous-catégorie invalide.",
+        "soldProducts": "Impossible de supprimer : ces produits figurent dans des commandes. Archivez-les à la place.",
+        "invalidSelection": "Sélection invalide. Rechargez la page puis réessayez."
+      },
+      "deleteTitle": "Supprimer définitivement ?",
+      "deleteBody": "{count, plural, one {Ce produit sera supprimé définitivement.} other {Ces # produits seront supprimés définitivement.}} Cette action est irréversible.",
+      "deletedToast": "Produit(s) supprimé(s).",
+      "deletedDescription": "Les images associées ont été supprimées avec le produit.",
+      "bulkArchivedToast": "Produit(s) archivé(s).",
+      "bulkRestoredToast": "Produit(s) restauré(s)."
     },
     "productForm": {
       "createTitle": "Nouveau produit",
@@ -490,6 +498,15 @@
         "invalidPct": "Pourcentage invalide (entier de 0 à 100).",
         "forbidden": "Action non autorisée."
       }
+    },
+    "selection": {
+      "count": "{count, plural, one {# sélectionné} other {# sélectionnés}}",
+      "clear": "Effacer la sélection",
+      "selectAll": "Tout sélectionner",
+      "selectRow": "Sélectionner {name}",
+      "archive": "Archiver",
+      "restore": "Restaurer",
+      "delete": "Supprimer"
     }
   },
   "adminOrders": {

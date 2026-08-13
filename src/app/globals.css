@@ -195,24 +195,28 @@
   --font-sans:
     ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     'Noto Sans Arabic', 'Segoe UI Emoji', sans-serif;
-  --background: #f9fafb; /* page — cards lift off it */
-  --foreground: #1c252e; /* text primary */
+  /* The SHOP's palette (same values as .theme-yasmine) so the dashboard and
+     the storefront read as one product — only the structure stays Minimal. */
+  --background: #f6f1e7; /* cream page — white cards lift off it */
+  --foreground: #33302b; /* primary text */
   --card: #ffffff;
-  --card-foreground: #1c252e;
+  --card-foreground: #33302b;
   --popover: #ffffff;
-  --popover-foreground: #1c252e;
-  --primary: #00a76f;
+  --popover-foreground: #33302b;
+  --primary: #c5a052; /* champagne gold */
   --primary-foreground: #ffffff;
-  --secondary: #f4f6f8;
-  --secondary-foreground: #637381;
-  --muted: #f4f6f8;
-  --muted-foreground: #637381; /* text secondary */
-  --accent: #f4f6f8;
-  --accent-foreground: #1c252e;
-  --destructive: #ff5630;
-  --border: rgb(145 158 171 / 0.2); /* divider */
-  --input: rgb(145 158 171 / 0.24);
-  --ring: #00a76f;
+  --primary-deep: #a6843c; /* deep gold — hover */
+  --secondary: #e9dfca; /* soft beige */
+  --secondary-foreground: #33302b;
+  --muted: #f1ebdd;
+  --muted-foreground: #8e877a; /* secondary text */
+  --accent: #e9dfca;
+  --accent-foreground: #33302b;
+  --destructive: #b71d18;
+  --border: rgb(110 90 58 / 0.16); /* warm divider */
+  --input: rgb(110 90 58 / 0.22);
+  --ring: #a6843c;
+  --brand-brown: #6e5a3a;
   --radius: 0.5rem; /* controls; cards use rounded-2xl */
 
 }
@@ -222,8 +226,8 @@
    outside the admin subtree, and still need these colours. Only the shadcn
    theme tokens above are scoped. */
 :root {
-  --admin-primary-dark: #007867;
-  --admin-primary-soft: rgb(0 167 111 / 0.16);
+  --admin-primary-dark: #6e5a3a;
+  --admin-primary-soft: rgb(197 160 82 / 0.20);
   --admin-info: #00b8d9;
   --admin-info-soft: rgb(0 184 217 / 0.16);
   --admin-success: #118d57;
@@ -232,27 +236,27 @@
   --admin-warning-soft: rgb(255 171 0 / 0.16);
   --admin-error: #b71d18;
   --admin-error-soft: rgb(255 86 48 / 0.16);
-  --admin-neutral-soft: rgb(145 158 171 / 0.16);
+  --admin-neutral-soft: rgb(110 90 58 / 0.14);
 
   /* GRAPHIC hues. The vars above are the INK variants — deliberately darkened
      so soft labels clear contrast on their own 16% wash — which renders muddy
      as a chart fill (warning ink is burnt ochre, not amber). Charts, dots and
      legend swatches use these full-strength hues instead; they are decorative
      fills, never text. */
-  --admin-primary-main: #00a76f;
+  --admin-primary-main: #c5a052;
   --admin-info-main: #00b8d9;
   --admin-success-main: #22c55e;
   --admin-warning-main: #ffab00;
   --admin-error-main: #ff5630;
 
-  --shadow-card: 0 0 2px 0 rgb(145 158 171 / 0.2), 0 12px 24px -4px rgb(145 158 171 / 0.12);
-  --shadow-float: 0 0 2px 0 rgb(145 158 171 / 0.24), -20px 20px 40px -4px rgb(145 158 171 / 0.24);
-  --shadow-primary: 0 8px 16px 0 rgb(0 167 111 / 0.24);
+  --shadow-card: 0 0 2px 0 rgb(110 90 58 / 0.16), 0 12px 24px -4px rgb(110 90 58 / 0.10);
+  --shadow-float: 0 0 2px 0 rgb(110 90 58 / 0.20), -20px 20px 40px -4px rgb(110 90 58 / 0.22);
+  --shadow-primary: 0 8px 16px 0 rgb(197 160 82 / 0.28);
 }
 
 /* Dark keeps the tints but lifts the ink so soft labels stay legible. */
 .dark {
-  --admin-primary-dark: #5be49b;
+  --admin-primary-dark: #cdb891;
   --admin-info: #61f3f3;
   --admin-success: #77ed8b;
   --admin-warning: #ffd666;
@@ -263,24 +267,26 @@
 }
 
 .dark .theme-minimal {
-  --background: #141a21;
-  --foreground: #ffffff;
-  --card: #1c252e;
-  --card-foreground: #ffffff;
-  --popover: #1c252e;
-  --popover-foreground: #ffffff;
-  --primary: #00a76f;
+  --background: #1a150e;
+  --foreground: #f1e8d6;
+  --card: #241d13;
+  --card-foreground: #f1e8d6;
+  --popover: #241d13;
+  --popover-foreground: #f1e8d6;
+  --primary: #c5a052;
   --primary-foreground: #ffffff;
-  --secondary: #28323d;
-  --secondary-foreground: #919eab;
-  --muted: #28323d;
-  --muted-foreground: #919eab;
-  --accent: #28323d;
-  --accent-foreground: #ffffff;
-  --destructive: #ff5630;
-  --border: rgb(145 158 171 / 0.2);
-  --input: rgb(145 158 171 / 0.24);
-  --ring: #00a76f;
+  --primary-deep: #a6843c;
+  --secondary: #38301f;
+  --secondary-foreground: #f1e8d6;
+  --muted: #332b1c;
+  --muted-foreground: #b5aa91;
+  --accent: #38301f;
+  --accent-foreground: #f1e8d6;
+  --destructive: #ffac82;
+  --border: rgb(241 232 214 / 0.14);
+  --input: rgb(241 232 214 / 0.18);
+  --ring: #c5a052;
+  --brand-brown: #cdb891;
 }
 
 /* Minimal's cards separate by shadow, not by a border. */

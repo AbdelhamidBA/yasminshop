@@ -129,16 +129,24 @@ export function AdminSidebar({isAdmin}: {isAdmin: boolean}) {
           aria-label={t('brand')}
           className="flex min-w-0 items-center gap-3 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          <span className="shadow-primary flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <ShoppingBag className="size-5" strokeWidth={2} />
-          </span>
+          {/* The shop's own mark, not a generic icon — the dashboard is the
+              same product as the storefront. Decorative: the link already
+              carries an aria-label. */}
+          <img src="/brand/yasmine-logo.webp" alt="" className="size-10 shrink-0 object-contain" />
           <span
             className={cn(
-              'truncate font-heading text-base font-bold',
-              collapsed ? 'hidden' : 'hidden lg:inline'
+              'flex min-w-0 flex-col',
+              collapsed ? 'hidden' : 'hidden lg:flex'
             )}
           >
-            {t('brand')}
+            <span className="font-(family-name:--font-betterlett) truncate text-xl leading-none">
+              Yasmine
+            </span>
+            <span className="mt-1 flex items-center gap-1.5 text-[10px] leading-none font-semibold tracking-[0.28em] text-foreground/70 uppercase">
+              <span aria-hidden="true" className="h-px w-3 bg-foreground/40" />
+              Shop
+              <span aria-hidden="true" className="h-px w-3 bg-foreground/40" />
+            </span>
           </span>
         </Link>
       </div>

@@ -351,8 +351,16 @@
         "notFound": "المنتج غير موجود.",
         "forbidden": "إجراء غير مسموح به.",
         "invalidCategory": "فئة غير صالحة.",
-        "invalidSubCategory": "فئة فرعية غير صالحة."
-      }
+        "invalidSubCategory": "فئة فرعية غير صالحة.",
+        "soldProducts": "تعذّر الحذف: هذه المنتجات مذكورة في طلبات. أرشفها بدلًا من ذلك.",
+        "invalidSelection": "تحديد غير صالح. أعد تحميل الصفحة ثم حاول مجددًا."
+      },
+      "deleteTitle": "حذف نهائي؟",
+      "deleteBody": "{count, plural, zero {سيُحذف هذا المنتج نهائيًا.} one {سيُحذف هذا المنتج نهائيًا.} two {سيُحذف هذان المنتجان نهائيًا.} few {ستُحذف # منتجات نهائيًا.} many {سيُحذف # منتجًا نهائيًا.} other {سيُحذف # منتج نهائيًا.}} لا يمكن التراجع عن هذا الإجراء.",
+      "deletedToast": "تم حذف المنتج (المنتجات).",
+      "deletedDescription": "حُذفت الصور المرتبطة مع المنتج.",
+      "bulkArchivedToast": "تمت أرشفة المنتج (المنتجات).",
+      "bulkRestoredToast": "تمت استعادة المنتج (المنتجات)."
     },
     "productForm": {
       "createTitle": "منتج جديد",
@@ -490,6 +498,15 @@
         "invalidPct": "نسبة غير صالحة (عدد صحيح من 0 إلى 100).",
         "forbidden": "إجراء غير مسموح به."
       }
+    },
+    "selection": {
+      "count": "{count, plural, zero {# محدد} one {# محدد} two {# محددان} few {# محددة} many {# محددًا} other {# محددة}}",
+      "clear": "إلغاء التحديد",
+      "selectAll": "تحديد الكل",
+      "selectRow": "تحديد {name}",
+      "archive": "أرشفة",
+      "restore": "استعادة",
+      "delete": "حذف"
     }
   },
   "adminOrders": {
