@@ -7,6 +7,7 @@ import {AuthzError} from '@/lib/authz';
 import {requireAdmin, requireStaff} from '@/server/authz';
 import {prisma} from '@/lib/db';
 import {sanitizeIds} from '@/lib/bulk';
+import {isUniqueViolationOn} from '@/lib/prisma-errors';
 import {parseDinarsToMillimes} from '@/lib/money';
 import {productSchema, quantitySchema} from '@/lib/schemas/catalog';
 import {ensureUniqueSlug, slugify} from '@/lib/slugify';
@@ -33,9 +34,10 @@ function formToInput(formData: FormData) {
     input: {
       reference: String(formData.get('reference') ?? ''),
       nameFr: String(formData.get('nameFr') ?? ''),
-      nameAr: String(formData.get('nameAr') ?? ''),
       descriptionFr: String(formData.get('descriptionFr') ?? ''),
-      descriptionAr: String(formData.get('descriptionAr') ?? ''),
+      // Optional free text — the schema trims it and turns "" into NULL, so an
+      // operator who clears the field really clears the column.
+      brand: String(formData.get('brand') ?? ''),
       priceMillimes: priceMillimes ?? 0,
       discountPct: Number.parseInt(String(formData.get('discountPct') ?? '0'), 10) || 0,
       quantity: Number.parseInt(String(formData.get('quantity') ?? '0'), 10) || 0,
@@ -71,16 +73,6 @@ function generateProductSlug(nameFr: string): Promise<string> {
   );
 }
 
-// P2002 can fire on Product.reference or Product.slug — discriminate by the
-// violated constraint's target column.
-function isUniqueViolationOn(error: unknown, column: string): boolean {
-  if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') {
-    return false;
-  }
-  const target = error.meta?.target;
-  return Array.isArray(target) ? target.includes(column) : String(target ?? '').includes(column);
-}
-
 export async function createProduct(formData: FormData): Promise<ActionResult<{id: string}>> {
   try {
     await requireAdmin();
@@ -94,11 +86,16 @@ export async function createProduct(formData: FormData): Promise<ActionResult<{i
     if (categoryError) return failure(categoryError);
 
     const {images, ...fields} = parsed.data;
+    // nameAr/descriptionAr are parked NOT NULL columns — Arabic was removed
+    // from the product, but the data was kept so the locale can be switched
+    // back on. Seed them from the French copy on CREATE; UPDATE never writes
+    // them, so any existing translation survives an edit.
+    const parkedArabic = {nameAr: fields.nameFr, descriptionAr: fields.descriptionFr};
     let created;
     try {
       const slug = await generateProductSlug(fields.nameFr);
       created = await prisma.product.create({
-        data: {...fields, slug, images: {create: images}}
+        data: {...fields, ...parkedArabic, slug, images: {create: images}}
       });
     } catch (error) {
       // Concurrent create can race ensureUniqueSlug; retry once with a fresh
@@ -106,7 +103,7 @@ export async function createProduct(formData: FormData): Promise<ActionResult<{i
       if (!isUniqueViolationOn(error, 'slug')) throw error;
       const slug = await generateProductSlug(fields.nameFr);
       created = await prisma.product.create({
-        data: {...fields, slug, images: {create: images}}
+        data: {...fields, ...parkedArabic, slug, images: {create: images}}
       });
     }
     revalidatePath(PATH, 'page');

@@ -153,6 +153,13 @@ export default async function ProductPage({params}: PageProps) {
           />
         </div>
         <div className="flex flex-col lg:col-span-5 lg:sticky lg:top-24 lg:self-start">
+          {/* Brand above the name — the standard place a shopper looks for it,
+              and simply absent when the product has none. */}
+          {product.brand ? (
+            <p className="mb-2 text-(--brand-brown)">
+              <Eyebrow tracked={!isAr}>{product.brand}</Eyebrow>
+            </p>
+          ) : null}
           <h1 className="text-3xl leading-[1.1] font-extrabold text-balance sm:text-4xl">
             {name}
           </h1>

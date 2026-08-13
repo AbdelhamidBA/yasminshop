@@ -20,6 +20,14 @@ import {AdminCard, Overline} from './ui';
 
 /** Roomy admin control: pair with Input / SelectTrigger. */
 export const adminControl = 'h-11 rounded-lg px-3';
+/**
+ * The popup half of an admin Select. It PORTALS to <body>, outside the admin
+ * subtree, so it carries the token scope itself — same precedent as dialog.tsx
+ * and the row action menus — and takes the kit's float shadow in place of the
+ * shared primitive's hairline ring, because Minimal surfaces separate by
+ * shadow rather than by a rule.
+ */
+export const adminSelectContent = 'theme-minimal rounded-xl shadow-float ring-0';
 /** Same language for a multi-line control. */
 export const adminTextarea = 'min-h-24 rounded-lg px-3 py-2.5';
 /** Solid primary action with the kit's primary-tinted shadow. */
@@ -58,7 +66,13 @@ export function Panel({
             flush && 'px-5 sm:px-6'
           )}
         >
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          {/* basis-64 is what makes `flex-wrap` above do its job: without an
+              intrinsic basis the title column just shrinks to nothing beside a
+              nowrap status chip (the description collapsed to a ~65px ribbon on
+              a 390px screen). Below ~256px + chip the chip drops to its own
+              line and the copy gets the full card width; above it, nothing
+              changes — flex-1 still fills the row. */}
+          <div className="flex min-w-0 flex-1 basis-64 flex-col gap-1.5">
             {title !== undefined && (
               <h2>
                 <Overline>{title}</Overline>

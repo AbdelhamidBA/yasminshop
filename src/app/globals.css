@@ -191,10 +191,12 @@
      UI is a grotesque-sans system: define the stack once here, scoped to the
      admin subtree (portalled admin surfaces carry .theme-minimal, so they pick
      it up too) and leave the storefront's Baloo untouched. */
+  /* Same face as the storefront (Baloo 2, loaded on <body> via next/font), so
+     the dashboard and the shop read as one product. */
   font-family: var(--font-sans);
   --font-sans:
-    ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    'Noto Sans Arabic', 'Segoe UI Emoji', sans-serif;
+    var(--font-baloo), ui-sans-serif, system-ui, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
   /* The SHOP's palette (same values as .theme-yasmine) so the dashboard and
      the storefront read as one product — only the structure stays Minimal. */
   --background: #f6f1e7; /* cream page — white cards lift off it */
@@ -317,6 +319,19 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  /* Tailwind v4 resets buttons to cursor:default. Anything clickable should
+     say so — including role="button" elements (Base UI renders several) and
+     labels wired to a control. Disabled controls keep the not-allowed cue. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  label[for],
+  summary {
+    @apply cursor-pointer;
+  }
+  button:disabled,
+  [role='button'][aria-disabled='true'] {
+    @apply cursor-not-allowed;
   }
   body {
     @apply bg-background text-foreground;

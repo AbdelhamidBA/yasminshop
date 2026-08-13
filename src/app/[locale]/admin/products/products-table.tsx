@@ -1,8 +1,7 @@
 'use client';
 
 import {type ReactNode, useState, useTransition} from 'react';
-import {Check, MoreHorizontal, Plus} from 'lucide-react';
-import {useSearchParams} from 'next/navigation';
+import {Check, Plus} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
@@ -11,15 +10,12 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
+import {RowActionItem, RowActions, RowActionSeparator} from '@/components/admin/row-actions';
 import {
-  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
-  EntityCell
+  AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd, EntityCell
 } from '@/components/admin/list-shell';
 import {
   RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
@@ -35,23 +31,32 @@ import {QuantityCell} from './quantity-cell';
 
 export function ProductsTable({
   products,
+  total,
   isAdmin,
-  includeArchived,
+  archivedOnly,
   lowStockThreshold,
   currencyLabel,
-  search
+  tabs,
+  search,
+  pagination
 }: {
   products: ProductRow[];
+  /** Rows matching the current filters across ALL pages, not just this one. */
+  total: number;
   isAdmin: boolean;
-  includeArchived: boolean;
+  /** The Archivés tab is the active one — every visible row is archived. */
+  archivedOnly: boolean;
   lowStockThreshold: number;
   currencyLabel: string;
+  // Server-rendered slots so the card owns the whole surface (orders idiom):
+  // the counted filter tabs, the search field and the pagination.
+  tabs?: ReactNode;
   search?: ReactNode;
+  pagination?: ReactNode;
 }) {
   const t = useTranslations('admin.products');
   const tList = useTranslations('admin.list');
   const locale = useLocale();
-  const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -79,12 +84,6 @@ export function ProductsTable({
   }
 
   const name = (row: {nameFr: string; nameAr: string}) => (locale === 'ar' ? row.nameAr : row.nameFr);
-
-  const toggleParams = new URLSearchParams();
-  const q = searchParams.get('q');
-  if (q) toggleParams.set('q', q);
-  if (!includeArchived) toggleParams.set('archived', '1');
-  const toggleHref = `/admin/products${toggleParams.size ? `?${toggleParams}` : ''}`;
 
   function runArchive(id: string) {
     startTransition(async () => {
@@ -117,6 +116,8 @@ export function ProductsTable({
       />
 
       <AdminTableCard
+        tabs={tabs}
+        footer={pagination}
         toolbar={
           selection.count > 0 ? (
             // The selection bar REPLACES the toolbar: the actions appear where
@@ -127,7 +128,7 @@ export function ProductsTable({
               clearLabel={tSel('clear')}
               onClear={selection.clear}
             >
-              {includeArchived ? (
+              {archivedOnly ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -162,10 +163,9 @@ export function ProductsTable({
                 warning) and lets it take the free space in the toolbar row. */}
             <div className="min-w-0 flex-1">{search}</div>
             <AdminToolbarEnd>
-              <AdminResultCount>{tList('results', {count: products.length})}</AdminResultCount>
-              <AdminFilterToggle href={toggleHref} active={includeArchived}>
-                {t('showArchived')}
-              </AdminFilterToggle>
+              {/* Reflects the ACTIVE tab, not the whole table — the count and
+                  the tab above it are the same figure. */}
+              <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
             </AdminToolbarEnd>
           </>
           )
@@ -221,8 +221,23 @@ export function ProductsTable({
                           />
                         }
                         primary={name(product)}
-                        secondary={product.reference}
-                        secondaryDir="ltr"
+                        // Reference keeps its own LTR text node (a row's
+                        // accessible name must still contain it); the brand
+                        // follows the page direction and is simply absent when
+                        // the product has none.
+                        secondary={
+                          <span className="flex flex-wrap items-center gap-x-1.5">
+                            <span dir="ltr">{product.reference}</span>
+                            {product.brand ? (
+                              <>
+                                <span aria-hidden="true" className="opacity-40">
+                                  ·
+                                </span>
+                                <span className="font-semibold">{product.brand}</span>
+                              </>
+                            ) : null}
+                          </span>
+                        }
                         badge={
                           archived ? <StatusLabel tone="neutral">{t('archived')}</StatusLabel> : undefined
                         }
@@ -281,29 +296,27 @@ export function ProductsTable({
                     </TableCell>
                     {isAdmin && (
                       <TableCell className="text-end">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            render={
-                              <Button variant="ghost" size="icon" aria-label={t('actions')} disabled={pending}>
-                                <MoreHorizontal className="size-4" />
-                              </Button>
-                            }
-                          />
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem render={<Link href={`/admin/products/${product.id}/edit`} />}>
-                              {t('edit')}
-                            </DropdownMenuItem>
-                            {archived ? (
-                              <DropdownMenuItem onClick={() => runRestore(product.id)}>
-                                {t('restore')}
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem onClick={() => setConfirmArchiveId(product.id)}>
-                                {t('archive')}
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <RowActions label={t('actions')} disabled={pending}>
+                          <RowActionItem
+                            action="edit"
+                            render={<Link href={`/admin/products/${product.id}/edit`} />}
+                          >
+                            {t('edit')}
+                          </RowActionItem>
+                          <RowActionSeparator />
+                          {archived ? (
+                            <RowActionItem action="restore" onClick={() => runRestore(product.id)}>
+                              {t('restore')}
+                            </RowActionItem>
+                          ) : (
+                            <RowActionItem
+                              action="archive"
+                              onClick={() => setConfirmArchiveId(product.id)}
+                            >
+                              {t('archive')}
+                            </RowActionItem>
+                          )}
+                        </RowActions>
                       </TableCell>
                     )}
                   </TableRow>

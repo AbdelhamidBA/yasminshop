@@ -54,7 +54,7 @@ export default async function OrderDetailPage({
         }
         title={
           <PageTitle dir="ltr" className="text-2xl">
-            #{order.number}
+            {t('orderTitle', {number: order.number})}
           </PageTitle>
         }
         badges={

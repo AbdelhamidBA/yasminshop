@@ -19,6 +19,15 @@ export function RegisterForm() {
   const isAr = useLocale() === 'ar';
   const [state, formAction, pending] = useActionState(registerClient, undefined);
   const [clientErrors, setClientErrors] = useState<Record<string, string>>({});
+  // React 19 resets an uncontrolled form as soon as its action settles — a
+  // rejected registration (e-mail already taken, rate limit) therefore wiped
+  // the name and e-mail that were just typed. Snapshot them on submit and
+  // replay them as the new defaults; `entryKey` remounts just those inputs
+  // (product-form idiom). The PASSWORD fields are deliberately NOT replayed —
+  // they must come back empty.
+  const [entered, setEntered] = useState<Record<string, string>>({});
+  const [entryKey, setEntryKey] = useState(0);
+  const initial = (field: string) => entered[field] ?? '';
 
   // Client pre-check errors win (they block submission); otherwise show the
   // server's message-KEY fieldErrors.
@@ -65,6 +74,14 @@ export function RegisterForm() {
       action={formAction}
       onSubmit={(event) => {
         const formData = new FormData(event.currentTarget);
+        // Snapshot the text fields BEFORE anything can return early: with
+        // useActionState there is no client-side failure branch to hook, and
+        // every outcome that keeps this form on screen ends in a reset.
+        setEntered({
+          name: String(formData.get('name') ?? ''),
+          email: String(formData.get('email') ?? '')
+        });
+        setEntryKey((key) => key + 1);
         const password = String(formData.get('password') ?? '');
         const confirm = String(formData.get('confirmPassword') ?? '');
         const errors: Record<string, string> = {};
@@ -79,7 +96,15 @@ export function RegisterForm() {
         <Label htmlFor="name" className="text-muted-foreground">
           <Eyebrow tracked={!isAr}>{t('register.name')}</Eyebrow>
         </Label>
-        <Input id="name" name="name" autoComplete="name" required className="h-11" />
+        <Input
+          id="name"
+          name="name"
+          autoComplete="name"
+          required
+          className="h-11"
+          key={`name-${entryKey}`}
+          defaultValue={initial('name')}
+        />
         {errorLine('name')}
       </div>
       <div className="flex flex-col gap-2">
@@ -94,6 +119,8 @@ export function RegisterForm() {
           required
           dir="ltr"
           className="h-11"
+          key={`email-${entryKey}`}
+          defaultValue={initial('email')}
         />
         {errorLine('email')}
       </div>

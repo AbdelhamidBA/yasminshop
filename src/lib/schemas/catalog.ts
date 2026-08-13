@@ -6,6 +6,17 @@ const optionalId = z
   .optional()
   .transform((v) => (v && v.trim() !== '' ? v : null));
 
+// Optional free text: trimmed, length-capped, and — crucially — an EMPTY value
+// stores NULL rather than "". "No brand" and "a brand that is the empty
+// string" must not be two different states in the database.
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max, {message: 'tooLong'})
+    .optional()
+    .transform((v) => (v && v !== '' ? v : null));
+
 // Admin catalog schemas. Like the client-facing checkout/auth schemas (spec §6c
 // binding), every constraint carries a message KEY — never zod's default
 // English text — so fieldErrorsFromZod surfaces keys the admin forms translate
@@ -13,7 +24,6 @@ const optionalId = z
 // 'tooShort', 'tooLong', 'invalid', 'min', 'max'. Bounds/logic are unchanged.
 export const categorySchema = z.object({
   nameFr: z.string().trim().min(1, {message: 'required'}),
-  nameAr: z.string().trim().min(1, {message: 'required'}),
   parentId: optionalId
 });
 export type CategoryInput = z.output<typeof categorySchema>;
@@ -40,9 +50,9 @@ export const productImageSchema = z.object({
 export const productSchema = z.object({
   reference: z.string().trim().min(1, {message: 'required'}).max(64, {message: 'tooLong'}),
   nameFr: z.string().trim().min(1, {message: 'required'}),
-  nameAr: z.string().trim().min(1, {message: 'required'}),
   descriptionFr: z.string().trim().min(1, {message: 'required'}),
-  descriptionAr: z.string().trim().min(1, {message: 'required'}),
+  // Free-text manufacturer/brand. Optional: blank means NULL, never "".
+  brand: optionalText(80),
   priceMillimes: z.number().int().min(0, {message: 'min'}).max(MAX_MILLIMES, {message: 'max'}),
   discountPct: z.number().int().min(0, {message: 'min'}).max(100, {message: 'max'}),
   quantity: z.number().int().min(0, {message: 'min'}),

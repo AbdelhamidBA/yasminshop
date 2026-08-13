@@ -84,32 +84,6 @@ export const adminSearchInputClass = 'h-10 rounded-lg bg-muted ps-9 shadow-none'
  * real URL — only the presentation changes; the tick reserves its own space so
  * toggling never shifts the row.
  */
-export function AdminFilterToggle({
-  href,
-  active,
-  children
-}: {
-  href: string;
-  active: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      data-active={active || undefined}
-      className={cn(
-        'inline-flex h-9 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition-colors',
-        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-        active
-          ? 'bg-(--admin-primary-soft) text-(--admin-primary-dark)'
-          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-      )}
-    >
-      <Check aria-hidden="true" className={cn('size-4', !active && 'opacity-0')} />
-      {children}
-    </Link>
-  );
-}
 
 /** Result counter — the toolbar's quiet utility face. */
 export function AdminResultCount({children}: {children: ReactNode}) {

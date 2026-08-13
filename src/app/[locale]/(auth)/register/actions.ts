@@ -6,6 +6,7 @@ import {headers} from 'next/headers';
 import {signIn} from '@/auth';
 import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/action-result';
 import {prisma} from '@/lib/db';
+import {routing} from '@/i18n/routing';
 import {hashPassword} from '@/lib/password';
 import {RATE_LIMITS, clientIpFromHeaders, enforceRateLimit} from '@/lib/rate-limit';
 import {registerSchema} from '@/lib/schemas/auth';
@@ -62,7 +63,11 @@ export async function registerClient(
   // plaintext password in client state after submit, and inherits the
   // NEXT_REDIRECT rethrow pattern from login/actions.ts verbatim.
   try {
-    await signIn('credentials', {email, password, redirectTo: '/'});
+    // Locale-prefixed on purpose: a bare '/' leans on the proxy to redirect,
+    // and that middleware hop does not resolve during the client-side
+    // navigation this action performs — the address bar moves while the old
+    // page stays on screen until a manual refresh.
+    await signIn('credentials', {email, password, redirectTo: `/${routing.defaultLocale}`});
   } catch (error) {
     // Practically unreachable (we just created these credentials), but if the
     // sign-in is refused the ACCOUNT still exists — surface success with a

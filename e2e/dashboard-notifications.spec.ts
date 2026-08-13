@@ -140,37 +140,49 @@ test('the created sub-admin can log in', async ({page}) => {
 });
 
 test('mass discount applies a reduced storefront price and removing it restores', async ({
-  page
+  page,
+  browser
 }) => {
-  await login(page, 'admin@local.test', 'admin123!');
-
-  // Baseline: no global discount (cleanup reset it), so only the base price shows.
-  await page.goto(`/fr/products/${DISCOUNT_PRODUCT.slug}`);
-  await expect(page.getByText(DISCOUNT_PRODUCT.basePrice)).toBeVisible();
-  await expect(page.getByText(DISCOUNT_PRODUCT.discountedPrice)).toHaveCount(0);
-
-  // Apply 10% via the ADMIN-only Parameters control.
-  await page.goto('/fr/admin/parameters');
-  await page.locator('#massDiscountPct').fill('10');
-  await page.getByRole('button', {name: 'Appliquer à tout'}).click();
-  await expect(page.getByText('Remise globale appliquée.')).toBeVisible();
+  // Staff are redirected off the storefront (they would be shopping in their
+  // own shop), so the price is checked in a SEPARATE signed-out context — the
+  // customer's view, which is the one that matters here.
+  const shopper = await browser.newContext({locale: 'fr-FR'});
+  const shop = await shopper.newPage();
+  const productUrl = `/fr/products/${DISCOUNT_PRODUCT.slug}`;
 
   try {
-    // Storefront product page now shows the reduced effective price alongside
-    // the struck-through original (both figures are unique to this product page).
-    await page.goto(`/fr/products/${DISCOUNT_PRODUCT.slug}`);
-    await expect(page.getByText(DISCOUNT_PRODUCT.discountedPrice)).toBeVisible();
-    await expect(page.getByText(DISCOUNT_PRODUCT.basePrice)).toBeVisible();
-  } finally {
-    // Always remove — even if the assertions above failed — so a residual
-    // discount can never leak into another spec (cleanup.ts is the cross-run net).
-    await page.goto('/fr/admin/parameters');
-    await page.getByRole('button', {name: 'Retirer de tout'}).click();
-    await expect(page.getByText('Remise globale retirée.')).toBeVisible();
-  }
+    await login(page, 'admin@local.test', 'admin123!');
 
-  // Restored: base price back, no discounted figure.
-  await page.goto(`/fr/products/${DISCOUNT_PRODUCT.slug}`);
-  await expect(page.getByText(DISCOUNT_PRODUCT.basePrice)).toBeVisible();
-  await expect(page.getByText(DISCOUNT_PRODUCT.discountedPrice)).toHaveCount(0);
+    // Baseline: no global discount (cleanup reset it), so only the base price shows.
+    await shop.goto(productUrl);
+    await expect(shop.getByText(DISCOUNT_PRODUCT.basePrice)).toBeVisible();
+    await expect(shop.getByText(DISCOUNT_PRODUCT.discountedPrice)).toHaveCount(0);
+
+    // Apply 10% via the ADMIN-only Parameters control.
+    await page.goto('/fr/admin/parameters');
+    await page.locator('#massDiscountPct').fill('10');
+    await page.getByRole('button', {name: 'Appliquer à tout'}).click();
+    await expect(page.getByText('Remise globale appliquée.')).toBeVisible();
+
+    try {
+      // Storefront product page now shows the reduced effective price alongside
+      // the struck-through original (both figures are unique to this page).
+      await shop.goto(productUrl);
+      await expect(shop.getByText(DISCOUNT_PRODUCT.discountedPrice)).toBeVisible();
+      await expect(shop.getByText(DISCOUNT_PRODUCT.basePrice)).toBeVisible();
+    } finally {
+      // Always remove — even if the assertions above failed — so a residual
+      // discount can never leak into another spec (cleanup.ts is the cross-run net).
+      await page.goto('/fr/admin/parameters');
+      await page.getByRole('button', {name: 'Retirer de tout'}).click();
+      await expect(page.getByText('Remise globale retirée.')).toBeVisible();
+    }
+
+    // Restored: base price back, no discounted figure.
+    await shop.goto(productUrl);
+    await expect(shop.getByText(DISCOUNT_PRODUCT.basePrice)).toBeVisible();
+    await expect(shop.getByText(DISCOUNT_PRODUCT.discountedPrice)).toHaveCount(0);
+  } finally {
+    await shopper.close();
+  }
 });

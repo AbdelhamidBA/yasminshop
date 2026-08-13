@@ -9,6 +9,7 @@ import {MobileMenu} from '@/components/storefront/mobile-menu';
 import {SearchButton} from '@/components/storefront/search-button';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
 import {listVisibleCategoryTree} from '@/server/storefront';
+import {routing} from '@/i18n/routing';
 
 // Mockup single-row header (under the service bar): hamburger (below lg) |
 // logo + two-line wordmark lockup | centered nav links (lg+) | icon group
@@ -29,7 +30,11 @@ export async function SiteHeader() {
   // menu item can stay a real <button type="submit"> inside a form.
   async function logout() {
     'use server';
-    await signOut({redirectTo: '/'});
+    // Locale-prefixed on purpose: a bare '/' leans on the proxy to redirect,
+    // and that middleware hop does not resolve during the client-side
+    // navigation this action performs — the address bar moves while the old
+    // page stays on screen until a manual refresh.
+    await signOut({redirectTo: `/${routing.defaultLocale}`});
   }
 
   const role = session?.user.role;

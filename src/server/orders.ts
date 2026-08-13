@@ -1,6 +1,8 @@
 import 'server-only';
 import type {OrderStatus, Prisma} from '@prisma/client';
 import {prisma} from '@/lib/db';
+import {ALLOWED_TRANSITIONS} from '@/lib/orders';
+import {pagingArgs} from './paging';
 
 // Admin orders data access. Search (q) matches the sequential order number
 // exactly when the query is numeric, and customerName / customerPhone
@@ -9,51 +11,59 @@ import {prisma} from '@/lib/db';
 
 const CLIENT_SELECT = {select: {id: true, name: true, email: true}} as const;
 
-// Same hard cap as the storefront listing: keeps skip = (page-1)*pageSize from
-// producing absurd Postgres offsets for URL-sourced page values.
-const MAX_PAGE = 10_000;
-
 // Order.number is an Int4 autoincrement — numeric queries beyond Int4 range
 // can never match and would 500 inside Prisma if passed through.
 const MAX_INT4 = 2_147_483_647;
 
-export type ListOrdersParams = {
+/**
+ * Which slice of the order book a view shows — one filter tab, in data terms.
+ * The tabs are mutually exclusive: `archivedOnly` shows archived rows ONLY (so
+ * the Archivées tab's count matches the rows under it), every other tab shows
+ * live orders, optionally narrowed to one status.
+ */
+export type OrderScope = {
   status?: OrderStatus;
+  archivedOnly: boolean;
+};
+
+export type ListOrdersParams = OrderScope & {
   q?: string;
-  includeArchived: boolean;
   page: number;
   pageSize: number;
 };
 
-export async function listOrders(params: ListOrdersParams) {
-  const page =
-    Number.isSafeInteger(params.page) && params.page >= 1 && params.page <= MAX_PAGE
-      ? params.page
-      : 1;
-  const pageSize =
-    Number.isInteger(params.pageSize) && params.pageSize >= 1 && params.pageSize <= 100
-      ? params.pageSize
-      : 20;
-
-  const filters: Prisma.OrderWhereInput[] = [];
-  if (!params.includeArchived) filters.push({archivedAt: null});
-  if (params.status) filters.push({status: params.status});
-
-  // Scalar guard on the URL-sourced q before any Prisma filter.
-  const q = typeof params.q === 'string' ? params.q.trim() : '';
-  if (q.length > 0 && q.length <= 200) {
-    const or: Prisma.OrderWhereInput[] = [
-      {customerName: {contains: q, mode: 'insensitive'}},
-      {customerPhone: {contains: q, mode: 'insensitive'}}
-    ];
-    if (/^\d+$/.test(q)) {
-      const number = Number.parseInt(q, 10);
-      if (Number.isSafeInteger(number) && number <= MAX_INT4) or.push({number});
-    }
-    filters.push({OR: or});
+/** Scalar guard on the URL-sourced q before any Prisma filter. */
+function searchWhere(raw: string | undefined): Prisma.OrderWhereInput | undefined {
+  const q = typeof raw === 'string' ? raw.trim() : '';
+  if (q.length === 0 || q.length > 200) return undefined;
+  const or: Prisma.OrderWhereInput[] = [
+    {customerName: {contains: q, mode: 'insensitive'}},
+    {customerPhone: {contains: q, mode: 'insensitive'}}
+  ];
+  if (/^\d+$/.test(q)) {
+    const number = Number.parseInt(q, 10);
+    if (Number.isSafeInteger(number) && number <= MAX_INT4) or.push({number});
   }
+  return {OR: or};
+}
 
-  const where: Prisma.OrderWhereInput = filters.length > 0 ? {AND: filters} : {};
+/**
+ * THE where clause for an orders view. listOrders and getOrderStats both go
+ * through it, which is what makes a tab's count and its rows the same question
+ * asked twice — they cannot drift.
+ */
+function ordersWhere(params: OrderScope & {q?: string}): Prisma.OrderWhereInput {
+  const filters: Prisma.OrderWhereInput[] = [
+    params.archivedOnly ? {archivedAt: {not: null}} : {archivedAt: null}
+  ];
+  if (params.status) filters.push({status: params.status});
+  const search = searchWhere(params.q);
+  if (search) filters.push(search);
+  return {AND: filters};
+}
+
+export async function listOrders(params: ListOrdersParams) {
+  const where = ordersWhere(params);
   const [orders, total] = await prisma.$transaction([
     prisma.order.findMany({
       where,
@@ -62,8 +72,7 @@ export async function listOrders(params: ListOrdersParams) {
         _count: {select: {items: true}},
         client: CLIENT_SELECT
       },
-      skip: (page - 1) * pageSize,
-      take: pageSize
+      ...pagingArgs(params)
     }),
     prisma.order.count({where})
   ]);
@@ -71,6 +80,51 @@ export async function listOrders(params: ListOrdersParams) {
 }
 
 export type OrderRow = Awaited<ReturnType<typeof listOrders>>['orders'][number];
+
+export type OrderStats = {
+  /** Live orders, every status — the default "Toutes" view. */
+  all: number;
+  /** Live orders per status; every status is present, zeroes included. */
+  byStatus: Record<OrderStatus, number>;
+  /** Archived orders — the ?archived=1 view, outside every other counter. */
+  archived: number;
+};
+
+// The status list comes from the transition engine, never from a literal here,
+// so a new status can never silently lose its tab.
+const ORDER_STATUSES = Object.keys(ALLOWED_TRANSITIONS) as OrderStatus[];
+
+/**
+ * The filter-tab counters for the admin orders list, in ONE round trip: every
+ * counter rides in the same `$transaction`, which gives them a single
+ * read-consistent snapshot, so no two tabs can show figures from different
+ * moments.
+ *
+ * Each counter is the row count of the view its tab links to — SAME
+ * `ordersWhere`, including the active search, because the tab links carry `q`
+ * forward. A tab therefore always predicts exactly what clicking it shows.
+ * `all` is the sum of `byStatus` by construction (an order has exactly one
+ * status), so the tabs can never add up to something the list denies.
+ */
+export async function getOrderStats({q}: {q?: string} = {}): Promise<OrderStats> {
+  const [archived, ...perStatus] = await prisma.$transaction([
+    prisma.order.count({where: ordersWhere({archivedOnly: true, q})}),
+    ...ORDER_STATUSES.map((status) =>
+      prisma.order.count({where: ordersWhere({archivedOnly: false, status, q})})
+    )
+  ]);
+
+  // Every status gets a key, zeroes included: a tab showing 0 is information,
+  // a tab that vanished is a moving target for the operator's mouse.
+  const byStatus = {} as Record<OrderStatus, number>;
+  let all = 0;
+  ORDER_STATUSES.forEach((status, index) => {
+    const count = perStatus[index];
+    byStatus[status] = count;
+    all += count;
+  });
+  return {all, byStatus, archived};
+}
 
 // Order ids are cuids; same charset allowlist as the checkout/search scalar
 // guards — rejects NUL bytes / lone surrogates before any Prisma filter.

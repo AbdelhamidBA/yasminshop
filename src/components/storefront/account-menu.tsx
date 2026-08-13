@@ -1,8 +1,7 @@
 'use client';
 
 import {User} from 'lucide-react';
-import {useLocale, useTranslations} from 'next-intl';
-import {useSearchParams} from 'next/navigation';
+import {useTranslations} from 'next-intl';
 import {useTheme} from 'next-themes';
 import {
   DropdownMenu,
@@ -11,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import {Link, usePathname, useRouter} from '@/i18n/navigation';
+import {Link} from '@/i18n/navigation';
 
 type AccountMenuProps = {
   isAuthenticated: boolean;
@@ -24,16 +23,11 @@ type AccountMenuProps = {
 
 // Mockup icon group entry: the person icon opens a Base UI menu with the
 // account links (signed-out: login/register; signed-in: my orders, dashboard
-// for staff, logout), then — below a separator — the locale switcher and the
-// theme toggle, which leave the header row (the mockup shows only 3 icons).
+// for staff, logout), then — below a separator — the theme toggle, which
+// leaves the header row (the mockup shows only 3 icons).
 export function AccountMenu({isAuthenticated, isStaff, logoutAction}: AccountMenuProps) {
   const t = useTranslations();
-  const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const {resolvedTheme, setTheme} = useTheme();
-  const otherLocale = locale === 'fr' ? 'ar' : 'fr';
 
   const itemCls = 'cursor-pointer px-2.5 py-2';
 
@@ -85,17 +79,6 @@ export function AccountMenu({isAuthenticated, isStaff, logoutAction}: AccountMen
           </>
         )}
         <DropdownMenuSeparator />
-        {/* Locale switcher — same logic as components/language-switcher.tsx:
-            preserve the query string (filters, search, pagination). */}
-        <DropdownMenuItem
-          onClick={() => {
-            const qs = searchParams.toString();
-            router.replace(qs ? `${pathname}?${qs}` : pathname, {locale: otherLocale});
-          }}
-          className={itemCls}
-        >
-          {t(otherLocale === 'ar' ? 'common.languageAr' : 'common.languageFr')}
-        </DropdownMenuItem>
         {/* Theme toggle — stays open so the flip is visible in place. */}
         <DropdownMenuItem
           closeOnClick={false}

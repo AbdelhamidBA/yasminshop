@@ -1,0 +1,456 @@
+{
+  "exportedAt": "2026-08-13T14:46:39.677Z",
+  "categories": [
+    {
+      "slug": "audio",
+      "nameFr": "Audio",
+      "nameAr": "صوتيات",
+      "parentSlug": "electronique",
+      "archived": false
+    },
+    {
+      "slug": "cuisine",
+      "nameFr": "Cuisine",
+      "nameAr": "مطبخ",
+      "parentSlug": "maison",
+      "archived": false
+    },
+    {
+      "slug": "electronique",
+      "nameFr": "Électronique",
+      "nameAr": "إلكترونيات",
+      "parentSlug": null,
+      "archived": false
+    },
+    {
+      "slug": "maison",
+      "nameFr": "Maison",
+      "nameAr": "منزل",
+      "parentSlug": null,
+      "archived": false
+    },
+    {
+      "slug": "mode",
+      "nameFr": "Mode",
+      "nameAr": "موضة",
+      "parentSlug": null,
+      "archived": false
+    },
+    {
+      "slug": "test",
+      "nameFr": "test",
+      "nameAr": "test",
+      "parentSlug": "electronique",
+      "archived": true
+    }
+  ],
+  "products": [
+    {
+      "reference": "3600551054469",
+      "slug": "cadum-creme-douche-surgras",
+      "nameFr": "Cadum Crème douche Surgras",
+      "nameAr": "Cadum Crème douche Surgras",
+      "descriptionFr": "Cadum Crème douche Surgras Karité 750ml Votre peau est nourrie, plus confortable et aussi\r\ndouce qu'une peau de bébé.\r\nTexture du produit :crème\r\nZone du corps concernée :corps\r\nType de peau : peau mature",
+      "descriptionAr": "Cadum Crème douche Surgras Karité 750ml Votre peau est nourrie, plus confortable et aussi\r\ndouce qu'une peau de bébé.\r\nTexture du produit :crème\r\nZone du corps concernée :corps\r\nType de peau : peau mature",
+      "priceMillimes": 25000,
+      "discountPct": 0,
+      "quantity": 56,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "mode",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/2104879d-51d6-4616-9fe7-a8ed79a8159f.webp",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "reference": "3600551054490",
+      "slug": "cadum-gel-douche-dermo-respect-sans-savon",
+      "nameFr": "Cadum Gel douche Dermo-Respect Sans Savon",
+      "nameAr": "Cadum Gel douche Dermo-Respect Sans Savon",
+      "descriptionFr": "Cadum Gel douche Dermo-Respect Sans Savon 750ml Votre peau est douce, souple et\r\néclatante comme la peau d'un bébé.\r\nTexture du produit :gel\r\nZone du corps concernée : corps\r\nType de peau : peau mature",
+      "descriptionAr": "Cadum Gel douche Dermo-Respect Sans Savon 750ml Votre peau est douce, souple et\r\néclatante comme la peau d'un bébé.\r\nTexture du produit :gel\r\nZone du corps concernée : corps\r\nType de peau : peau mature",
+      "priceMillimes": 25000,
+      "discountPct": 0,
+      "quantity": 55,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "mode",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/c4b2c382-3a17-4517-9ee2-c06bfd39e341.webp",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "reference": "8711000582824",
+      "slug": "cafe-soluble-classique",
+      "nameFr": "Café soluble classique",
+      "nameAr": "Café soluble classique",
+      "descriptionFr": "Café soluble classique / Qualité filtre : 100 % café pur (café soluble lyophilisé ou déshydraté).\r\nCafés aromatisés ou boissons lactées instantanées (type International Café) : Contiennent en\r\nplus du sucre, des substituts de crème (sirop de glucose, huile de coconut hydrogénée,\r\nprotéines de lait), des stabilisants et des arômes naturels ou artificiels",
+      "descriptionAr": "Café soluble classique / Qualité filtre : 100 % café pur (café soluble lyophilisé ou déshydraté).\r\nCafés aromatisés ou boissons lactées instantanées (type International Café) : Contiennent en\r\nplus du sucre, des substituts de crème (sirop de glucose, huile de coconut hydrogénée,\r\nprotéines de lait), des stabilisants et des arômes naturels ou artificiels",
+      "priceMillimes": 25000,
+      "discountPct": 0,
+      "quantity": 65,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "maison",
+      "subCategorySlug": "cuisine",
+      "images": [
+        {
+          "url": "/api/uploads/products/c9414cc5-ef2a-4f47-9b75-886827b88c5e.webp",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "reference": "07500575",
+      "slug": "elseve-dream-long-masque",
+      "nameFr": "Elseve Dream long Masque",
+      "nameAr": "Elseve Dream long Masque",
+      "descriptionFr": "Le Masque Sauveur de Longueurs Elseve Dream Long de L'Oréal Paris nourrit intensément, renforce et répare les cheveux longs et abîmés jusqu'aux pointes. Enrichi en huile de ricin, kératine végétale et vitamines, ce soin de 300 ml sauve vos derniers centimètres pour afficher des longueurs fortes, brillantes et pleines de vie.",
+      "descriptionAr": "Le Masque Sauveur de Longueurs Elseve Dream Long de L'Oréal Paris nourrit intensément, renforce et répare les cheveux longs et abîmés jusqu'aux pointes. Enrichi en huile de ricin, kératine végétale et vitamines, ce soin de 300 ml sauve vos derniers centimètres pour afficher des longueurs fortes, brillantes et pleines de vie.",
+      "priceMillimes": 25000,
+      "discountPct": 0,
+      "quantity": 6,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "mode",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/9da0384b-f235-4228-be21-0446c54e1d61.webp",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "reference": "075005766",
+      "slug": "elseve-huile-extraordinaire",
+      "nameFr": "Elseve huile extraordinaire",
+      "nameAr": "Elseve huile extraordinaire",
+      "descriptionFr": "L'Huile Extraordinaire Elseve de L'Oréal Paris est un soin capillaire multi-usages universel de 100 ml conçu pour nourrir, illuminer et discipliner les cheveux secs ou en manque d'éclat. Enrichie en huiles précieuses (comme le camélia et le marula), elle offre une texture légère qui ne alourdit pas la chevelure tout en protégeant de la chaleur jusqu'à 230 °C.",
+      "descriptionAr": "L'Huile Extraordinaire Elseve de L'Oréal Paris est un soin capillaire multi-usages universel de 100 ml conçu pour nourrir, illuminer et discipliner les cheveux secs ou en manque d'éclat. Enrichie en huiles précieuses (comme le camélia et le marula), elle offre une texture légère qui ne alourdit pas la chevelure tout en protégeant de la chaleur jusqu'à 230 °C.",
+      "priceMillimes": 25000,
+      "discountPct": 0,
+      "quantity": 10,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "mode",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/041f547e-c56b-4c5d-a727-a47d611c6d67.webp",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "reference": "07500467",
+      "slug": "elseve-huile-extraordinaire-coco",
+      "nameFr": "Elseve huile extraordinaire Coco",
+      "nameAr": "Elseve huile extraordinaire Coco",
+      "descriptionFr": "Offrez à vos cheveux une transformation instantanée avec le soin multi-usages Elseve Huile Extraordinaire Coco. Sa formule légère infusée à l'huile de coco pénètre la fibre pour l'envelopper de douceur, éliminer les frisottis et offrir un toucher soyeux incomparable",
+      "descriptionAr": "Offrez à vos cheveux une transformation instantanée avec le soin multi-usages Elseve Huile Extraordinaire Coco. Sa formule légère infusée à l'huile de coco pénètre la fibre pour l'envelopper de douceur, éliminer les frisottis et offrir un toucher soyeux incomparable",
+      "priceMillimes": 25000,
+      "discountPct": 0,
+      "quantity": 6,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "mode",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/b479de6b-b41a-4533-99f4-89fd716bc930.webp",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "reference": "07500567",
+      "slug": "elseve-repulp-hyaluron",
+      "nameFr": "Elseve Repulp Hyaluron",
+      "nameAr": "Elseve Repulp Hyaluron",
+      "descriptionFr": "Le Masque Hydra-Régénérant Elseve Hyaluron Repulp de L'Oréal Paris est un soin intensif pour les cheveux déshydratés et fatigués. Enrichi en acide hyaluronique, il offre jusqu'à 72h à 100h d'hydratation, repulpe la fibre capillaire et apporte brillance et légèreté sans alourdir.",
+      "descriptionAr": "Le Masque Hydra-Régénérant Elseve Hyaluron Repulp de L'Oréal Paris est un soin intensif pour les cheveux déshydratés et fatigués. Enrichi en acide hyaluronique, il offre jusqu'à 72h à 100h d'hydratation, repulpe la fibre capillaire et apporte brillance et légèreté sans alourdir.",
+      "priceMillimes": 25000,
+      "discountPct": 0,
+      "quantity": 6,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "mode",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/b9678610-f3e4-4373-ae44-da09d766e070.webp",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "reference": "0750046",
+      "slug": "moulinex-easy-fry-mega",
+      "nameFr": "Moulinex Easy Fry Mega",
+      "nameAr": "Moulinex Easy Fry Mega",
+      "descriptionFr": "La Moulinex Easy Fry Mega est une friteuse sans huile XXL dotée d'une capacité géante de 7,5 L (jusqu'à 8 personnes / 1,2 kg de frites). Elle offre une puissance de 2020 W, 8 programmes automatiques, un écran tactile intuitif et une cuisson rapide et saine avec peu ou pas de matière grasse.",
+      "descriptionAr": "La Moulinex Easy Fry Mega est une friteuse sans huile XXL dotée d'une capacité géante de 7,5 L (jusqu'à 8 personnes / 1,2 kg de frites). Elle offre une puissance de 2020 W, 8 programmes automatiques, un écran tactile intuitif et une cuisson rapide et saine avec peu ou pas de matière grasse.",
+      "priceMillimes": 500000,
+      "discountPct": 0,
+      "quantity": 2,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "electronique",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/182e770c-cd55-4663-a734-4cba75dc58c7.webp",
+          "sortOrder": 0
+        },
+        {
+          "url": "/api/uploads/products/16699722-1139-48a5-a555-712239a9d9f2.webp",
+          "sortOrder": 1
+        }
+      ]
+    },
+    {
+      "reference": "0750077",
+      "slug": "philips-blender-3000",
+      "nameFr": "Philips Blender 3000",
+      "nameAr": "Philips Blender 3000",
+      "descriptionFr": "Le Blender Philips Série 3000 (modèles 450W à 600W) associe la technologie unique ProBlend à un bol spacieux de 1,9 L. Il garantit des smoothies et des préparations parfaitement onctueux et sans grumeaux en seulement 45 secondes, tout en offrant une fonction de pilage de glace très pratique pour le quotidien",
+      "descriptionAr": "Le Blender Philips Série 3000 (modèles 450W à 600W) associe la technologie unique ProBlend à un bol spacieux de 1,9 L. Il garantit des smoothies et des préparations parfaitement onctueux et sans grumeaux en seulement 45 secondes, tout en offrant une fonction de pilage de glace très pratique pour le quotidien",
+      "priceMillimes": 250000,
+      "discountPct": 0,
+      "quantity": 99,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "electronique",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/2b0776c5-8489-43ec-82d3-4c3b4488d8b3.webp",
+          "sortOrder": 0
+        },
+        {
+          "url": "/api/uploads/products/64e5777b-660f-4f35-8d02-2f2c9c9c0cb4.webp",
+          "sortOrder": 1
+        }
+      ]
+    },
+    {
+      "reference": "0750057",
+      "slug": "rowenta-signature-pro-ac",
+      "nameFr": "Rowenta Signature Pro AC",
+      "nameAr": "Rowenta Signature Pro AC",
+      "descriptionFr": "Le sèche-cheveux Rowenta Signature Pro AC associe un moteur professionnel de 2200 W à un flux d'air de 100 km/h pour un séchage rapide et un brushing parfait. Doté d'une fonction ionique anti-frizz et d'une grille amovible, il garantit brillance, maniabilité et une grande longévité.",
+      "descriptionAr": "Le sèche-cheveux Rowenta Signature Pro AC associe un moteur professionnel de 2200 W à un flux d'air de 100 km/h pour un séchage rapide et un brushing parfait. Doté d'une fonction ionique anti-frizz et d'une grille amovible, il garantit brillance, maniabilité et une grande longévité.",
+      "priceMillimes": 150000,
+      "discountPct": 0,
+      "quantity": 5,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "mode",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/f7ba4868-ff4e-4a77-9f4c-ad0642e89e9c.webp",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "reference": "075007",
+      "slug": "royalty-line-citrus-juicer",
+      "nameFr": "royalty line citrus juicer",
+      "nameAr": "royalty line citrus juicer",
+      "descriptionFr": "Le presse-agrumes Royalty Line combine un corps élégant en acier inoxydable et un moteur puissant pour un jus frais rapide. Il extrait le maximum de jus d'oranges, citrons ou pamplemousses sans effort grâce à sa pression automatique et son design compact idéal pour toutes les cuisines.Caractéristiques principalesDesign moderne : Finition en acier inoxydable robuste et esthétique.Utilisation simple : Mise en marche automatique par pression sur le cône.Stabilité : Pieds antidérapants pour une sécurité optimale pendant l'utilisation.Entretien facile : Éléments amovibles se nettoient rapidement.Avantages clientGain de temps : Préparez un jus de fruits vitaminé en quelques secondes.Rendement maximal : Extrait tout le jus sans abîmer la pulpe.Gain de place : Format compact qui trouve facilement sa place sur le plan de travail.",
+      "descriptionAr": "Le presse-agrumes Royalty Line combine un corps élégant en acier inoxydable et un moteur puissant pour un jus frais rapide. Il extrait le maximum de jus d'oranges, citrons ou pamplemousses sans effort grâce à sa pression automatique et son design compact idéal pour toutes les cuisines.Caractéristiques principalesDesign moderne : Finition en acier inoxydable robuste et esthétique.Utilisation simple : Mise en marche automatique par pression sur le cône.Stabilité : Pieds antidérapants pour une sécurité optimale pendant l'utilisation.Entretien facile : Éléments amovibles se nettoient rapidement.Avantages clientGain de temps : Préparez un jus de fruits vitaminé en quelques secondes.Rendement maximal : Extrait tout le jus sans abîmer la pulpe.Gain de place : Format compact qui trouve facilement sa place sur le plan de travail.",
+      "priceMillimes": 150000,
+      "discountPct": 0,
+      "quantity": 8,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "electronique",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/a8460e30-a729-4985-b1ff-1c39334ba403.webp",
+          "sortOrder": 0
+        },
+        {
+          "url": "/api/uploads/products/d51b71e5-d849-4569-8389-27193ff86226.webp",
+          "sortOrder": 1
+        }
+      ]
+    },
+    {
+      "reference": "3600551142227",
+      "slug": "shampooing-tres-doux-2-en-1-dop",
+      "nameFr": "Shampooing très doux 2-en-1 DOP",
+      "nameAr": "Shampooing très doux 2-en-1 DOP",
+      "descriptionFr": "Shampooing très doux 2-en-1 à l’huile d’argan nourrit, démêle et fait briller\r\nFait briller les cheveux méditerranéens secs ou frisés\r\nContenance : 400 ml\r\nFabriqué en FRANCE\r\nDLC : 12 Mois après Ouverture",
+      "descriptionAr": "Shampooing très doux 2-en-1 à l’huile d’argan nourrit, démêle et fait briller\r\nFait briller les cheveux méditerranéens secs ou frisés\r\nContenance : 400 ml\r\nFabriqué en FRANCE\r\nDLC : 12 Mois après Ouverture",
+      "priceMillimes": 25000,
+      "discountPct": 0,
+      "quantity": 55,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "mode",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/382dd1c9-7f7a-4977-a8d3-55f59f260e35.webp",
+          "sortOrder": 0
+        },
+        {
+          "url": "/api/uploads/products/9d53b3b9-9c8a-4bb2-8c10-66f844806408.webp",
+          "sortOrder": 1
+        }
+      ]
+    },
+    {
+      "reference": "3600551103013",
+      "slug": "shampooing-tres-doux-2-en-1-dop-2",
+      "nameFr": "Shampooing très doux 2-en-1 DOP",
+      "nameAr": "Shampooing très doux 2-en-1 DOP",
+      "descriptionFr": "Type de cheveux : Normaux à gras.\r\nAction : Purifie le cuir chevelu, élimine les impuretés et apporte légèreté.\r\nFormule : Sans silicone pour un toucher naturel et un pH doux.\r\nContenance : 400 ml",
+      "descriptionAr": "Type de cheveux : Normaux à gras.\r\nAction : Purifie le cuir chevelu, élimine les impuretés et apporte légèreté.\r\nFormule : Sans silicone pour un toucher naturel et un pH doux.\r\nContenance : 400 ml",
+      "priceMillimes": 25000,
+      "discountPct": 0,
+      "quantity": 7,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "mode",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/3e217d4c-7958-4a18-88e7-35018f5a7ac0.webp",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "reference": "075004",
+      "slug": "silver-crest-machine-a-coffee",
+      "nameFr": "Silver Crest Machine a coffee",
+      "nameAr": "Silver Crest Machine a coffee",
+      "descriptionFr": "Offrez-vous un véritable café digne d'un barista à la maison avec la machine à expresso Silvercrest. Cette cafetière associe un design élégant à une pompe puissante de 15 bars. Elle garantit une extraction parfaite des arômes et une crema riche et onctueuse à chaque tasse. Facile à utiliser, elle s'adresse aux débutants comme aux amateurs d'expresso exigeants.Points fortsPression optimale : Pompe de 15 bars pour un espresso intense et crémeux.Buse vapeur intégrée : Idéale pour réaliser de magnifiques cappuccinos ou lattes macchiatos.Polyvalence tasses : Livrée avec deux inserts de filtre pour préparer une ou deux tasses en même temps.Entretien facile : Réservoir d'eau et bac d'égouttement amovibles pour un nettoyage rapide.Caractéristiques techniquesPuissance : 1100 WPression : 15 barsCapacité du réservoir d'eau : 1,2 L (amovible)Accessoires inclus : Porte-filtre, deux filtres (1 et 2 tasses), cuillère doseuse avec tasseur à caféSécurité : Arrêt automatique",
+      "descriptionAr": "Offrez-vous un véritable café digne d'un barista à la maison avec la machine à expresso Silvercrest. Cette cafetière associe un design élégant à une pompe puissante de 15 bars. Elle garantit une extraction parfaite des arômes et une crema riche et onctueuse à chaque tasse. Facile à utiliser, elle s'adresse aux débutants comme aux amateurs d'expresso exigeants.Points fortsPression optimale : Pompe de 15 bars pour un espresso intense et crémeux.Buse vapeur intégrée : Idéale pour réaliser de magnifiques cappuccinos ou lattes macchiatos.Polyvalence tasses : Livrée avec deux inserts de filtre pour préparer une ou deux tasses en même temps.Entretien facile : Réservoir d'eau et bac d'égouttement amovibles pour un nettoyage rapide.Caractéristiques techniquesPuissance : 1100 WPression : 15 barsCapacité du réservoir d'eau : 1,2 L (amovible)Accessoires inclus : Porte-filtre, deux filtres (1 et 2 tasses), cuillère doseuse avec tasseur à caféSécurité : Arrêt automatique",
+      "priceMillimes": 190000,
+      "discountPct": 0,
+      "quantity": 5,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "electronique",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/0d9206e3-71b9-411e-83c1-c06a80b7d17a.webp",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "reference": "075005",
+      "slug": "silvercrest-defroisseur",
+      "nameFr": "SilverCrest Defroisseur",
+      "nameAr": "SilverCrest Defroisseur",
+      "descriptionFr": "Le défroisseur à main Silvercrest (1190-1400 W, réservoir de 250 ml) est un appareil compact et ergonomique conçu pour lisser rapidement et sans effort les plis de vos vêtements directement sur cintre, grâce à un jet de vapeur vertical continu d'environ 20 g/min",
+      "descriptionAr": "Le défroisseur à main Silvercrest (1190-1400 W, réservoir de 250 ml) est un appareil compact et ergonomique conçu pour lisser rapidement et sans effort les plis de vos vêtements directement sur cintre, grâce à un jet de vapeur vertical continu d'environ 20 g/min",
+      "priceMillimes": 160000,
+      "discountPct": 0,
+      "quantity": 7,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "electronique",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/1d2a868c-9b99-447e-a6ca-7bae6e276718.webp",
+          "sortOrder": 0
+        },
+        {
+          "url": "/api/uploads/products/77bd5a4b-cfeb-46a3-b3d3-26425a89e6d4.webp",
+          "sortOrder": 1
+        }
+      ]
+    },
+    {
+      "reference": "075006",
+      "slug": "silvercrest-presse-agrume",
+      "nameFr": "Silvercrest presse agrume",
+      "nameAr": "Silvercrest presse agrume",
+      "descriptionFr": "Le presse-agrumes électrique Silvercrest offre un jus frais et vitaminé en un instant. Doté d'une rotation bidirectionnelle (gauche/droite) et de deux cônes de tailles différentes, il s'adapte à tous les agrumes (citrons, oranges, pamplemousses) pour un rendement optimal. Son tamis réglable permet de contrôler la quantité de pulpe selon vos envies",
+      "descriptionAr": "Le presse-agrumes électrique Silvercrest offre un jus frais et vitaminé en un instant. Doté d'une rotation bidirectionnelle (gauche/droite) et de deux cônes de tailles différentes, il s'adapte à tous les agrumes (citrons, oranges, pamplemousses) pour un rendement optimal. Son tamis réglable permet de contrôler la quantité de pulpe selon vos envies",
+      "priceMillimes": 160000,
+      "discountPct": 0,
+      "quantity": 33,
+      "featured": false,
+      "archived": false,
+      "categorySlug": "electronique",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/3c6c5523-a42a-4936-86b0-f48271e41a10.webp",
+          "sortOrder": 0
+        },
+        {
+          "url": "/api/uploads/products/25804632-fbe5-4028-a7e9-b3caecbc7a9d.webp",
+          "sortOrder": 1
+        }
+      ]
+    },
+    {
+      "reference": "ELEC-004",
+      "slug": "televiseur-4k-55",
+      "nameFr": "Téléviseur 4K 55 pouces",
+      "nameAr": "تلفزيون 4K مقاس 55 بوصة",
+      "descriptionFr": "Téléviseur intelligent 4K UHD de 55 pouces avec HDR.",
+      "descriptionAr": "تلفزيون ذكي بدقة 4K مقاس 55 بوصة مع تقنية HDR.",
+      "priceMillimes": 899000,
+      "discountPct": 0,
+      "quantity": 3,
+      "featured": false,
+      "archived": true,
+      "categorySlug": "electronique",
+      "subCategorySlug": null,
+      "images": [
+        {
+          "url": "/api/uploads/products/seed-televiseur-4k-55.webp",
+          "sortOrder": 0
+        }
+      ]
+    }
+  ],
+  "promoCodes": [
+    {
+      "code": "BIENVENUE10",
+      "percentOff": 10,
+      "active": true,
+      "archived": false,
+      "expiresAt": null
+    }
+  ],
+  "settings": {
+    "contactEmail": "",
+    "contactPhone": "",
+    "copyright": "© 2026 Yasmin Shop",
+    "currency": "TND",
+    "deliveryCostMillimes": 7000,
+    "freeDeliveryThresholdMillimes": 100000,
+    "keywords": "",
+    "lastChanceThreshold": 5,
+    "massDiscountPct": null,
+    "siteDescription": "",
+    "socialLinks": {
+      "tiktok": "https://www.instagram.com/produit_importe1/",
+      "facebook": "https://www.facebook.com/profile.php?id=100042816777116",
+      "instagram": "https://www.instagram.com/produit_importe1/"
+    }
+  }
+}

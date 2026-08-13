@@ -1,6 +1,7 @@
 import 'server-only';
 import type {Prisma} from '@prisma/client';
 import {prisma} from '@/lib/db';
+import {pagingArgs} from './paging';
 
 // Admin clients data access. Two invariants hold on EVERY query in this
 // module: only role CLIENT rows are reachable (staff accounts are managed on
@@ -19,29 +20,23 @@ const CLIENT_SELECT = {
   _count: {select: {orders: true}}
 } as const;
 
-// Same hard cap as the orders listing: keeps skip = (page-1)*pageSize from
-// producing absurd Postgres offsets for URL-sourced page values.
-const MAX_PAGE = 10_000;
-
+// The list is filtered by ONE of two mutually exclusive tabs: Actifs (the
+// default) or Archivés. `archivedOnly` is what the URL's ?archived=1 means —
+// archived rows ONLY, never mixed in with the live ones.
+//
+// Both tab counts come from the very same where-builder the rows come from —
+// search included — inside the same $transaction, so a tab can never disagree
+// with the rows it opens, nor with the footer range (`total` IS the open tab's
+// count, read out of `counts` rather than queried a second time).
 export type ListClientsParams = {
   q?: string;
-  includeArchived: boolean;
+  archivedOnly: boolean;
   page: number;
   pageSize: number;
 };
 
 export async function listClients(params: ListClientsParams) {
-  const page =
-    Number.isSafeInteger(params.page) && params.page >= 1 && params.page <= MAX_PAGE
-      ? params.page
-      : 1;
-  const pageSize =
-    Number.isInteger(params.pageSize) && params.pageSize >= 1 && params.pageSize <= 100
-      ? params.pageSize
-      : 20;
-
   const filters: Prisma.UserWhereInput[] = [{role: 'CLIENT'}];
-  if (!params.includeArchived) filters.push({archivedAt: null});
 
   // Scalar guard on the URL-sourced q before any Prisma filter.
   const q = typeof params.q === 'string' ? params.q.trim() : '';
@@ -55,18 +50,25 @@ export async function listClients(params: ListClientsParams) {
     });
   }
 
-  const where: Prisma.UserWhereInput = {AND: filters};
-  const [clients, total] = await prisma.$transaction([
+  // Complementary halves of the same (role + search) population: every client
+  // is counted by exactly one tab.
+  const whereFor = (archived: boolean): Prisma.UserWhereInput => ({
+    AND: [...filters, archived ? {archivedAt: {not: null}} : {archivedAt: null}]
+  });
+
+  const [clients, active, archived] = await prisma.$transaction([
     prisma.user.findMany({
-      where,
+      where: whereFor(params.archivedOnly),
       orderBy: [{createdAt: 'desc'}, {id: 'asc'}],
       select: CLIENT_SELECT,
-      skip: (page - 1) * pageSize,
-      take: pageSize
+      ...pagingArgs(params)
     }),
-    prisma.user.count({where})
+    prisma.user.count({where: whereFor(false)}),
+    prisma.user.count({where: whereFor(true)})
   ]);
-  return {clients, total};
+
+  const counts = {active, archived};
+  return {clients, counts, total: params.archivedOnly ? archived : active};
 }
 
 export type ClientRow = Awaited<ReturnType<typeof listClients>>['clients'][number];

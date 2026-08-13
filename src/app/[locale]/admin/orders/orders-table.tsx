@@ -1,8 +1,7 @@
 'use client';
 
 import {type ReactNode, useState, useTransition} from 'react';
-import {Eye, MoreHorizontal, Plus} from 'lucide-react';
-import {useSearchParams} from 'next/navigation';
+import {Eye, Plus} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
 import {
@@ -11,15 +10,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import {Button} from '@/components/ui/button';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
+import {RowActionItem, RowActions} from '@/components/admin/row-actions';
 import {
-  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
-  EntityCell
+  AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd, EntityCell
 } from '@/components/admin/list-shell';
 import {OrderStatusBadge} from '@/components/admin/order-status-badge';
 import {
@@ -35,7 +31,7 @@ export function OrdersTable({
   orders,
   total,
   isAdmin,
-  includeArchived,
+  archivedOnly,
   currencyLabel,
   tabs,
   search,
@@ -44,10 +40,11 @@ export function OrdersTable({
   orders: OrderRow[];
   total: number;
   isAdmin: boolean;
-  includeArchived: boolean;
+  /** The Archivées tab is the active one — every visible row is archived. */
+  archivedOnly: boolean;
   currencyLabel: string;
-  // Server-rendered slots so the card owns the whole surface: the status tabs,
-  // the search field and the pagination all render inside it.
+  // Server-rendered slots so the card owns the whole surface: the counted
+  // filter tabs, the search field and the pagination all render inside it.
   tabs?: ReactNode;
   search?: ReactNode;
   pagination?: ReactNode;
@@ -56,7 +53,6 @@ export function OrdersTable({
   const tList = useTranslations('admin.list');
   const tSel = useTranslations('admin.selection');
   const locale = useLocale();
-  const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
   // Mass actions are ADMIN-only (a SUB_ADMIN may change an order's status and
@@ -68,16 +64,6 @@ export function OrdersTable({
     dateStyle: 'medium',
     timeStyle: 'short'
   });
-
-  // Archived-toggle link preserves the search and the active status tab
-  // (products-table idiom).
-  const toggleParams = new URLSearchParams();
-  const q = searchParams.get('q');
-  const status = searchParams.get('status');
-  if (q) toggleParams.set('q', q);
-  if (status) toggleParams.set('status', status);
-  if (!includeArchived) toggleParams.set('archived', '1');
-  const toggleHref = `/admin/orders${toggleParams.size ? `?${toggleParams}` : ''}`;
 
   function runArchive(id: string) {
     startTransition(async () => {
@@ -138,7 +124,7 @@ export function OrdersTable({
               clearLabel={tSel('clear')}
               onClear={selection.clear}
             >
-              {includeArchived ? (
+              {archivedOnly ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -164,10 +150,9 @@ export function OrdersTable({
           <>
             {search}
             <AdminToolbarEnd>
+              {/* Reflects the ACTIVE tab, not the whole table — the count and
+                  the tab above it are the same figure. */}
               <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
-              <AdminFilterToggle href={toggleHref} active={includeArchived}>
-                {t('showArchived')}
-              </AdminFilterToggle>
             </AdminToolbarEnd>
           </>
           )
@@ -257,31 +242,20 @@ export function OrdersTable({
                           <Eye className="size-4" />
                         </Button>
                         {isAdmin && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  aria-label={t('actions')}
-                                  disabled={pending}
-                                >
-                                  <MoreHorizontal className="size-4" />
-                                </Button>
-                              }
-                            />
-                            <DropdownMenuContent align="end">
-                              {archived ? (
-                                <DropdownMenuItem onClick={() => runRestore(order.id)}>
-                                  {t('restore')}
-                                </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem onClick={() => setConfirmArchiveId(order.id)}>
-                                  {t('archive')}
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <RowActions label={t('actions')} disabled={pending}>
+                            {archived ? (
+                              <RowActionItem action="restore" onClick={() => runRestore(order.id)}>
+                                {t('restore')}
+                              </RowActionItem>
+                            ) : (
+                              <RowActionItem
+                                action="archive"
+                                onClick={() => setConfirmArchiveId(order.id)}
+                              >
+                                {t('archive')}
+                              </RowActionItem>
+                            )}
+                          </RowActions>
                         )}
                       </div>
                     </TableCell>

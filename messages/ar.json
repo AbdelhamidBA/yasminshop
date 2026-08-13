@@ -276,12 +276,25 @@
       "parameters": "الإعدادات العامة"
     },
     "collapse": "طي القائمة",
+    "menu": "القائمة",
+    "navLabel": "التنقل الرئيسي",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق القائمة",
     "notifications": "الإشعارات",
     "list": {
-      "results": "{count, plural, =0 {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {# نتائج} many {# نتيجة} other {# نتيجة}}"
+      "results": "{count, plural, =0 {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {# نتائج} many {# نتيجة} other {# نتيجة}}",
+      "rowsPerPage": "صفوف لكل صفحة",
+      "range": "{from}–{to} من {total}",
+      "prev": "السابق",
+      "next": "التالي"
     },
     "categories": {
       "title": "الفئات",
+      "tabs": {
+        "label": "تصفية الفئات",
+        "active": "نشطة",
+        "archived": "مؤرشفة"
+      },
       "add": "إضافة فئة",
       "edit": "تعديل الفئة",
       "name": "الاسم",
@@ -295,7 +308,6 @@
       "archive": "أرشفة",
       "restore": "استعادة",
       "archived": "مؤرشفة",
-      "showArchived": "عرض المؤرشفة",
       "confirmArchiveTitle": "أرشفة هذه الفئة؟",
       "confirmArchiveBody": "سيتم إخفاء الفئة وفئاتها الفرعية من المتجر.",
       "cancel": "إلغاء",
@@ -333,7 +345,6 @@
       "lowStock": "مخزون منخفض",
       "outOfStock": "نفد المخزون",
       "archived": "مؤرشف",
-      "showArchived": "عرض المؤرشفة",
       "actions": "إجراءات",
       "edit": "تعديل",
       "archive": "أرشفة",
@@ -361,7 +372,14 @@
       "deletedToast": "تم حذف المنتج (المنتجات).",
       "deletedDescription": "حُذفت الصور المرتبطة مع المنتج.",
       "bulkArchivedToast": "تمت أرشفة المنتج (المنتجات).",
-      "bulkRestoredToast": "تمت استعادة المنتج (المنتجات)."
+      "bulkRestoredToast": "تمت استعادة المنتج (المنتجات).",
+      "tabs": {
+        "label": "تصفية المنتجات",
+        "active": "نشطة",
+        "outOfStock": "نفد المخزون",
+        "lowStock": "مخزون منخفض",
+        "archived": "مؤرشفة"
+      }
     },
     "productForm": {
       "createTitle": "منتج جديد",
@@ -370,6 +388,8 @@
       "sectionPricing": "السعر والمخزون",
       "sectionOrganization": "التصنيف",
       "reference": "المرجع",
+      "brand": "العلامة التجارية",
+      "brandHint": "اختياري — تظهر في صفحة المنتج.",
       "nameFr": "الاسم (بالفرنسية)",
       "nameAr": "الاسم (بالعربية)",
       "descriptionFr": "الوصف (بالفرنسية)",
@@ -382,10 +402,21 @@
       "subCategory": "الفئة الفرعية",
       "noSubCategory": "بدون",
       "images": "الصور",
+      "imagesHelp": "الصورة الأولى هي التي تظهر في المتجر.",
       "addImage": "إضافة صورة",
       "removeImage": "إزالة",
       "moveUp": "تقديم",
       "moveDown": "تأخير",
+      "primaryImage": "الرئيسية",
+      "makePrimary": "تعيينها صورة رئيسية",
+      "dropTitle": "أفلت صورك هنا",
+      "dropAction": "أو اختر عدة ملفات",
+      "queued": "في الانتظار",
+      "imageCount": "{count, plural, zero {لا توجد صور} one {صورة واحدة} two {صورتان} few {# صور} many {# صورة} other {# صورة}}",
+      "noImages": "لا توجد صور.",
+      "dismissError": "تجاهل",
+      "fileUnsupported": "صيغة غير مدعومة.",
+      "fileTooLarge": "الملف كبير جدًا (8 ميغابايت كحد أقصى).",
       "uploading": "جارٍ الرفع...",
       "uploadFailed": "فشل رفع الصورة.",
       "uploadHint": "الصيغ المقبولة: JPEG وPNG وWebP وAVIF — 8 ميغابايت كحد أقصى.",
@@ -414,6 +445,12 @@
     },
     "promoCodesPage": {
       "title": "أكواد التخفيض",
+      "tabs": {
+        "label": "تصفية أكواد التخفيض",
+        "active": "نشطة",
+        "inactive": "غير نشطة",
+        "archived": "مؤرشفة"
+      },
       "add": "إضافة كود",
       "edit": "تعديل الكود",
       "code": "الكود",
@@ -422,7 +459,6 @@
       "expiresAt": "ينتهي في",
       "noExpiry": "بدون انتهاء",
       "archived": "مؤرشف",
-      "showArchived": "عرض المؤرشفة",
       "actions": "إجراءات",
       "archive": "أرشفة",
       "restore": "استعادة",
@@ -518,7 +554,9 @@
     "title": "الطلبات",
     "search": "ابحث بالرقم أو الاسم أو الهاتف...",
     "tabs": {
-      "all": "الكل"
+      "label": "تصفية الطلبات",
+      "all": "الكل",
+      "archived": "مؤرشفة"
     },
     "status": {
       "PENDING": "قيد الانتظار",
@@ -537,7 +575,6 @@
     "archive": "أرشفة",
     "restore": "استعادة",
     "archived": "مؤرشف",
-    "showArchived": "عرض المؤرشفة",
     "empty": "لا توجد طلبات.",
     "prev": "السابق",
     "next": "التالي",
@@ -616,11 +653,17 @@
       "invalidPhone": "رقم هاتف غير صالح.",
       "tooShort": "قصير جداً.",
       "tooLong": "طويل جداً."
-    }
+    },
+    "orderTitle": "طلب #{number}"
   },
   "adminClients": {
     "title": "العملاء",
     "search": "ابحث بالاسم أو البريد الإلكتروني أو الهاتف...",
+    "tabs": {
+      "label": "تصفية العملاء",
+      "active": "نشطون",
+      "archived": "مؤرشفون"
+    },
     "name": "الاسم",
     "email": "البريد الإلكتروني",
     "phone": "الهاتف",
@@ -632,7 +675,6 @@
     "archive": "أرشفة",
     "restore": "استعادة",
     "archived": "مؤرشف",
-    "showArchived": "عرض المؤرشفين",
     "empty": "لا يوجد عملاء.",
     "prev": "السابق",
     "next": "التالي",
@@ -672,6 +714,11 @@
   "subAdmins": {
     "title": "المشرفون الفرعيون",
     "search": "ابحث بالاسم أو البريد الإلكتروني أو الهاتف...",
+    "tabs": {
+      "label": "تصفية المشرفين الفرعيين",
+      "active": "نشطون",
+      "archived": "مؤرشفون"
+    },
     "name": "الاسم",
     "email": "البريد الإلكتروني",
     "phone": "الهاتف",
@@ -690,7 +737,6 @@
     "archive": "أرشفة",
     "restore": "استعادة",
     "archived": "مؤرشف",
-    "showArchived": "عرض المؤرشفين",
     "empty": "لا يوجد مشرفون فرعيون.",
     "prev": "السابق",
     "next": "التالي",
@@ -733,6 +779,7 @@
     "deliveryFree": "مجاني",
     "total": "المجموع الكلي",
     "codNote": "الدفع عند الاستلام — يُسدَّد المبلغ الإجمالي عند تسلّم الطلب.",
+    "signatureCaption": "توقيع البائع",
     "print": "طباعة"
   },
   "dashboard": {

@@ -25,7 +25,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
+    <html lang={locale} dir="ltr" suppressHydrationWarning>
       {/* baloo.variable only DEFINES --font-baloo (usable by portalled
           storefront surfaces); the family is applied inside .theme-yasmine,
           so admin/auth keep the default font stack. */}
@@ -33,7 +33,7 @@ export default async function LocaleLayout({
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
             {children}
-            <Toaster dir={locale === 'ar' ? 'rtl' : 'ltr'} position="bottom-center" />
+            <Toaster dir="ltr" position="bottom-center" />
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

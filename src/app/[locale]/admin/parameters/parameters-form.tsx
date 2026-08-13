@@ -24,15 +24,39 @@ export function ParametersForm({
   const t = useTranslations('admin.parameters');
   const [pending, startTransition] = useTransition();
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  // React 19 resets an uncontrolled <form action={...}> once the action
+  // settles — including when it FAILS validation, which threw away every
+  // parameter edit and restored the stored values. Replay the submitted text
+  // as the new defaults; `entryKey` remounts just those inputs (product-form
+  // idiom).
+  const [entered, setEntered] = useState<Record<string, string>>({});
+  const [entryKey, setEntryKey] = useState(0);
+  const initial = (field: string, fallback: string | number | null | undefined) =>
+    entered[field] ?? (fallback === null || fallback === undefined ? '' : String(fallback));
 
   function submit(formData: FormData) {
+    // Snapshot what was typed BEFORE the action returns: React resets the form
+    // as soon as it settles, whatever the outcome.
+    const typed: Record<string, string> = {};
+    for (const [key, value] of formData.entries()) {
+      if (typeof value === 'string') typed[key] = value;
+    }
+    const restoreTypedValues = () => {
+      setEntered(typed);
+      setEntryKey((key) => key + 1);
+    };
+
     startTransition(async () => {
       const result = await updateParameters(formData);
       if (result.ok) {
         setFieldErrors({});
+        // Saved: the stored values ARE what was typed, so drop the replay and
+        // let the refreshed props be the defaults again.
+        setEntered({});
         toast.success(t('saved'));
       } else {
         setFieldErrors(result.fieldErrors ?? {});
+        restoreTypedValues();
         toast.error(t(`errors.${result.error}` as never));
       }
     });
@@ -60,7 +84,11 @@ export function ParametersForm({
               name="deliveryCost"
               dir="ltr"
               className={adminControl}
-              defaultValue={millimesToInput(parameters.deliveryCostMillimes)}
+              key={`deliveryCost-${entryKey}`}
+              defaultValue={initial(
+                'deliveryCost',
+                millimesToInput(parameters.deliveryCostMillimes)
+              )}
             />
           </Field>
           <Field
@@ -73,7 +101,11 @@ export function ParametersForm({
               name="freeDeliveryThreshold"
               dir="ltr"
               className={adminControl}
-              defaultValue={millimesToInput(parameters.freeDeliveryThresholdMillimes)}
+              key={`freeDeliveryThreshold-${entryKey}`}
+              defaultValue={initial(
+                'freeDeliveryThreshold',
+                millimesToInput(parameters.freeDeliveryThresholdMillimes)
+              )}
             />
           </Field>
           <Field label={t('currency')} htmlFor="currency" error={errorLine('currency')}>
@@ -81,7 +113,8 @@ export function ParametersForm({
               id="currency"
               name="currency"
               className={adminControl}
-              defaultValue={parameters.currency}
+              key={`currency-${entryKey}`}
+              defaultValue={initial('currency', parameters.currency)}
             />
           </Field>
           <Field
@@ -95,7 +128,8 @@ export function ParametersForm({
               type="number"
               min={0}
               className={adminControl}
-              defaultValue={parameters.lastChanceThreshold}
+              key={`lastChanceThreshold-${entryKey}`}
+              defaultValue={initial('lastChanceThreshold', parameters.lastChanceThreshold)}
             />
           </Field>
         </FormSection>
@@ -111,7 +145,8 @@ export function ParametersForm({
               id="copyright"
               name="copyright"
               className={adminControl}
-              defaultValue={parameters.copyright}
+              key={`copyright-${entryKey}`}
+              defaultValue={initial('copyright', parameters.copyright)}
             />
           </Field>
           <Field
@@ -124,7 +159,8 @@ export function ParametersForm({
               id="siteDescription"
               name="siteDescription"
               className={adminTextarea}
-              defaultValue={parameters.siteDescription}
+              key={`siteDescription-${entryKey}`}
+              defaultValue={initial('siteDescription', parameters.siteDescription)}
             />
           </Field>
           <Field
@@ -137,7 +173,8 @@ export function ParametersForm({
               id="keywords"
               name="keywords"
               className={adminControl}
-              defaultValue={parameters.keywords}
+              key={`keywords-${entryKey}`}
+              defaultValue={initial('keywords', parameters.keywords)}
             />
           </Field>
         </FormSection>
@@ -149,7 +186,8 @@ export function ParametersForm({
               name="contactPhone"
               dir="ltr"
               className={adminControl}
-              defaultValue={parameters.contactPhone}
+              key={`contactPhone-${entryKey}`}
+              defaultValue={initial('contactPhone', parameters.contactPhone)}
             />
           </Field>
           <Field label={t('contactEmail')} htmlFor="contactEmail" error={errorLine('contactEmail')}>
@@ -158,7 +196,8 @@ export function ParametersForm({
               name="contactEmail"
               dir="ltr"
               className={adminControl}
-              defaultValue={parameters.contactEmail}
+              key={`contactEmail-${entryKey}`}
+              defaultValue={initial('contactEmail', parameters.contactEmail)}
             />
           </Field>
         </FormSection>
@@ -174,7 +213,8 @@ export function ParametersForm({
               name="facebook"
               dir="ltr"
               className={adminControl}
-              defaultValue={parameters.socialLinks.facebook}
+              key={`facebook-${entryKey}`}
+              defaultValue={initial('facebook', parameters.socialLinks.facebook)}
             />
           </Field>
           <Field
@@ -187,7 +227,8 @@ export function ParametersForm({
               name="instagram"
               dir="ltr"
               className={adminControl}
-              defaultValue={parameters.socialLinks.instagram}
+              key={`instagram-${entryKey}`}
+              defaultValue={initial('instagram', parameters.socialLinks.instagram)}
             />
           </Field>
           <Field label={t('tiktok')} htmlFor="tiktok" error={errorLine('socialLinks.tiktok')}>
@@ -196,7 +237,8 @@ export function ParametersForm({
               name="tiktok"
               dir="ltr"
               className={adminControl}
-              defaultValue={parameters.socialLinks.tiktok}
+              key={`tiktok-${entryKey}`}
+              defaultValue={initial('tiktok', parameters.socialLinks.tiktok)}
             />
           </Field>
         </FormSection>

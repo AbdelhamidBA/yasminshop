@@ -5,14 +5,15 @@ import {Input} from '@/components/ui/input';
 import {AdminSearchField, adminSearchInputClass} from '@/components/admin/list-shell';
 import {useRouter} from '@/i18n/navigation';
 
-// Same submit-to-URL idiom as the admin orders search; preserves the archived
-// toggle, resets pagination.
+// Same submit-to-URL idiom as the admin orders search; stays on the open filter
+// tab, resets pagination.
 export function ClientsSearch({
   initialValue,
-  includeArchived
+  archivedOnly
 }: {
   initialValue: string;
-  includeArchived: boolean;
+  /** Open tab — kept in the URL so searching does not jump back to "Actifs". */
+  archivedOnly: boolean;
 }) {
   const t = useTranslations('adminClients');
   const router = useRouter();
@@ -24,7 +25,7 @@ export function ClientsSearch({
         const q = new FormData(event.currentTarget).get('q');
         const params = new URLSearchParams();
         if (q && String(q).trim()) params.set('q', String(q).trim());
-        if (includeArchived) params.set('archived', '1');
+        if (archivedOnly) params.set('archived', '1');
         router.replace(`/admin/clients${params.size ? `?${params}` : ''}`);
       }}
       className="w-full sm:max-w-xs"

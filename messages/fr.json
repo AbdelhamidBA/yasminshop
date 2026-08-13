@@ -276,12 +276,25 @@
       "parameters": "Paramètres généraux"
     },
     "collapse": "Réduire le menu",
+    "menu": "Menu",
+    "navLabel": "Navigation principale",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
     "notifications": "Notifications",
     "list": {
-      "results": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}"
+      "results": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}",
+      "rowsPerPage": "Lignes par page",
+      "range": "{from}–{to} sur {total}",
+      "prev": "Précédent",
+      "next": "Suivant"
     },
     "categories": {
       "title": "Catégories",
+      "tabs": {
+        "label": "Filtrer les catégories",
+        "active": "Actives",
+        "archived": "Archivées"
+      },
       "add": "Ajouter une catégorie",
       "edit": "Modifier la catégorie",
       "name": "Nom",
@@ -295,7 +308,6 @@
       "archive": "Archiver",
       "restore": "Restaurer",
       "archived": "Archivée",
-      "showArchived": "Afficher les archivées",
       "confirmArchiveTitle": "Archiver cette catégorie ?",
       "confirmArchiveBody": "La catégorie et ses sous-catégories seront masquées de la boutique.",
       "cancel": "Annuler",
@@ -333,7 +345,6 @@
       "lowStock": "Stock bas",
       "outOfStock": "Rupture",
       "archived": "Archivé",
-      "showArchived": "Afficher les archivés",
       "actions": "Actions",
       "edit": "Modifier",
       "archive": "Archiver",
@@ -361,7 +372,14 @@
       "deletedToast": "Produit(s) supprimé(s).",
       "deletedDescription": "Les images associées ont été supprimées avec le produit.",
       "bulkArchivedToast": "Produit(s) archivé(s).",
-      "bulkRestoredToast": "Produit(s) restauré(s)."
+      "bulkRestoredToast": "Produit(s) restauré(s).",
+      "tabs": {
+        "label": "Filtrer les produits",
+        "active": "Actifs",
+        "outOfStock": "En rupture",
+        "lowStock": "Stock bas",
+        "archived": "Archivés"
+      }
     },
     "productForm": {
       "createTitle": "Nouveau produit",
@@ -370,6 +388,8 @@
       "sectionPricing": "Prix et stock",
       "sectionOrganization": "Classement",
       "reference": "Référence",
+      "brand": "Marque",
+      "brandHint": "Optionnel — affichée sur la fiche produit.",
       "nameFr": "Nom (français)",
       "nameAr": "Nom (arabe)",
       "descriptionFr": "Description (français)",
@@ -382,10 +402,21 @@
       "subCategory": "Sous-catégorie",
       "noSubCategory": "Aucune",
       "images": "Images",
+      "imagesHelp": "La première image est celle affichée dans la boutique.",
       "addImage": "Ajouter une image",
       "removeImage": "Retirer",
       "moveUp": "Monter",
       "moveDown": "Descendre",
+      "primaryImage": "Principale",
+      "makePrimary": "Définir comme image principale",
+      "dropTitle": "Glissez vos images ici",
+      "dropAction": "ou choisissez plusieurs fichiers",
+      "queued": "En attente",
+      "imageCount": "{count, plural, one {# image} other {# images}}",
+      "noImages": "Aucune image.",
+      "dismissError": "Ignorer",
+      "fileUnsupported": "Format non pris en charge.",
+      "fileTooLarge": "Fichier trop volumineux (8 Mo maximum).",
       "uploading": "Téléversement...",
       "uploadFailed": "Échec du téléversement.",
       "uploadHint": "Formats acceptés : JPEG, PNG, WebP, AVIF — 8 Mo maximum.",
@@ -414,6 +445,12 @@
     },
     "promoCodesPage": {
       "title": "Codes promo",
+      "tabs": {
+        "label": "Filtrer les codes promo",
+        "active": "Actifs",
+        "inactive": "Inactifs",
+        "archived": "Archivés"
+      },
       "add": "Ajouter un code",
       "edit": "Modifier le code",
       "code": "Code",
@@ -422,7 +459,6 @@
       "expiresAt": "Expire le",
       "noExpiry": "Sans expiration",
       "archived": "Archivé",
-      "showArchived": "Afficher les archivés",
       "actions": "Actions",
       "archive": "Archiver",
       "restore": "Restaurer",
@@ -518,7 +554,9 @@
     "title": "Commandes",
     "search": "Rechercher par n°, nom ou téléphone...",
     "tabs": {
-      "all": "Toutes"
+      "label": "Filtrer les commandes",
+      "all": "Toutes",
+      "archived": "Archivées"
     },
     "status": {
       "PENDING": "En attente",
@@ -537,7 +575,6 @@
     "archive": "Archiver",
     "restore": "Restaurer",
     "archived": "Archivée",
-    "showArchived": "Afficher les archivées",
     "empty": "Aucune commande trouvée.",
     "prev": "Précédent",
     "next": "Suivant",
@@ -616,11 +653,17 @@
       "invalidPhone": "Numéro de téléphone invalide.",
       "tooShort": "Trop court.",
       "tooLong": "Trop long."
-    }
+    },
+    "orderTitle": "Commande #{number}"
   },
   "adminClients": {
     "title": "Clients",
     "search": "Rechercher par nom, e-mail ou téléphone...",
+    "tabs": {
+      "label": "Filtrer les clients",
+      "active": "Actifs",
+      "archived": "Archivés"
+    },
     "name": "Nom",
     "email": "E-mail",
     "phone": "Téléphone",
@@ -632,7 +675,6 @@
     "archive": "Archiver",
     "restore": "Restaurer",
     "archived": "Archivé",
-    "showArchived": "Afficher les archivés",
     "empty": "Aucun client trouvé.",
     "prev": "Précédent",
     "next": "Suivant",
@@ -672,6 +714,11 @@
   "subAdmins": {
     "title": "Sous-admins",
     "search": "Rechercher par nom, e-mail ou téléphone...",
+    "tabs": {
+      "label": "Filtrer les sous-admins",
+      "active": "Actifs",
+      "archived": "Archivés"
+    },
     "name": "Nom",
     "email": "E-mail",
     "phone": "Téléphone",
@@ -690,7 +737,6 @@
     "archive": "Archiver",
     "restore": "Restaurer",
     "archived": "Archivé",
-    "showArchived": "Afficher les archivés",
     "empty": "Aucun sous-admin trouvé.",
     "prev": "Précédent",
     "next": "Suivant",
@@ -733,6 +779,7 @@
     "deliveryFree": "Gratuite",
     "total": "Total",
     "codNote": "Paiement à la livraison — le montant total est à régler à la réception de la commande.",
+    "signatureCaption": "Signature du vendeur",
     "print": "Imprimer"
   },
   "dashboard": {

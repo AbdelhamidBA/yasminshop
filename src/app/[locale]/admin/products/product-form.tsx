@@ -39,6 +39,16 @@ export function ProductForm({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  // React 19 resets an uncontrolled <form action={...}> once the action
+  // settles — including when it FAILS validation, which wiped everything the
+  // user had typed. Keep the submitted text values and replay them as the new
+  // defaults; `entryKey` remounts just those inputs so the new defaults take
+  // effect. Only the text inputs are keyed: the image list, selects and the
+  // featured switch are React state and already survive.
+  const [entered, setEntered] = useState<Record<string, string>>({});
+  const [entryKey, setEntryKey] = useState(0);
+  const initial = (field: string, fallback: string | number | null | undefined) =>
+    entered[field] ?? (fallback === null || fallback === undefined ? '' : String(fallback));
   const [images, setImages] = useState<FormImage[]>(
     product?.images.map((image) => ({url: image.url, sortOrder: image.sortOrder})) ?? []
   );
@@ -48,8 +58,7 @@ export function ProductForm({
   );
   const [featured, setFeatured] = useState<boolean>(product?.featured ?? false);
 
-  const name = (node: {nameFr: string; nameAr: string}) =>
-    locale === 'ar' ? node.nameAr : node.nameFr;
+  const name = (node: {nameFr: string}) => node.nameFr;
 
   const subCategories = categories.find((category) => category.id === categoryId)?.children ?? [];
 
@@ -64,9 +73,22 @@ export function ProductForm({
   }
 
   function submit(formData: FormData) {
+    // Snapshot what was typed BEFORE any early return: React resets the form
+    // as soon as this action returns, whatever the outcome, so every failure
+    // path has to put the values back — not just the server-rejected one.
+    const typed: Record<string, string> = {};
+    for (const [key, value] of formData.entries()) {
+      if (typeof value === 'string') typed[key] = value;
+    }
+    const restoreTypedValues = () => {
+      setEntered(typed);
+      setEntryKey((key) => key + 1);
+    };
+
     if (images.length === 0) {
       setFieldErrors({images: 'minOneImage'});
       toast.error(t('minOneImage'));
+      restoreTypedValues();
       return;
     }
     formData.set('images', JSON.stringify(images));
@@ -81,6 +103,7 @@ export function ProductForm({
         router.push('/admin/products');
       } else {
         setFieldErrors(result.fieldErrors ?? {});
+        restoreTypedValues();
         toast.error(errorText(result.error));
       }
     });
@@ -92,35 +115,45 @@ export function ProductForm({
           section cards be the form's own flex children. */}
       <fieldset disabled={readOnly || pending} className="contents">
         <FormSection title={t('sectionInfo')}>
-          <Field
-            label={t('reference')}
-            htmlFor="reference"
-            error={errorLine('reference')}
-            className="sm:col-span-2"
-          >
+          <Field label={t('reference')} htmlFor="reference" error={errorLine('reference')}>
             <Input
               id="reference"
               name="reference"
               dir="ltr"
               className={adminControl}
-              defaultValue={product?.reference ?? ''}
+              key={`reference-${entryKey}`}
+              defaultValue={initial('reference', product?.reference)}
             />
           </Field>
-          <Field label={t('nameFr')} htmlFor="nameFr" error={errorLine('nameFr')}>
+          {/* Brand is FREE TEXT and OPTIONAL — the schema trims it and stores
+              NULL for a blank, so clearing the field really clears the column. */}
+          <Field
+            label={t('brand')}
+            htmlFor="brand"
+            hint={t('brandHint')}
+            error={errorLine('brand')}
+          >
+            <Input
+              id="brand"
+              name="brand"
+              maxLength={80}
+              className={adminControl}
+              key={`brand-${entryKey}`}
+              defaultValue={initial('brand', product?.brand)}
+            />
+          </Field>
+          <Field
+            label={t('nameFr')}
+            htmlFor="nameFr"
+            error={errorLine('nameFr')}
+            className="sm:col-span-2"
+          >
             <Input
               id="nameFr"
               name="nameFr"
               className={adminControl}
-              defaultValue={product?.nameFr ?? ''}
-            />
-          </Field>
-          <Field label={t('nameAr')} htmlFor="nameAr" error={errorLine('nameAr')}>
-            <Input
-              id="nameAr"
-              name="nameAr"
-              dir="rtl"
-              className={adminControl}
-              defaultValue={product?.nameAr ?? ''}
+              key={`nameFr-${entryKey}`}
+              defaultValue={initial('nameFr', product?.nameFr)}
             />
           </Field>
           <Field
@@ -133,21 +166,8 @@ export function ProductForm({
               id="descriptionFr"
               name="descriptionFr"
               className={adminTextarea}
-              defaultValue={product?.descriptionFr ?? ''}
-            />
-          </Field>
-          <Field
-            label={t('descriptionAr')}
-            htmlFor="descriptionAr"
-            error={errorLine('descriptionAr')}
-            className="sm:col-span-2"
-          >
-            <Textarea
-              id="descriptionAr"
-              name="descriptionAr"
-              dir="rtl"
-              className={adminTextarea}
-              defaultValue={product?.descriptionAr ?? ''}
+              key={`descriptionFr-${entryKey}`}
+              defaultValue={initial('descriptionFr', product?.descriptionFr)}
             />
           </Field>
         </FormSection>
@@ -159,7 +179,8 @@ export function ProductForm({
               name="price"
               dir="ltr"
               className={adminControl}
-              defaultValue={product ? millimesToInput(product.priceMillimes) : ''}
+              key={`price-${entryKey}`}
+              defaultValue={initial('price', product ? millimesToInput(product.priceMillimes) : '')}
             />
           </Field>
           <Field label={t('discountPct')} htmlFor="discountPct" error={errorLine('discountPct')}>
@@ -170,7 +191,8 @@ export function ProductForm({
               min={0}
               max={100}
               className={adminControl}
-              defaultValue={product?.discountPct ?? 0}
+              key={`discountPct-${entryKey}`}
+              defaultValue={initial('discountPct', product?.discountPct ?? 0)}
             />
           </Field>
           <Field label={t('quantity')} htmlFor="quantity" error={errorLine('quantity')}>
@@ -180,7 +202,8 @@ export function ProductForm({
               type="number"
               min={0}
               className={adminControl}
-              defaultValue={product?.quantity ?? 0}
+              key={`quantity-${entryKey}`}
+              defaultValue={initial('quantity', product?.quantity ?? 0)}
             />
           </Field>
         </FormSection>
@@ -244,8 +267,15 @@ export function ProductForm({
           </div>
         </FormSection>
 
-        <FormSection title={t('images')} bodyClassName="sm:grid-cols-1">
-          <Field hint={t('uploadHint')} error={errorLine('images')}>
+        {/* The formats/size hint now lives INSIDE the drop zone, next to the
+            control it constrains; the card description carries the one rule
+            that is not obvious — image 1 is the one the shop displays. */}
+        <FormSection
+          title={t('images')}
+          description={t('imagesHelp')}
+          bodyClassName="sm:grid-cols-1"
+        >
+          <Field error={errorLine('images')}>
             <ImageUploader images={images} onChange={setImages} disabled={readOnly} />
           </Field>
         </FormSection>

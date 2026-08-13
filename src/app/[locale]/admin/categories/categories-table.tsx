@@ -1,7 +1,7 @@
 'use client';
 
-import {useState, useTransition} from 'react';
-import {CornerDownRight, MoreHorizontal, Plus} from 'lucide-react';
+import {type ReactNode, useState, useTransition} from 'react';
+import {CornerDownRight, Plus} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
@@ -10,15 +10,12 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
+import {RowActionItem, RowActions, RowActionSeparator} from '@/components/admin/row-actions';
 import {
-  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
-  EntityCell
+  AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd, EntityCell
 } from '@/components/admin/list-shell';
 import {
   RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
@@ -32,14 +29,28 @@ type ParentOption = {id: string; nameFr: string; nameAr: string};
 
 export function CategoriesTable({
   categories,
+  total,
   parentOptions,
   isAdmin,
-  includeArchived
+  archivedView,
+  tabs,
+  pagination
 }: {
   categories: CategoryRow[];
+  /**
+   * ROOT categories matching the OPEN tab across ALL pages. The tree is
+   * paginated by root — each root's sub-categories always travel with it — so
+   * the tab number, the result count and the footer range speak the same unit
+   * and can never disagree with one another.
+   */
+  total: number;
   parentOptions: ParentOption[];
   isAdmin: boolean;
-  includeArchived: boolean;
+  /** The "Archivées" tab is open: the mass action there is restore, not archive. */
+  archivedView: boolean;
+  // Server-rendered slots so the card owns the whole surface (orders idiom).
+  tabs?: ReactNode;
+  pagination?: ReactNode;
 }) {
   const t = useTranslations('admin.categories');
   const tList = useTranslations('admin.list');
@@ -55,9 +66,6 @@ export function CategoriesTable({
   // The tree is rendered flat, so selection is fed the SAME flat list of ids the
   // operator can see — roots first, each followed by its sub-categories.
   const rowIds = categories.flatMap((root) => [root.id, ...root.children.map((c) => c.id)]);
-  // Roots + their children — the tree is rendered flat, so the count is the
-  // number of rows the table actually shows.
-  const rowCount = rowIds.length;
   // Mass actions are ADMIN-only, so the whole selection column is absent for a
   // SUB_ADMIN — the server re-checks regardless.
   const selection = useRowSelection(isAdmin ? rowIds : []);
@@ -139,34 +147,31 @@ export function CategoriesTable({
         <TableCell className="tabular-nums">{row._count.products}</TableCell>
         {isAdmin && (
           <TableCell className="text-end">
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button variant="ghost" size="icon" aria-label={t('actions')} disabled={pending}>
-                    <MoreHorizontal className="size-4" />
-                  </Button>
+            <RowActions label={t('actions')} disabled={pending}>
+              <RowActionItem
+                action="edit"
+                onClick={() =>
+                  setEditing({
+                    id: row.id,
+                    nameFr: row.nameFr,
+                    nameAr: row.nameAr,
+                    parentId: 'parentId' in row ? row.parentId : null
+                  })
                 }
-              />
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() =>
-                    setEditing({
-                      id: row.id,
-                      nameFr: row.nameFr,
-                      nameAr: row.nameAr,
-                      parentId: 'parentId' in row ? row.parentId : null
-                    })
-                  }
-                >
-                  {t('edit')}
-                </DropdownMenuItem>
-                {archived ? (
-                  <DropdownMenuItem onClick={() => runRestore(row.id)}>{t('restore')}</DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem onClick={() => setConfirmArchiveId(row.id)}>{t('archive')}</DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              >
+                {t('edit')}
+              </RowActionItem>
+              <RowActionSeparator />
+              {archived ? (
+                <RowActionItem action="restore" onClick={() => runRestore(row.id)}>
+                  {t('restore')}
+                </RowActionItem>
+              ) : (
+                <RowActionItem action="archive" onClick={() => setConfirmArchiveId(row.id)}>
+                  {t('archive')}
+                </RowActionItem>
+              )}
+            </RowActions>
           </TableCell>
         )}
       </TableRow>
@@ -187,6 +192,8 @@ export function CategoriesTable({
       />
 
       <AdminTableCard
+        tabs={tabs}
+        footer={pagination}
         toolbar={
           selection.count > 0 ? (
             // The selection bar REPLACES the toolbar: the actions appear where
@@ -197,7 +204,7 @@ export function CategoriesTable({
               clearLabel={tSel('clear')}
               onClear={selection.clear}
             >
-              {includeArchived ? (
+              {archivedView ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -219,13 +226,8 @@ export function CategoriesTable({
             </SelectionBar>
           ) : (
             <AdminToolbarEnd>
-              <AdminResultCount>{tList('results', {count: rowCount})}</AdminResultCount>
-              <AdminFilterToggle
-                href={includeArchived ? '/admin/categories' : '/admin/categories?archived=1'}
-                active={includeArchived}
-              >
-                {t('showArchived')}
-              </AdminFilterToggle>
+              {/* ROOT categories on the OPEN tab — the unit the list pages by. */}
+              <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
             </AdminToolbarEnd>
           )
         }

@@ -26,6 +26,7 @@ export default async function StorefrontLayout({children}: {children: ReactNode}
         <SiteFooter
           isAuthenticated={session !== null}
           isStaff={role === 'ADMIN' || role === 'SUB_ADMIN'}
+          socialLinks={parameters.socialLinks}
         />
       </div>
       {/* Portal-based drawer + fixed bottom navbar live outside the column so

@@ -7,10 +7,11 @@ import {AdminSearchField, adminSearchInputClass} from '@/components/admin/list-s
 
 export function SearchInput({
   initialValue,
-  includeArchived
+  keep
 }: {
   initialValue: string;
-  includeArchived: boolean;
+  /** Active filter tab + rows-per-page, so searching stays on this tab. */
+  keep: Record<string, string>;
 }) {
   const t = useTranslations('admin.products');
   const router = useRouter();
@@ -22,7 +23,8 @@ export function SearchInput({
         const q = new FormData(event.currentTarget).get('q');
         const params = new URLSearchParams();
         if (q && String(q).trim()) params.set('q', String(q).trim());
-        if (includeArchived) params.set('archived', '1');
+        // `page` is deliberately absent: a new search restarts at page 1.
+        for (const [key, value] of Object.entries(keep)) params.set(key, value);
         router.replace(`/admin/products${params.size ? `?${params}` : ''}`);
       }}
       className="w-full sm:max-w-xs"

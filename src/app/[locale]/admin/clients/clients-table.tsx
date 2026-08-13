@@ -1,8 +1,7 @@
 'use client';
 
 import {type ReactNode, useState, useTransition} from 'react';
-import {Eye, MoreHorizontal} from 'lucide-react';
-import {useSearchParams} from 'next/navigation';
+import {Eye} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
 import {
@@ -11,15 +10,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import {Button} from '@/components/ui/button';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
+import {RowActionItem, RowActions, RowActionSeparator} from '@/components/admin/row-actions';
 import {
-  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
-  EntityCell
+  AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd, EntityCell
 } from '@/components/admin/list-shell';
 import {
   RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
@@ -34,14 +30,19 @@ export function ClientsTable({
   clients,
   total,
   isAdmin,
-  includeArchived,
+  archivedView,
+  tabs,
   search,
   pagination
 }: {
   clients: ClientRow[];
+  /** Rows matching the OPEN tab across all pages — the tab's own number. */
   total: number;
   isAdmin: boolean;
-  includeArchived: boolean;
+  /** The "Archivés" tab is open: the mass action there is restore, not archive. */
+  archivedView: boolean;
+  // Server-rendered slots so the card owns the whole surface (orders idiom).
+  tabs?: ReactNode;
   search?: ReactNode;
   pagination?: ReactNode;
 }) {
@@ -49,7 +50,6 @@ export function ClientsTable({
   const tList = useTranslations('admin.list');
   const tSel = useTranslations('admin.selection');
   const locale = useLocale();
-  const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<EditableClient | null>(null);
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
@@ -61,13 +61,6 @@ export function ClientsTable({
   const dateFormatter = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-TN' : 'fr-TN', {
     dateStyle: 'medium'
   });
-
-  // Archived-toggle link preserves the search (orders-table idiom).
-  const toggleParams = new URLSearchParams();
-  const q = searchParams.get('q');
-  if (q) toggleParams.set('q', q);
-  if (!includeArchived) toggleParams.set('archived', '1');
-  const toggleHref = `/admin/clients${toggleParams.size ? `?${toggleParams}` : ''}`;
 
   function runArchive(id: string) {
     startTransition(async () => {
@@ -107,6 +100,7 @@ export function ClientsTable({
       <AdminListHeader title={t('title')} />
 
       <AdminTableCard
+        tabs={tabs}
         toolbar={
           selection.count > 0 ? (
             // The selection bar REPLACES the toolbar: the actions appear where
@@ -117,7 +111,7 @@ export function ClientsTable({
               clearLabel={tSel('clear')}
               onClear={selection.clear}
             >
-              {includeArchived ? (
+              {archivedView ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -141,10 +135,8 @@ export function ClientsTable({
           <>
             {search}
             <AdminToolbarEnd>
+              {/* Counts the OPEN tab, not the whole table. */}
               <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
-              <AdminFilterToggle href={toggleHref} active={includeArchived}>
-                {t('showArchived')}
-              </AdminFilterToggle>
             </AdminToolbarEnd>
           </>
           )
@@ -227,47 +219,38 @@ export function ClientsTable({
                           <Eye className="size-4" />
                         </Button>
                         {isAdmin && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  aria-label={t('actions')}
-                                  disabled={pending}
+                          <RowActions label={t('actions')} disabled={pending}>
+                            {archived ? (
+                              <RowActionItem action="restore" onClick={() => runRestore(client.id)}>
+                                {t('restore')}
+                              </RowActionItem>
+                            ) : (
+                              <>
+                                <RowActionItem
+                                  action="edit"
+                                  onClick={() =>
+                                    setEditing({
+                                      id: client.id,
+                                      name: client.name,
+                                      email: client.email,
+                                      phone: client.phone,
+                                      address: client.address,
+                                      city: client.city
+                                    })
+                                  }
                                 >
-                                  <MoreHorizontal className="size-4" />
-                                </Button>
-                              }
-                            />
-                            <DropdownMenuContent align="end">
-                              {archived ? (
-                                <DropdownMenuItem onClick={() => runRestore(client.id)}>
-                                  {t('restore')}
-                                </DropdownMenuItem>
-                              ) : (
-                                <>
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      setEditing({
-                                        id: client.id,
-                                        name: client.name,
-                                        email: client.email,
-                                        phone: client.phone,
-                                        address: client.address,
-                                        city: client.city
-                                      })
-                                    }
-                                  >
-                                    {t('edit')}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => setConfirmArchiveId(client.id)}>
-                                    {t('archive')}
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                  {t('edit')}
+                                </RowActionItem>
+                                <RowActionSeparator />
+                                <RowActionItem
+                                  action="archive"
+                                  onClick={() => setConfirmArchiveId(client.id)}
+                                >
+                                  {t('archive')}
+                                </RowActionItem>
+                              </>
+                            )}
+                          </RowActions>
                         )}
                       </div>
                     </TableCell>

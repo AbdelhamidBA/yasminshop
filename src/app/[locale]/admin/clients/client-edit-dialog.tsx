@@ -36,9 +36,22 @@ export function ClientEditDialog({
   const t = useTranslations('adminClients');
   const [pending, startTransition] = useTransition();
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  // React 19 resets an uncontrolled <form action={...}> once the action
+  // settles — including when it FAILS validation, which wiped everything that
+  // had just been typed. Replay the submitted values as the new defaults;
+  // `entryKey` remounts just those inputs (product-form idiom).
+  const [entered, setEntered] = useState<Record<string, string>>({});
+  const [entryKey, setEntryKey] = useState(0);
+  const initial = (field: string, fallback: string | number | null | undefined) =>
+    entered[field] ?? (fallback === null || fallback === undefined ? '' : String(fallback));
 
   useEffect(() => {
-    if (open) setFieldErrors({});
+    if (open) {
+      setFieldErrors({});
+      // A fresh open must show the row's own values, never the previous
+      // attempt's replayed text.
+      setEntered({});
+    }
   }, [open]);
 
   function errorLine(key: string) {
@@ -48,7 +61,21 @@ export function ClientEditDialog({
   }
 
   function submit(formData: FormData) {
-    if (!client) return;
+    // Snapshot what was typed BEFORE the early return below: React resets the
+    // form as soon as this action returns, whatever the outcome.
+    const typed: Record<string, string> = {};
+    for (const [key, value] of formData.entries()) {
+      if (typeof value === 'string') typed[key] = value;
+    }
+    const restoreTypedValues = () => {
+      setEntered(typed);
+      setEntryKey((key) => key + 1);
+    };
+
+    if (!client) {
+      restoreTypedValues();
+      return;
+    }
     startTransition(async () => {
       const result = await updateClient(client.id, formData);
       if (result.ok) {
@@ -56,6 +83,7 @@ export function ClientEditDialog({
         onOpenChange(false);
       } else {
         setFieldErrors(result.fieldErrors ?? {});
+        restoreTypedValues();
         toast.error(t(`errors.${result.error}` as never));
       }
     });
@@ -75,22 +103,44 @@ export function ClientEditDialog({
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="client-name">{t('name')}</Label>
-            <Input id="client-name" name="name" defaultValue={client?.name ?? ''} required />
+            <Input
+              id="client-name"
+              name="name"
+              required
+              key={`name-${entryKey}`}
+              defaultValue={initial('name', client?.name)}
+            />
             {errorLine('name')}
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="client-phone">{t('phone')}</Label>
-            <Input id="client-phone" name="phone" dir="ltr" defaultValue={client?.phone ?? ''} />
+            <Input
+              id="client-phone"
+              name="phone"
+              dir="ltr"
+              key={`phone-${entryKey}`}
+              defaultValue={initial('phone', client?.phone)}
+            />
             {errorLine('phone')}
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="client-address">{t('address')}</Label>
-            <Input id="client-address" name="address" defaultValue={client?.address ?? ''} />
+            <Input
+              id="client-address"
+              name="address"
+              key={`address-${entryKey}`}
+              defaultValue={initial('address', client?.address)}
+            />
             {errorLine('address')}
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="client-city">{t('city')}</Label>
-            <Input id="client-city" name="city" defaultValue={client?.city ?? ''} />
+            <Input
+              id="client-city"
+              name="city"
+              key={`city-${entryKey}`}
+              defaultValue={initial('city', client?.city)}
+            />
             {errorLine('city')}
           </div>
           <DialogFooter>
