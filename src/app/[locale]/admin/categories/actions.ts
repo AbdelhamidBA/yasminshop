@@ -4,6 +4,7 @@ import {revalidatePath} from 'next/cache';
 import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/action-result';
 import {AuthzError} from '@/lib/authz';
 import {requireAdmin} from '@/server/authz';
+import {sanitizeIds} from '@/lib/bulk';
 import {prisma} from '@/lib/db';
 import {categorySchema} from '@/lib/schemas/catalog';
 import {ensureUniqueSlug, slugify} from '@/lib/slugify';
@@ -100,6 +101,60 @@ export async function restoreCategory(id: string): Promise<ActionResult> {
     ]);
     revalidatePath(PATH, 'page');
     return success(undefined);
+  } catch (error) {
+    if (error instanceof AuthzError) return failure('forbidden');
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mass actions
+// ---------------------------------------------------------------------------
+
+/**
+ * Archive/restore a reviewed selection. ADMIN only, ids scalar-guarded and
+ * capped, and the whole batch is one transaction so it cannot half-apply.
+ */
+export async function archiveCategories(ids: unknown): Promise<ActionResult<number>> {
+  return setCategoriesArchived(ids, new Date());
+}
+
+export async function restoreCategories(ids: unknown): Promise<ActionResult<number>> {
+  return setCategoriesArchived(ids, null);
+}
+
+/**
+ * Reproduces archiveCategory/restoreCategory's CASCADE exactly, batched rather
+ * than looped: the single-row action writes the row itself plus every row whose
+ * parentId is that row, and the tree is only ever two deep (validateParent
+ * refuses a parent that already has a parent), so one extra `parentId: {in}`
+ * updateMany covers the sub-categories of EVERY selected id at once — there is
+ * no grandchild level a loop would have reached and this does not. Selecting a
+ * sub-category is harmless: it has no children, so the second statement simply
+ * matches nothing for it. Both statements share one transaction, so a category
+ * can never end up archived with its sub-categories still live.
+ *
+ * Archiving hides the category AND its sub-categories from the storefront; the
+ * products underneath stop being reachable through it, exactly as the per-row
+ * action already promised in its confirm dialog.
+ *
+ * The returned count is the number of DIRECTLY selected rows written (the
+ * cascade is a side effect, as it is per row).
+ */
+async function setCategoriesArchived(
+  ids: unknown,
+  archivedAt: Date | null
+): Promise<ActionResult<number>> {
+  const clean = sanitizeIds(ids);
+  if (!clean) return failure('invalidSelection');
+  try {
+    await requireAdmin();
+    const [selected] = await prisma.$transaction([
+      prisma.category.updateMany({where: {id: {in: clean}}, data: {archivedAt}}),
+      prisma.category.updateMany({where: {parentId: {in: clean}}, data: {archivedAt}})
+    ]);
+    revalidatePath(PATH, 'page');
+    return success(selected.count);
   } catch (error) {
     if (error instanceof AuthzError) return failure('forbidden');
     throw error;

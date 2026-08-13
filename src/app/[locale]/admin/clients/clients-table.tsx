@@ -21,10 +21,13 @@ import {
   AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
   EntityCell
 } from '@/components/admin/list-shell';
+import {
+  RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
+} from '@/components/admin/selection';
 import {Avatar, StatusLabel} from '@/components/admin/ui';
 import {Link} from '@/i18n/navigation';
 import type {ClientRow} from '@/server/clients';
-import {archiveClient, restoreClient} from './actions';
+import {archiveClient, archiveClients, restoreClient, restoreClients} from './actions';
 import {ClientEditDialog, type EditableClient} from './client-edit-dialog';
 
 export function ClientsTable({
@@ -44,11 +47,16 @@ export function ClientsTable({
 }) {
   const t = useTranslations('adminClients');
   const tList = useTranslations('admin.list');
+  const tSel = useTranslations('admin.selection');
   const locale = useLocale();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<EditableClient | null>(null);
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
+  // Every client mutation is ADMIN-only, so the whole selection column is
+  // absent for a SUB_ADMIN — the server re-checks regardless. Page-scoped:
+  // only the ids on this page.
+  const selection = useRowSelection(isAdmin ? clients.map((c) => c.id) : []);
 
   const dateFormatter = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-TN' : 'fr-TN', {
     dateStyle: 'medium'
@@ -78,12 +86,58 @@ export function ClientsTable({
     });
   }
 
+  function runBulk(
+    action: (ids: string[]) => Promise<{ok: boolean; error?: string}>,
+    okMessage: string
+  ) {
+    const ids = selection.ids;
+    startTransition(async () => {
+      const result = await action(ids);
+      if (result.ok) {
+        toast.success(okMessage);
+        selection.clear();
+      } else {
+        toast.error(t(`errors.${result.error}` as never));
+      }
+    });
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <AdminListHeader title={t('title')} />
 
       <AdminTableCard
         toolbar={
+          selection.count > 0 ? (
+            // The selection bar REPLACES the toolbar: the actions appear where
+            // the operator is already looking, with the count always in view.
+            <SelectionBar
+              count={selection.count}
+              countLabel={tSel('count', {count: selection.count})}
+              clearLabel={tSel('clear')}
+              onClear={selection.clear}
+            >
+              {includeArchived ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => runBulk(restoreClients, t('restoredToast'))}
+                >
+                  {tSel('restore')}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => runBulk(archiveClients, t('archivedToast'))}
+                >
+                  {tSel('archive')}
+                </Button>
+              )}
+            </SelectionBar>
+          ) : (
           <>
             {search}
             <AdminToolbarEnd>
@@ -93,6 +147,7 @@ export function ClientsTable({
               </AdminFilterToggle>
             </AdminToolbarEnd>
           </>
+          )
         }
         footer={pagination}
       >
@@ -102,6 +157,11 @@ export function ClientsTable({
           <Table>
             <TableHeader>
               <TableRow>
+                {isAdmin && (
+                  <TableHead className="w-10">
+                    <SelectAllCheckbox selection={selection} label={tSel('selectAll')} />
+                  </TableHead>
+                )}
                 <TableHead>{t('name')}</TableHead>
                 <TableHead>{t('phone')}</TableHead>
                 <TableHead>{t('orders')}</TableHead>
@@ -113,7 +173,22 @@ export function ClientsTable({
               {clients.map((client) => {
                 const archived = client.archivedAt !== null;
                 return (
-                  <TableRow key={client.id}>
+                  <TableRow key={client.id} data-selected={selection.has(client.id) || undefined}>
+                    {isAdmin && (
+                      // aria-label on the CELL: a cell takes its accessible
+                      // name from its contents, so an unlabelled one would
+                      // announce (and be matched by getByRole('cell', {name}))
+                      // as "Sélectionner <nom>", colliding with the name cell
+                      // of the very same row. The checkbox keeps its own
+                      // precise label.
+                      <TableCell className="w-10" aria-label={tSel('column')}>
+                        <RowCheckbox
+                          selection={selection}
+                          id={client.id}
+                          label={tSel('selectRow', {name: client.name})}
+                        />
+                      </TableCell>
+                    )}
                     {/* Monogram + name over e-mail — the e-mail keeps its own
                         text node, so nothing that used to be findable is lost. */}
                     <TableCell>

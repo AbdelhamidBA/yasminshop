@@ -74,8 +74,17 @@ test('admin archives the e2e product', async ({page}) => {
   await page.goto('/fr/admin/products?q=E2E-PROD-1');
 
   const row = page.getByRole('row', {name: /E2E-PROD-1/});
-  await row.getByRole('button', {name: 'Actions'}).click();
-  await page.getByRole('menuitem', {name: 'Archiver'}).click();
+  const actions = row.getByRole('button', {name: 'Actions'});
+  const archiveItem = page.getByRole('menuitem', {name: 'Archiver'});
+  // Admin routes compile on demand, so under full-suite load this click can
+  // land before the Base UI trigger hydrates and open nothing. Retry
+  // idempotently — click only while the menu is closed, never toggling an
+  // open one shut. Same idiom as the notification-bell test.
+  await expect(async () => {
+    if (!(await archiveItem.isVisible())) await actions.click();
+    await expect(archiveItem).toBeVisible({timeout: 1500});
+  }).toPass({timeout: 20_000});
+  await archiveItem.click();
   await page.getByRole('alertdialog').getByRole('button', {name: 'Archiver'}).click();
   await expect(page.getByText('Produit archivé.')).toBeVisible();
   await expect(page.getByRole('cell', {name: 'E2E-PROD-1'})).toHaveCount(0);

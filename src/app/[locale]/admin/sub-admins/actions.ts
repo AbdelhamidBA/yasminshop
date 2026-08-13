@@ -5,6 +5,7 @@ import {Prisma} from '@prisma/client';
 import {z} from 'zod';
 import {failure, fieldErrorsFromZod, success, type ActionResult} from '@/lib/action-result';
 import {AuthzError} from '@/lib/authz';
+import {sanitizeIds} from '@/lib/bulk';
 import {prisma} from '@/lib/db';
 import {hashPassword} from '@/lib/password';
 import {requireAdmin} from '@/server/authz';
@@ -177,6 +178,53 @@ export async function restoreSubAdmin(id: string): Promise<ActionResult> {
     if (updated.count === 0) return failure('notFound');
     revalidatePath(PATH, 'page');
     return success(undefined);
+  } catch (error) {
+    if (error instanceof AuthzError) return failure('forbidden');
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mass actions
+// ---------------------------------------------------------------------------
+
+/**
+ * Archive/restore a reviewed selection of sub-admins. ADMIN only (this whole
+ * surface already is), ids scalar-guarded and capped, and one updateMany so the
+ * batch cannot half-apply. NO delete: a sub-admin is a staff record.
+ */
+export async function archiveSubAdmins(ids: unknown): Promise<ActionResult<number>> {
+  return setSubAdminsArchived(ids, new Date());
+}
+
+export async function restoreSubAdmins(ids: unknown): Promise<ActionResult<number>> {
+  return setSubAdminsArchived(ids, null);
+}
+
+/**
+ * Carries EVERY side effect of the single-row actions:
+ *  - `role: 'SUB_ADMIN'` stays pinned in the WHERE, so an ADMIN or CLIENT id
+ *    smuggled into the selection behaves exactly like an unknown id — this
+ *    surface can never archive the owner ADMIN or a client.
+ *  - `tokenVersion: {increment: 1}` rides in the SAME updateMany, so a bulk
+ *    archive KILLS the live staff sessions of everyone in the batch on their
+ *    next protected page/action, not at token expiry. Restore bumps too
+ *    (belt-and-braces), keeping every archive/restore a clean boundary.
+ */
+async function setSubAdminsArchived(
+  ids: unknown,
+  archivedAt: Date | null
+): Promise<ActionResult<number>> {
+  const clean = sanitizeIds(ids);
+  if (!clean) return failure('invalidSelection');
+  try {
+    await requireAdmin();
+    const {count} = await prisma.user.updateMany({
+      where: {id: {in: clean}, role: 'SUB_ADMIN'},
+      data: {archivedAt, tokenVersion: {increment: 1}}
+    });
+    revalidatePath(PATH, 'page');
+    return success(count);
   } catch (error) {
     if (error instanceof AuthzError) return failure('forbidden');
     throw error;

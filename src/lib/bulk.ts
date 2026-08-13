@@ -6,8 +6,10 @@
 /** Upper bound on one mass action — a page of rows, not the whole table. */
 export const MAX_BULK_IDS = 100;
 
-// cuid() ids are alphanumeric; anything else is not an id this app issued.
-const ID_PATTERN = /^[a-z0-9]{1,64}$/i;
+// Matches the id guard used by the single-row actions
+// (/^[a-z0-9-]{1,40}$/i) so a mass action can never reject an id that the
+// per-row path accepts. Slightly longer bound, hyphen allowed.
+const ID_PATTERN = /^[a-z0-9-]{1,64}$/i;
 
 /**
  * Returns a clean, de-duplicated id list, or null when the input is not a

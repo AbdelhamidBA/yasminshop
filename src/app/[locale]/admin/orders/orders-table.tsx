@@ -22,11 +22,14 @@ import {
   EntityCell
 } from '@/components/admin/list-shell';
 import {OrderStatusBadge} from '@/components/admin/order-status-badge';
+import {
+  RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
+} from '@/components/admin/selection';
 import {Avatar, StatusLabel} from '@/components/admin/ui';
 import {Link} from '@/i18n/navigation';
 import {formatMillimes} from '@/lib/money';
 import type {OrderRow} from '@/server/orders';
-import {archiveOrder, restoreOrder} from './actions';
+import {archiveOrder, archiveOrders, restoreOrder, restoreOrders} from './actions';
 
 export function OrdersTable({
   orders,
@@ -51,10 +54,15 @@ export function OrdersTable({
 }) {
   const t = useTranslations('adminOrders');
   const tList = useTranslations('admin.list');
+  const tSel = useTranslations('admin.selection');
   const locale = useLocale();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
+  // Mass actions are ADMIN-only (a SUB_ADMIN may change an order's status and
+  // nothing else), so the whole selection column is absent for them — the
+  // server re-checks regardless. Page-scoped: only the ids on this page.
+  const selection = useRowSelection(isAdmin ? orders.map((o) => o.id) : []);
 
   const dateFormatter = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-TN' : 'fr-TN', {
     dateStyle: 'medium',
@@ -88,6 +96,23 @@ export function OrdersTable({
     });
   }
 
+  function runBulk(
+    action: (ids: string[]) => Promise<{ok: boolean; error?: string}>,
+    okMessage: string,
+    okDescription?: string
+  ) {
+    const ids = selection.ids;
+    startTransition(async () => {
+      const result = await action(ids);
+      if (result.ok) {
+        toast.success(okMessage, okDescription ? {description: okDescription} : undefined);
+        selection.clear();
+      } else {
+        toast.error(t(`errors.${result.error}` as never));
+      }
+    });
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <AdminListHeader
@@ -104,6 +129,38 @@ export function OrdersTable({
       <AdminTableCard
         tabs={tabs}
         toolbar={
+          selection.count > 0 ? (
+            // The selection bar REPLACES the toolbar: the actions appear where
+            // the operator is already looking, with the count always in view.
+            <SelectionBar
+              count={selection.count}
+              countLabel={tSel('count', {count: selection.count})}
+              clearLabel={tSel('clear')}
+              onClear={selection.clear}
+            >
+              {includeArchived ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() =>
+                    runBulk(restoreOrders, t('restoredToast'), t('restoredDescription'))
+                  }
+                >
+                  {tSel('restore')}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => runBulk(archiveOrders, t('archivedToast'), t('archivedDescription'))}
+                >
+                  {tSel('archive')}
+                </Button>
+              )}
+            </SelectionBar>
+          ) : (
           <>
             {search}
             <AdminToolbarEnd>
@@ -113,6 +170,7 @@ export function OrdersTable({
               </AdminFilterToggle>
             </AdminToolbarEnd>
           </>
+          )
         }
         footer={pagination}
       >
@@ -122,6 +180,11 @@ export function OrdersTable({
           <Table>
             <TableHeader>
               <TableRow>
+                {isAdmin && (
+                  <TableHead className="w-10">
+                    <SelectAllCheckbox selection={selection} label={tSel('selectAll')} />
+                  </TableHead>
+                )}
                 <TableHead>{t('number')}</TableHead>
                 <TableHead>{t('customer')}</TableHead>
                 <TableHead>{t('date')}</TableHead>
@@ -135,7 +198,22 @@ export function OrdersTable({
               {orders.map((order) => {
                 const archived = order.archivedAt !== null;
                 return (
-                  <TableRow key={order.id}>
+                  <TableRow key={order.id} data-selected={selection.has(order.id) || undefined}>
+                    {isAdmin && (
+                      // aria-label on the CELL: a cell takes its accessible
+                      // name from its contents, so an unlabelled one would
+                      // announce (and be matched by getByRole('cell', {name}))
+                      // as "Sélectionner #227", colliding with the number cell
+                      // of the very same row. The checkbox keeps its own
+                      // precise label.
+                      <TableCell className="w-10" aria-label={tSel('column')}>
+                        <RowCheckbox
+                          selection={selection}
+                          id={order.id}
+                          label={tSel('selectRow', {name: `#${order.number}`})}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Link

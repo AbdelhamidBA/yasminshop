@@ -20,9 +20,12 @@ import {
   AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
   EntityCell
 } from '@/components/admin/list-shell';
+import {
+  RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
+} from '@/components/admin/selection';
 import {Avatar, StatusLabel} from '@/components/admin/ui';
 import type {CategoryRow} from '@/server/categories';
-import {archiveCategory, restoreCategory} from './actions';
+import {archiveCategories, archiveCategory, restoreCategories, restoreCategory} from './actions';
 import {CategoryFormDialog, type EditableCategory} from './category-form-dialog';
 
 type ParentOption = {id: string; nameFr: string; nameAr: string};
@@ -40,6 +43,7 @@ export function CategoriesTable({
 }) {
   const t = useTranslations('admin.categories');
   const tList = useTranslations('admin.list');
+  const tSel = useTranslations('admin.selection');
   const locale = useLocale();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<EditableCategory | null>(null);
@@ -48,9 +52,34 @@ export function CategoriesTable({
 
   const name = (row: {nameFr: string; nameAr: string}) => (locale === 'ar' ? row.nameAr : row.nameFr);
 
+  // The tree is rendered flat, so selection is fed the SAME flat list of ids the
+  // operator can see — roots first, each followed by its sub-categories.
+  const rowIds = categories.flatMap((root) => [root.id, ...root.children.map((c) => c.id)]);
   // Roots + their children — the tree is rendered flat, so the count is the
   // number of rows the table actually shows.
-  const rowCount = categories.reduce((sum, root) => sum + 1 + root.children.length, 0);
+  const rowCount = rowIds.length;
+  // Mass actions are ADMIN-only, so the whole selection column is absent for a
+  // SUB_ADMIN — the server re-checks regardless.
+  const selection = useRowSelection(isAdmin ? rowIds : []);
+
+  function runBulk(
+    action: (ids: string[]) => Promise<{ok: boolean; error?: string}>,
+    okMessage: string,
+    tone: 'info' | 'success'
+  ) {
+    const ids = selection.ids;
+    startTransition(async () => {
+      const result = await action(ids);
+      if (result.ok) {
+        // Same severity split as the per-row actions: archiving hides records
+        // (info), restoring brings them back (success).
+        toast[tone](okMessage);
+        selection.clear();
+      } else {
+        toast.error(t(`errors.${result.error}` as never));
+      }
+    });
+  }
 
   function runArchive(id: string) {
     startTransition(async () => {
@@ -72,7 +101,21 @@ export function CategoriesTable({
   function renderRow(row: CategoryRow | CategoryRow['children'][number], isChild: boolean) {
     const archived = row.archivedAt !== null;
     return (
-      <TableRow key={row.id}>
+      <TableRow key={row.id} data-selected={selection.has(row.id) || undefined}>
+        {isAdmin && (
+          // aria-label on the CELL, not just the checkbox: a cell takes its
+          // accessible name from its contents, so an unlabelled one would be
+          // announced (and matched by getByRole('cell', {name})) as
+          // "Sélectionner <catégorie>" — colliding with the name cell of the
+          // very same row. The checkbox keeps its own precise label.
+          <TableCell className="w-10" aria-label={tSel('column')}>
+            <RowCheckbox
+              selection={selection}
+              id={row.id}
+              label={tSel('selectRow', {name: name(row)})}
+            />
+          </TableCell>
+        )}
         {/* Name over slug. Children keep their indent and swap the monogram for
             a branch glyph, so the hierarchy still reads at a glance. */}
         <TableCell className={isChild ? 'ps-10' : undefined}>
@@ -145,15 +188,46 @@ export function CategoriesTable({
 
       <AdminTableCard
         toolbar={
-          <AdminToolbarEnd>
-            <AdminResultCount>{tList('results', {count: rowCount})}</AdminResultCount>
-            <AdminFilterToggle
-              href={includeArchived ? '/admin/categories' : '/admin/categories?archived=1'}
-              active={includeArchived}
+          selection.count > 0 ? (
+            // The selection bar REPLACES the toolbar: the actions appear where
+            // the operator is already looking, with the count always in view.
+            <SelectionBar
+              count={selection.count}
+              countLabel={tSel('count', {count: selection.count})}
+              clearLabel={tSel('clear')}
+              onClear={selection.clear}
             >
-              {t('showArchived')}
-            </AdminFilterToggle>
-          </AdminToolbarEnd>
+              {includeArchived ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => runBulk(restoreCategories, t('restoredToast'), 'success')}
+                >
+                  {tSel('restore')}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => runBulk(archiveCategories, t('archivedToast'), 'info')}
+                >
+                  {tSel('archive')}
+                </Button>
+              )}
+            </SelectionBar>
+          ) : (
+            <AdminToolbarEnd>
+              <AdminResultCount>{tList('results', {count: rowCount})}</AdminResultCount>
+              <AdminFilterToggle
+                href={includeArchived ? '/admin/categories' : '/admin/categories?archived=1'}
+                active={includeArchived}
+              >
+                {t('showArchived')}
+              </AdminFilterToggle>
+            </AdminToolbarEnd>
+          )
         }
       >
         {categories.length === 0 ? (
@@ -162,6 +236,11 @@ export function CategoriesTable({
           <Table>
             <TableHeader>
               <TableRow>
+                {isAdmin && (
+                  <TableHead className="w-10">
+                    <SelectAllCheckbox selection={selection} label={tSel('selectAll')} />
+                  </TableHead>
+                )}
                 <TableHead>{t('name')}</TableHead>
                 <TableHead>{t('products')}</TableHead>
                 {isAdmin && <TableHead className="text-end">{t('actions')}</TableHead>}

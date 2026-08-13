@@ -21,9 +21,15 @@ import {
   AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
   EntityCell
 } from '@/components/admin/list-shell';
+import {
+  RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
+} from '@/components/admin/selection';
 import {IconBox, StatusLabel} from '@/components/admin/ui';
 import type {PromoCodeRow} from '@/server/promo-codes';
-import {archivePromoCode, restorePromoCode, togglePromoCode} from './actions';
+import {
+  archivePromoCode, archivePromoCodes, disablePromoCodes, enablePromoCodes, restorePromoCode,
+  restorePromoCodes, togglePromoCode
+} from './actions';
 import {PromoCodeFormDialog, type EditablePromoCode} from './promo-code-form-dialog';
 
 export function PromoCodesTable({
@@ -37,15 +43,38 @@ export function PromoCodesTable({
 }) {
   const t = useTranslations('admin.promoCodesPage');
   const tList = useTranslations('admin.list');
+  const tSel = useTranslations('admin.selection');
   const locale = useLocale();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<EditablePromoCode | null>(null);
   const [creating, setCreating] = useState(false);
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
+  // Mass actions are ADMIN-only, so the whole selection column is absent for a
+  // SUB_ADMIN — the server re-checks regardless.
+  const selection = useRowSelection(isAdmin ? promoCodes.map((row) => row.id) : []);
 
   const dateFormatter = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-TN' : 'fr-TN', {
     dateStyle: 'medium'
   });
+
+  function runBulk(
+    action: (ids: string[]) => Promise<{ok: boolean; error?: string}>,
+    okMessage: string,
+    tone: 'info' | 'success'
+  ) {
+    const ids = selection.ids;
+    startTransition(async () => {
+      const result = await action(ids);
+      if (result.ok) {
+        // Same severity split as the per-row actions: archiving/deactivating is
+        // a state change (info), restoring/activating an achievement (success).
+        toast[tone](okMessage);
+        selection.clear();
+      } else {
+        toast.error(t(`errors.${result.error}` as never));
+      }
+    });
+  }
 
   function runToggle(id: string, active: boolean) {
     startTransition(async () => {
@@ -92,15 +121,64 @@ export function PromoCodesTable({
 
       <AdminTableCard
         toolbar={
-          <AdminToolbarEnd>
-            <AdminResultCount>{tList('results', {count: promoCodes.length})}</AdminResultCount>
-            <AdminFilterToggle
-              href={includeArchived ? '/admin/promo-codes' : '/admin/promo-codes?archived=1'}
-              active={includeArchived}
+          selection.count > 0 ? (
+            // The selection bar REPLACES the toolbar: the actions appear where
+            // the operator is already looking, with the count always in view.
+            <SelectionBar
+              count={selection.count}
+              countLabel={tSel('count', {count: selection.count})}
+              clearLabel={tSel('clear')}
+              onClear={selection.clear}
             >
-              {t('showArchived')}
-            </AdminFilterToggle>
-          </AdminToolbarEnd>
+              {/* Enable/disable is the per-row Switch applied to the selection —
+                  same single `active` write, same two toasts. */}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={pending}
+                onClick={() => runBulk(enablePromoCodes, t('toggledOn'), 'success')}
+              >
+                {t('enable')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={pending}
+                onClick={() => runBulk(disablePromoCodes, t('toggledOff'), 'info')}
+              >
+                {t('disable')}
+              </Button>
+              {includeArchived ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => runBulk(restorePromoCodes, t('restoredToast'), 'success')}
+                >
+                  {tSel('restore')}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => runBulk(archivePromoCodes, t('archivedToast'), 'info')}
+                >
+                  {tSel('archive')}
+                </Button>
+              )}
+            </SelectionBar>
+          ) : (
+            <AdminToolbarEnd>
+              <AdminResultCount>{tList('results', {count: promoCodes.length})}</AdminResultCount>
+              <AdminFilterToggle
+                href={includeArchived ? '/admin/promo-codes' : '/admin/promo-codes?archived=1'}
+                active={includeArchived}
+              >
+                {t('showArchived')}
+              </AdminFilterToggle>
+            </AdminToolbarEnd>
+          )
         }
       >
         {promoCodes.length === 0 ? (
@@ -109,6 +187,11 @@ export function PromoCodesTable({
           <Table>
             <TableHeader>
               <TableRow>
+                {isAdmin && (
+                  <TableHead className="w-10">
+                    <SelectAllCheckbox selection={selection} label={tSel('selectAll')} />
+                  </TableHead>
+                )}
                 <TableHead>{t('code')}</TableHead>
                 <TableHead>{t('percentOff')}</TableHead>
                 <TableHead>{t('active')}</TableHead>
@@ -120,7 +203,21 @@ export function PromoCodesTable({
               {promoCodes.map((row) => {
                 const archived = row.archivedAt !== null;
                 return (
-                  <TableRow key={row.id}>
+                  <TableRow key={row.id} data-selected={selection.has(row.id) || undefined}>
+                    {isAdmin && (
+                      // aria-label on the CELL: a cell is named from its
+                      // contents, so an unlabelled one would announce (and be
+                      // matched by getByRole('cell', {name})) as
+                      // "Sélectionner <code>", colliding with the code cell of
+                      // the same row. The checkbox keeps its own precise label.
+                      <TableCell className="w-10" aria-label={tSel('column')}>
+                        <RowCheckbox
+                          selection={selection}
+                          id={row.id}
+                          label={tSel('selectRow', {name: row.code})}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell>
                       <EntityCell
                         media={

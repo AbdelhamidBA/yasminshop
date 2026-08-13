@@ -22,10 +22,13 @@ describe('sanitizeIds', () => {
 
   it('rejects anything that is not an id', () => {
     expect(sanitizeIds(['abc123', ''])).toBeNull();
-    expect(sanitizeIds(['abc-123'])).toBeNull();
     expect(sanitizeIds(['abc 123'])).toBeNull();
     expect(sanitizeIds(['abc123', 42])).toBeNull();
     expect(sanitizeIds(['a'.repeat(65)])).toBeNull();
+  });
+
+  it('accepts hyphens, matching the single-row id guards', () => {
+    expect(sanitizeIds(['abc-123'])).toEqual(['abc-123']);
   });
 
   it('caps the batch size', () => {

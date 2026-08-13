@@ -197,7 +197,11 @@ export function ProductsTable({
                 return (
                   <TableRow key={product.id} data-selected={selection.has(product.id) || undefined}>
                     {isAdmin && (
-                      <TableCell className="w-10">
+                      // Labelled so the cell does not inherit its accessible
+                      // name from the checkbox inside it: an unlabelled
+                      // selection cell announces as "Selectionner <name>" and
+                      // collides with the row's own name cell in cell lookups.
+                      <TableCell className="w-10" aria-label={tSel('column')}>
                         <RowCheckbox
                           selection={selection}
                           id={product.id}
