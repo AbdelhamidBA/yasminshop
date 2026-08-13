@@ -290,6 +290,11 @@
     },
     "categories": {
       "title": "Catégories",
+      "tabs": {
+        "label": "Filtrer les catégories",
+        "active": "Actives",
+        "archived": "Archivées"
+      },
       "add": "Ajouter une catégorie",
       "edit": "Modifier la catégorie",
       "name": "Nom",
@@ -303,7 +308,6 @@
       "archive": "Archiver",
       "restore": "Restaurer",
       "archived": "Archivée",
-      "showArchived": "Afficher les archivées",
       "confirmArchiveTitle": "Archiver cette catégorie ?",
       "confirmArchiveBody": "La catégorie et ses sous-catégories seront masquées de la boutique.",
       "cancel": "Annuler",
@@ -341,7 +345,6 @@
       "lowStock": "Stock bas",
       "outOfStock": "Rupture",
       "archived": "Archivé",
-      "showArchived": "Afficher les archivés",
       "actions": "Actions",
       "edit": "Modifier",
       "archive": "Archiver",
@@ -370,14 +373,12 @@
       "deletedDescription": "Les images associées ont été supprimées avec le produit.",
       "bulkArchivedToast": "Produit(s) archivé(s).",
       "bulkRestoredToast": "Produit(s) restauré(s).",
-      "stats": {
-        "total": "Produits actifs",
+      "tabs": {
+        "label": "Filtrer les produits",
+        "active": "Actifs",
         "outOfStock": "En rupture",
         "lowStock": "Stock bas",
-        "archived": "Archivés",
-        "hint": {
-          "lowStock": "{count} en stock ou moins"
-        }
+        "archived": "Archivés"
       }
     },
     "productForm": {
@@ -444,6 +445,12 @@
     },
     "promoCodesPage": {
       "title": "Codes promo",
+      "tabs": {
+        "label": "Filtrer les codes promo",
+        "active": "Actifs",
+        "inactive": "Inactifs",
+        "archived": "Archivés"
+      },
       "add": "Ajouter un code",
       "edit": "Modifier le code",
       "code": "Code",
@@ -452,7 +459,6 @@
       "expiresAt": "Expire le",
       "noExpiry": "Sans expiration",
       "archived": "Archivé",
-      "showArchived": "Afficher les archivés",
       "actions": "Actions",
       "archive": "Archiver",
       "restore": "Restaurer",
@@ -548,7 +554,9 @@
     "title": "Commandes",
     "search": "Rechercher par n°, nom ou téléphone...",
     "tabs": {
-      "all": "Toutes"
+      "label": "Filtrer les commandes",
+      "all": "Toutes",
+      "archived": "Archivées"
     },
     "status": {
       "PENDING": "En attente",
@@ -567,7 +575,6 @@
     "archive": "Archiver",
     "restore": "Restaurer",
     "archived": "Archivée",
-    "showArchived": "Afficher les archivées",
     "empty": "Aucune commande trouvée.",
     "prev": "Précédent",
     "next": "Suivant",
@@ -652,6 +659,11 @@
   "adminClients": {
     "title": "Clients",
     "search": "Rechercher par nom, e-mail ou téléphone...",
+    "tabs": {
+      "label": "Filtrer les clients",
+      "active": "Actifs",
+      "archived": "Archivés"
+    },
     "name": "Nom",
     "email": "E-mail",
     "phone": "Téléphone",
@@ -663,7 +675,6 @@
     "archive": "Archiver",
     "restore": "Restaurer",
     "archived": "Archivé",
-    "showArchived": "Afficher les archivés",
     "empty": "Aucun client trouvé.",
     "prev": "Précédent",
     "next": "Suivant",
@@ -703,6 +714,11 @@
   "subAdmins": {
     "title": "Sous-admins",
     "search": "Rechercher par nom, e-mail ou téléphone...",
+    "tabs": {
+      "label": "Filtrer les sous-admins",
+      "active": "Actifs",
+      "archived": "Archivés"
+    },
     "name": "Nom",
     "email": "E-mail",
     "phone": "Téléphone",
@@ -721,7 +737,6 @@
     "archive": "Archiver",
     "restore": "Restaurer",
     "archived": "Archivé",
-    "showArchived": "Afficher les archivés",
     "empty": "Aucun sous-admin trouvé.",
     "prev": "Précédent",
     "next": "Suivant",

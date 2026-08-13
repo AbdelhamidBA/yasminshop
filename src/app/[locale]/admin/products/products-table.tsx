@@ -2,7 +2,6 @@
 
 import {type ReactNode, useState, useTransition} from 'react';
 import {Check, Plus} from 'lucide-react';
-import {useSearchParams} from 'next/navigation';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
@@ -16,8 +15,7 @@ import {
 import {AdminEmptyState} from '@/components/admin/empty-state';
 import {RowActionItem, RowActions, RowActionSeparator} from '@/components/admin/row-actions';
 import {
-  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
-  EntityCell
+  AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd, EntityCell
 } from '@/components/admin/list-shell';
 import {
   RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
@@ -35,9 +33,10 @@ export function ProductsTable({
   products,
   total,
   isAdmin,
-  includeArchived,
+  archivedOnly,
   lowStockThreshold,
   currencyLabel,
+  tabs,
   search,
   pagination
 }: {
@@ -45,17 +44,19 @@ export function ProductsTable({
   /** Rows matching the current filters across ALL pages, not just this one. */
   total: number;
   isAdmin: boolean;
-  includeArchived: boolean;
+  /** The Archivés tab is the active one — every visible row is archived. */
+  archivedOnly: boolean;
   lowStockThreshold: number;
   currencyLabel: string;
-  // Server-rendered slots so the card owns the whole surface (orders idiom).
+  // Server-rendered slots so the card owns the whole surface (orders idiom):
+  // the counted filter tabs, the search field and the pagination.
+  tabs?: ReactNode;
   search?: ReactNode;
   pagination?: ReactNode;
 }) {
   const t = useTranslations('admin.products');
   const tList = useTranslations('admin.list');
   const locale = useLocale();
-  const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -83,12 +84,6 @@ export function ProductsTable({
   }
 
   const name = (row: {nameFr: string; nameAr: string}) => (locale === 'ar' ? row.nameAr : row.nameFr);
-
-  const toggleParams = new URLSearchParams();
-  const q = searchParams.get('q');
-  if (q) toggleParams.set('q', q);
-  if (!includeArchived) toggleParams.set('archived', '1');
-  const toggleHref = `/admin/products${toggleParams.size ? `?${toggleParams}` : ''}`;
 
   function runArchive(id: string) {
     startTransition(async () => {
@@ -121,6 +116,7 @@ export function ProductsTable({
       />
 
       <AdminTableCard
+        tabs={tabs}
         footer={pagination}
         toolbar={
           selection.count > 0 ? (
@@ -132,7 +128,7 @@ export function ProductsTable({
               clearLabel={tSel('clear')}
               onClear={selection.clear}
             >
-              {includeArchived ? (
+              {archivedOnly ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -167,10 +163,9 @@ export function ProductsTable({
                 warning) and lets it take the free space in the toolbar row. */}
             <div className="min-w-0 flex-1">{search}</div>
             <AdminToolbarEnd>
+              {/* Reflects the ACTIVE tab, not the whole table — the count and
+                  the tab above it are the same figure. */}
               <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
-              <AdminFilterToggle href={toggleHref} active={includeArchived}>
-                {t('showArchived')}
-              </AdminFilterToggle>
             </AdminToolbarEnd>
           </>
           )

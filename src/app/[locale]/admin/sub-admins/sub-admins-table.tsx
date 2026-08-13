@@ -2,7 +2,6 @@
 
 import {type ReactNode, useState, useTransition} from 'react';
 import {Plus} from 'lucide-react';
-import {useSearchParams} from 'next/navigation';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
 import {
@@ -16,8 +15,7 @@ import {
 import {AdminEmptyState} from '@/components/admin/empty-state';
 import {RowActionItem, RowActions, RowActionSeparator} from '@/components/admin/row-actions';
 import {
-  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
-  EntityCell
+  AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd, EntityCell
 } from '@/components/admin/list-shell';
 import {
   RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
@@ -34,13 +32,18 @@ import {SubAdminEditDialog, type EditableSubAdmin} from './sub-admin-edit-dialog
 export function SubAdminsTable({
   subAdmins,
   total,
-  includeArchived,
+  archivedView,
+  tabs,
   search,
   pagination
 }: {
   subAdmins: SubAdminRow[];
+  /** Rows matching the OPEN tab across all pages — the tab's own number. */
   total: number;
-  includeArchived: boolean;
+  /** The "Archivés" tab is open: the mass action there is restore, not archive. */
+  archivedView: boolean;
+  // Server-rendered slots so the card owns the whole surface (orders idiom).
+  tabs?: ReactNode;
   search?: ReactNode;
   pagination?: ReactNode;
 }) {
@@ -48,7 +51,6 @@ export function SubAdminsTable({
   const tList = useTranslations('admin.list');
   const tSel = useTranslations('admin.selection');
   const locale = useLocale();
-  const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<EditableSubAdmin | null>(null);
@@ -80,13 +82,6 @@ export function SubAdminsTable({
     });
   }
 
-  // Archived-toggle link preserves the search (clients-table idiom).
-  const toggleParams = new URLSearchParams();
-  const q = searchParams.get('q');
-  if (q) toggleParams.set('q', q);
-  if (!includeArchived) toggleParams.set('archived', '1');
-  const toggleHref = `/admin/sub-admins${toggleParams.size ? `?${toggleParams}` : ''}`;
-
   function runArchive(id: string) {
     startTransition(async () => {
       const result = await archiveSubAdmin(id);
@@ -116,6 +111,7 @@ export function SubAdminsTable({
       />
 
       <AdminTableCard
+        tabs={tabs}
         toolbar={
           selection.count > 0 ? (
             // The selection bar REPLACES the toolbar: the actions appear where
@@ -126,7 +122,7 @@ export function SubAdminsTable({
               clearLabel={tSel('clear')}
               onClear={selection.clear}
             >
-              {includeArchived ? (
+              {archivedView ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -150,10 +146,8 @@ export function SubAdminsTable({
             <>
               {search}
               <AdminToolbarEnd>
+                {/* Counts the OPEN tab, not the whole table. */}
                 <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
-                <AdminFilterToggle href={toggleHref} active={includeArchived}>
-                  {t('showArchived')}
-                </AdminFilterToggle>
               </AdminToolbarEnd>
             </>
           )

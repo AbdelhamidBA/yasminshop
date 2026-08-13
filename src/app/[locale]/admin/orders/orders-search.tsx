@@ -4,18 +4,16 @@ import {useTranslations} from 'next-intl';
 import {Input} from '@/components/ui/input';
 import {AdminSearchField, adminSearchInputClass} from '@/components/admin/list-shell';
 import {useRouter} from '@/i18n/navigation';
-import type {OrderStatus} from '@/lib/orders';
 
 // Same submit-to-URL idiom as the admin products SearchInput; preserves the
-// active status tab and archived toggle, resets pagination.
+// active filter tab and the rows-per-page choice, resets pagination.
 export function OrdersSearch({
   initialValue,
-  status,
-  includeArchived
+  keep
 }: {
   initialValue: string;
-  status: OrderStatus | undefined;
-  includeArchived: boolean;
+  /** Active filter tab + rows-per-page, so searching stays on this tab. */
+  keep: Record<string, string>;
 }) {
   const t = useTranslations('adminOrders');
   const router = useRouter();
@@ -27,8 +25,8 @@ export function OrdersSearch({
         const q = new FormData(event.currentTarget).get('q');
         const params = new URLSearchParams();
         if (q && String(q).trim()) params.set('q', String(q).trim());
-        if (status) params.set('status', status);
-        if (includeArchived) params.set('archived', '1');
+        // `page` is deliberately absent: a new search restarts at page 1.
+        for (const [key, value] of Object.entries(keep)) params.set(key, value);
         router.replace(`/admin/orders${params.size ? `?${params}` : ''}`);
       }}
       className="w-full sm:max-w-xs"

@@ -20,3 +20,19 @@ export function lowStockRange(lastChanceThreshold: number): {gt: number; lte: nu
     Number.isInteger(lastChanceThreshold) && lastChanceThreshold > 0 ? lastChanceThreshold : 0;
   return {gt: 0, lte: max};
 }
+
+/**
+ * The two stock views the admin products list offers, as their `?stock=` URL
+ * values: `out` is `quantity = 0`, `low` is the band above.
+ */
+export type StockFilter = 'out' | 'low';
+
+/**
+ * Scalar guard for the URL-sourced `?stock=` value — the same treatment `page`
+ * and `per` get. Exactly 'out' or 'low' is honoured; anything else (absent, a
+ * typo, the array a repeated query param produces) is ignored, so the list
+ * falls back to its default view instead of reaching Prisma with junk.
+ */
+export function parseStockFilter(raw: unknown): StockFilter | undefined {
+  return raw === 'out' || raw === 'low' ? raw : undefined;
+}

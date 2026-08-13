@@ -15,8 +15,7 @@ import {
 import {AdminEmptyState} from '@/components/admin/empty-state';
 import {RowActionItem, RowActions, RowActionSeparator} from '@/components/admin/row-actions';
 import {
-  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
-  EntityCell
+  AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd, EntityCell
 } from '@/components/admin/list-shell';
 import {
   RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
@@ -33,21 +32,24 @@ export function CategoriesTable({
   total,
   parentOptions,
   isAdmin,
-  includeArchived,
+  archivedView,
+  tabs,
   pagination
 }: {
   categories: CategoryRow[];
   /**
-   * ROOT categories matching the current filter across ALL pages. The tree is
+   * ROOT categories matching the OPEN tab across ALL pages. The tree is
    * paginated by root — each root's sub-categories always travel with it — so
-   * the result count and the footer range speak the same unit and can never
-   * disagree with one another.
+   * the tab number, the result count and the footer range speak the same unit
+   * and can never disagree with one another.
    */
   total: number;
   parentOptions: ParentOption[];
   isAdmin: boolean;
-  includeArchived: boolean;
-  // Server-rendered slot so the card owns the whole surface (orders idiom).
+  /** The "Archivées" tab is open: the mass action there is restore, not archive. */
+  archivedView: boolean;
+  // Server-rendered slots so the card owns the whole surface (orders idiom).
+  tabs?: ReactNode;
   pagination?: ReactNode;
 }) {
   const t = useTranslations('admin.categories');
@@ -190,6 +192,7 @@ export function CategoriesTable({
       />
 
       <AdminTableCard
+        tabs={tabs}
         footer={pagination}
         toolbar={
           selection.count > 0 ? (
@@ -201,7 +204,7 @@ export function CategoriesTable({
               clearLabel={tSel('clear')}
               onClear={selection.clear}
             >
-              {includeArchived ? (
+              {archivedView ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -223,14 +226,8 @@ export function CategoriesTable({
             </SelectionBar>
           ) : (
             <AdminToolbarEnd>
-              {/* Counts ROOT categories — the unit the list pages by. */}
+              {/* ROOT categories on the OPEN tab — the unit the list pages by. */}
               <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
-              <AdminFilterToggle
-                href={includeArchived ? '/admin/categories' : '/admin/categories?archived=1'}
-                active={includeArchived}
-              >
-                {t('showArchived')}
-              </AdminFilterToggle>
             </AdminToolbarEnd>
           )
         }

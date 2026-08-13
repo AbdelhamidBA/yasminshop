@@ -1,5 +1,5 @@
 import {describe, expect, test} from 'vitest';
-import {lowStockRange} from './inventory';
+import {lowStockRange, parseStockFilter} from './inventory';
 
 describe('lowStockRange', () => {
   test('spans "in stock but at or below the owner threshold"', () => {
@@ -29,5 +29,24 @@ describe('lowStockRange', () => {
     // getHomeSections filters last-chance products with exactly this shape, so
     // the admin "Stock bas" count and the storefront section can never diverge.
     expect(lowStockRange(5)).toEqual({gt: 0, lte: 5});
+  });
+});
+
+describe('parseStockFilter', () => {
+  test('honours exactly the two tab values', () => {
+    expect(parseStockFilter('out')).toBe('out');
+    expect(parseStockFilter('low')).toBe('low');
+  });
+
+  test('ignores anything else rather than passing it to Prisma', () => {
+    // Absent, mis-cased, unknown, or the array a repeated ?stock= produces —
+    // every one of them falls back to the default (all active) view.
+    expect(parseStockFilter(undefined)).toBeUndefined();
+    expect(parseStockFilter('')).toBeUndefined();
+    expect(parseStockFilter('OUT')).toBeUndefined();
+    expect(parseStockFilter('archived')).toBeUndefined();
+    expect(parseStockFilter(['out'])).toBeUndefined();
+    expect(parseStockFilter(0)).toBeUndefined();
+    expect(parseStockFilter(null)).toBeUndefined();
   });
 });

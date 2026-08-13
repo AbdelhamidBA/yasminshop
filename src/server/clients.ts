@@ -20,16 +20,23 @@ const CLIENT_SELECT = {
   _count: {select: {orders: true}}
 } as const;
 
+// The list is filtered by ONE of two mutually exclusive tabs: Actifs (the
+// default) or Archivés. `archivedOnly` is what the URL's ?archived=1 means —
+// archived rows ONLY, never mixed in with the live ones.
+//
+// Both tab counts come from the very same where-builder the rows come from —
+// search included — inside the same $transaction, so a tab can never disagree
+// with the rows it opens, nor with the footer range (`total` IS the open tab's
+// count, read out of `counts` rather than queried a second time).
 export type ListClientsParams = {
   q?: string;
-  includeArchived: boolean;
+  archivedOnly: boolean;
   page: number;
   pageSize: number;
 };
 
 export async function listClients(params: ListClientsParams) {
   const filters: Prisma.UserWhereInput[] = [{role: 'CLIENT'}];
-  if (!params.includeArchived) filters.push({archivedAt: null});
 
   // Scalar guard on the URL-sourced q before any Prisma filter.
   const q = typeof params.q === 'string' ? params.q.trim() : '';
@@ -43,17 +50,25 @@ export async function listClients(params: ListClientsParams) {
     });
   }
 
-  const where: Prisma.UserWhereInput = {AND: filters};
-  const [clients, total] = await prisma.$transaction([
+  // Complementary halves of the same (role + search) population: every client
+  // is counted by exactly one tab.
+  const whereFor = (archived: boolean): Prisma.UserWhereInput => ({
+    AND: [...filters, archived ? {archivedAt: {not: null}} : {archivedAt: null}]
+  });
+
+  const [clients, active, archived] = await prisma.$transaction([
     prisma.user.findMany({
-      where,
+      where: whereFor(params.archivedOnly),
       orderBy: [{createdAt: 'desc'}, {id: 'asc'}],
       select: CLIENT_SELECT,
       ...pagingArgs(params)
     }),
-    prisma.user.count({where})
+    prisma.user.count({where: whereFor(false)}),
+    prisma.user.count({where: whereFor(true)})
   ]);
-  return {clients, total};
+
+  const counts = {active, archived};
+  return {clients, counts, total: params.archivedOnly ? archived : active};
 }
 
 export type ClientRow = Awaited<ReturnType<typeof listClients>>['clients'][number];

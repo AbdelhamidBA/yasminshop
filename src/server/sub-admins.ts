@@ -18,9 +18,13 @@ const SUB_ADMIN_SELECT = {
   createdAt: true
 } as const;
 
+// One of two mutually exclusive tabs (?archived=1 means archived rows ONLY),
+// counted the same way the clients list is: both counts come from the same
+// where-builder as the rows — role pin and search included — inside one
+// $transaction, so `total` IS the open tab's number.
 export type ListSubAdminsParams = {
   q?: string;
-  includeArchived: boolean;
+  archivedOnly: boolean;
   page: number;
   pageSize: number;
 };
@@ -29,7 +33,6 @@ export async function listSubAdmins(params: ListSubAdminsParams) {
   // Role SUB_ADMIN is pinned in the very first filter — every query below
   // carries it, so ADMIN / CLIENT rows are structurally unreachable.
   const filters: Prisma.UserWhereInput[] = [{role: 'SUB_ADMIN'}];
-  if (!params.includeArchived) filters.push({archivedAt: null});
 
   // Scalar guard on the URL-sourced q before any Prisma filter.
   const q = typeof params.q === 'string' ? params.q.trim() : '';
@@ -43,17 +46,23 @@ export async function listSubAdmins(params: ListSubAdminsParams) {
     });
   }
 
-  const where: Prisma.UserWhereInput = {AND: filters};
-  const [subAdmins, total] = await prisma.$transaction([
+  const whereFor = (archived: boolean): Prisma.UserWhereInput => ({
+    AND: [...filters, archived ? {archivedAt: {not: null}} : {archivedAt: null}]
+  });
+
+  const [subAdmins, active, archived] = await prisma.$transaction([
     prisma.user.findMany({
-      where,
+      where: whereFor(params.archivedOnly),
       orderBy: [{createdAt: 'desc'}, {id: 'asc'}],
       select: SUB_ADMIN_SELECT,
       ...pagingArgs(params)
     }),
-    prisma.user.count({where})
+    prisma.user.count({where: whereFor(false)}),
+    prisma.user.count({where: whereFor(true)})
   ]);
-  return {subAdmins, total};
+
+  const counts = {active, archived};
+  return {subAdmins, counts, total: params.archivedOnly ? archived : active};
 }
 
 export type SubAdminRow = Awaited<ReturnType<typeof listSubAdmins>>['subAdmins'][number];

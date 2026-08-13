@@ -16,8 +16,7 @@ import {
 import {AdminEmptyState} from '@/components/admin/empty-state';
 import {RowActionItem, RowActions, RowActionSeparator} from '@/components/admin/row-actions';
 import {
-  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
-  EntityCell
+  AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd, EntityCell
 } from '@/components/admin/list-shell';
 import {
   RowCheckbox, SelectAllCheckbox, SelectionBar, useRowSelection
@@ -34,15 +33,18 @@ export function PromoCodesTable({
   promoCodes,
   total,
   isAdmin,
-  includeArchived,
+  archivedView,
+  tabs,
   pagination
 }: {
   promoCodes: PromoCodeRow[];
-  /** Rows matching the current filter across ALL pages, not just this one. */
+  /** Rows matching the OPEN tab across ALL pages — the tab's own number. */
   total: number;
   isAdmin: boolean;
-  includeArchived: boolean;
-  // Server-rendered slot so the card owns the whole surface (orders idiom).
+  /** The "Archivés" tab is open: the mass action there is restore, not archive. */
+  archivedView: boolean;
+  // Server-rendered slots so the card owns the whole surface (orders idiom).
+  tabs?: ReactNode;
   pagination?: ReactNode;
 }) {
   const t = useTranslations('admin.promoCodesPage');
@@ -124,6 +126,7 @@ export function PromoCodesTable({
       />
 
       <AdminTableCard
+        tabs={tabs}
         footer={pagination}
         toolbar={
           selection.count > 0 ? (
@@ -153,7 +156,7 @@ export function PromoCodesTable({
               >
                 {t('disable')}
               </Button>
-              {includeArchived ? (
+              {archivedView ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -175,13 +178,8 @@ export function PromoCodesTable({
             </SelectionBar>
           ) : (
             <AdminToolbarEnd>
+              {/* Counts the OPEN tab, not the whole table. */}
               <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
-              <AdminFilterToggle
-                href={includeArchived ? '/admin/promo-codes' : '/admin/promo-codes?archived=1'}
-                active={includeArchived}
-              >
-                {t('showArchived')}
-              </AdminFilterToggle>
             </AdminToolbarEnd>
           )
         }

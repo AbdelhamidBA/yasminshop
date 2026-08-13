@@ -1,7 +1,7 @@
 import 'server-only';
 import type {Prisma} from '@prisma/client';
 import {prisma} from '@/lib/db';
-import {lowStockRange} from '@/lib/inventory';
+import {lowStockRange, type StockFilter} from '@/lib/inventory';
 import {pagingArgs} from './paging';
 
 // Admin products data access. Search (q) matches the reference and the names
@@ -14,34 +14,66 @@ import {pagingArgs} from './paging';
 const CATEGORY_SELECT = {select: {id: true, nameFr: true, nameAr: true}} as const;
 
 // "Active" for the catalogue is exactly listProducts' default visibility rule:
-// archivedAt: null. The archived counter is its complement, so total + archived
-// is the whole product table and neither figure can double-count.
+// archivedAt: null. ARCHIVED is its exact complement, so the two scopes
+// partition the product table and no row can be counted twice.
 const ACTIVE: Prisma.ProductWhereInput = {archivedAt: null};
+const ARCHIVED: Prisma.ProductWhereInput = {archivedAt: {not: null}};
 
-export type ListProductsParams = {
+/**
+ * Which slice of the catalogue a view shows — one filter tab, in data terms.
+ * The four are mutually exclusive: `archivedOnly` wins outright (an archived
+ * product is out of the catalogue, so grading its stock is meaningless), and
+ * the two stock bands live inside the active scope.
+ */
+export type ProductScope = {
+  /** The Archivés tab shows archived rows ONLY, never active ones alongside. */
+  archivedOnly: boolean;
+  /** 'out' → quantity = 0; 'low' → the owner's low band. Ignored when archived. */
+  stock?: StockFilter;
+  /** Owner-configured threshold — the ONE definition of "low" (lib/inventory). */
+  lastChanceThreshold: number;
+};
+
+export type ListProductsParams = ProductScope & {
   search?: string;
-  includeArchived: boolean;
   page: number;
   pageSize: number;
 };
 
+/** Scalar guard on the URL-sourced search before any Prisma filter. */
+function searchWhere(raw: string | undefined): Prisma.ProductWhereInput | undefined {
+  const search = typeof raw === 'string' ? raw.trim() : '';
+  if (search.length === 0 || search.length > 200) return undefined;
+  return {
+    OR: [
+      {reference: {contains: search, mode: 'insensitive'}},
+      {nameFr: {contains: search, mode: 'insensitive'}},
+      {nameAr: {contains: search, mode: 'insensitive'}}
+    ]
+  };
+}
+
+function scopeWhere({archivedOnly, stock, lastChanceThreshold}: ProductScope) {
+  if (archivedOnly) return ARCHIVED;
+  if (stock === 'out') return {...ACTIVE, quantity: 0};
+  if (stock === 'low') return {...ACTIVE, quantity: lowStockRange(lastChanceThreshold)};
+  return ACTIVE;
+}
+
+/**
+ * THE where clause for a products view. listProducts and getProductStats both
+ * go through it, which is what makes a tab's count and its rows the same
+ * question asked twice — they cannot drift.
+ */
+function productsWhere(params: ProductScope & {search?: string}): Prisma.ProductWhereInput {
+  const filters: Prisma.ProductWhereInput[] = [scopeWhere(params)];
+  const search = searchWhere(params.search);
+  if (search) filters.push(search);
+  return {AND: filters};
+}
+
 export async function listProducts(params: ListProductsParams) {
-  const filters: Prisma.ProductWhereInput[] = [];
-  if (!params.includeArchived) filters.push(ACTIVE);
-
-  // Scalar guard on the URL-sourced search before any Prisma filter.
-  const search = typeof params.search === 'string' ? params.search.trim() : '';
-  if (search.length > 0 && search.length <= 200) {
-    filters.push({
-      OR: [
-        {reference: {contains: search, mode: 'insensitive'}},
-        {nameFr: {contains: search, mode: 'insensitive'}},
-        {nameAr: {contains: search, mode: 'insensitive'}}
-      ]
-    });
-  }
-
-  const where: Prisma.ProductWhereInput = filters.length > 0 ? {AND: filters} : {};
+  const where = productsWhere(params);
   const [products, total] = await prisma.$transaction([
     prisma.product.findMany({
       where,
@@ -67,25 +99,35 @@ export type ProductStats = {
   outOfStock: number;
   /** Active products still in stock but at or below lastChanceThreshold. */
   lowStock: number;
-  /** Archived products — reachable through the list's ?archived=1 filter. */
+  /** Archived products — the ?archived=1 view. */
   archived: number;
 };
 
 /**
- * Catalogue counters for the admin products header. Four counts in ONE round
- * trip (`$transaction` gives them a single read-consistent snapshot, so the
- * tiles can never show a torn total).
+ * The four filter-tab counters for the admin products list. Four counts in ONE
+ * round trip (`$transaction` gives them a single read-consistent snapshot, so
+ * two tabs can never show figures from different moments).
  *
- * Scope: the whole catalogue, deliberately NOT the current search — `q` narrows
- * the table below, while these summarise what the shop owns. `outOfStock` and
- * `lowStock` are disjoint and both live inside `total`; `archived` is outside it.
+ * Every counter is the row count of the view its tab links to — SAME
+ * `productsWhere`, including the active search, because the tab links carry `q`
+ * forward. A tab therefore always predicts exactly what clicking it shows.
+ * `outOfStock` and `lowStock` are disjoint and both live inside `total`;
+ * `archived` is outside it.
  */
-export async function getProductStats(lastChanceThreshold: number): Promise<ProductStats> {
+export async function getProductStats({
+  lastChanceThreshold,
+  search
+}: {
+  lastChanceThreshold: number;
+  search?: string;
+}): Promise<ProductStats> {
+  const at = (scope: Omit<ProductScope, 'lastChanceThreshold'>) =>
+    productsWhere({...scope, lastChanceThreshold, search});
   const [total, outOfStock, lowStock, archived] = await prisma.$transaction([
-    prisma.product.count({where: ACTIVE}),
-    prisma.product.count({where: {...ACTIVE, quantity: 0}}),
-    prisma.product.count({where: {...ACTIVE, quantity: lowStockRange(lastChanceThreshold)}}),
-    prisma.product.count({where: {archivedAt: {not: null}}})
+    prisma.product.count({where: at({archivedOnly: false})}),
+    prisma.product.count({where: at({archivedOnly: false, stock: 'out'})}),
+    prisma.product.count({where: at({archivedOnly: false, stock: 'low'})}),
+    prisma.product.count({where: at({archivedOnly: true})})
   ]);
   return {total, outOfStock, lowStock, archived};
 }
