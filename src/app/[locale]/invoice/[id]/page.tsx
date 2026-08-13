@@ -41,7 +41,6 @@ export default async function InvoicePage({
   const dateFormatter = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-TN' : 'fr-TN', {
     dateStyle: 'long'
   });
-  const socialLinks = Object.values(parameters.socialLinks).filter((url) => url !== '');
   // Owner-configured contact details only. Both default to '' (server/settings
   // DEFAULT_PARAMETERS) — an unconfigured shop prints no contact line at all
   // rather than an invented one. No address / tax id / bank details exist in
@@ -113,11 +112,6 @@ export default async function InvoicePage({
             {contactLines.length > 0 && (
               <p dir="ltr" className="text-xs text-neutral-600">
                 {contactLines.join(' · ')}
-              </p>
-            )}
-            {socialLinks.length > 0 && (
-              <p dir="ltr" className="text-xs text-neutral-500">
-                {socialLinks.join(' · ')}
               </p>
             )}
           </div>

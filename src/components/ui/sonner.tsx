@@ -21,7 +21,16 @@ const Toaster = ({...props}: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps['theme']}
-      className="toaster group"
+      // The toaster portals to <body>, outside every theme scope, so it was
+      // painting on the DEFAULT shadcn palette — a neutral near-black panel
+      // floating over the shop's warm brown surfaces in dark mode. Carry the
+      // brand scope here: both the storefront and the dashboard now use this
+      // palette, so toasts match wherever they appear.
+      className="toaster group theme-yasmine"
+      // Sonner hard-codes its own font stack on the toaster element, which
+      // beats an inherited family; an inline style is what actually wins, so
+      // toasts are set in the shop's face like everything else.
+      style={{fontFamily: 'var(--font-baloo), ui-sans-serif, system-ui, sans-serif'}}
       icons={{
         success: (
           <span className={`${iconBox} bg-(--admin-success-soft) text-(--admin-success)`}>
