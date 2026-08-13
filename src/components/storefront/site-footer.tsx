@@ -1,5 +1,6 @@
 import {getLocale, getTranslations} from 'next-intl/server';
 import {BrandLockup, Eyebrow} from '@/components/storefront/brand';
+import {SocialLinks, type SocialLinksValue} from '@/components/storefront/social-links';
 import {Link} from '@/i18n/navigation';
 
 // The footer used to repeat the four service promises already made by the
@@ -9,10 +10,13 @@ import {Link} from '@/i18n/navigation';
 // points at a page that exists.
 export async function SiteFooter({
   isAuthenticated = false,
-  isStaff = false
+  isStaff = false,
+  socialLinks = {}
 }: {
   isAuthenticated?: boolean;
   isStaff?: boolean;
+  /** From the owner's `socialLinks` setting; empty entries render nothing. */
+  socialLinks?: SocialLinksValue;
 }) {
   const [t, locale] = await Promise.all([getTranslations(), getLocale()]);
   const tracked = locale !== 'ar';
@@ -59,6 +63,7 @@ export async function SiteFooter({
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted-foreground">
             {t('about.lead')}
           </p>
+          <SocialLinks links={socialLinks} className="mt-5 -ms-2" />
         </div>
         {columns.map((column) => (
           <nav key={column.heading} aria-label={column.heading}>

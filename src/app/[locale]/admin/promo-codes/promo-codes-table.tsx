@@ -1,7 +1,7 @@
 'use client';
 
 import {useState, useTransition} from 'react';
-import {MoreHorizontal, Plus, Ticket} from 'lucide-react';
+import {Plus, Ticket} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
@@ -9,14 +9,12 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from '@/components/ui/alert-dialog';
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
 import {Switch} from '@/components/ui/switch';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
+import {RowActionItem, RowActions, RowActionSeparator} from '@/components/admin/row-actions';
 import {
   AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
   EntityCell
@@ -255,39 +253,35 @@ export function PromoCodesTable({
                     </TableCell>
                     {isAdmin && (
                       <TableCell className="text-end">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            render={
-                              <Button variant="ghost" size="icon" aria-label={t('actions')} disabled={pending}>
-                                <MoreHorizontal className="size-4" />
-                              </Button>
+                        <RowActions label={t('actions')} disabled={pending}>
+                          <RowActionItem
+                            action="edit"
+                            onClick={() =>
+                              setEditing({
+                                id: row.id,
+                                code: row.code,
+                                percentOff: row.percentOff,
+                                active: row.active,
+                                expiresAt: row.expiresAt
+                              })
                             }
-                          />
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() =>
-                                setEditing({
-                                  id: row.id,
-                                  code: row.code,
-                                  percentOff: row.percentOff,
-                                  active: row.active,
-                                  expiresAt: row.expiresAt
-                                })
-                              }
+                          >
+                            {t('edit')}
+                          </RowActionItem>
+                          <RowActionSeparator />
+                          {archived ? (
+                            <RowActionItem action="restore" onClick={() => runRestore(row.id)}>
+                              {t('restore')}
+                            </RowActionItem>
+                          ) : (
+                            <RowActionItem
+                              action="archive"
+                              onClick={() => setConfirmArchiveId(row.id)}
                             >
-                              {t('edit')}
-                            </DropdownMenuItem>
-                            {archived ? (
-                              <DropdownMenuItem onClick={() => runRestore(row.id)}>
-                                {t('restore')}
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem onClick={() => setConfirmArchiveId(row.id)}>
-                                {t('archive')}
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              {t('archive')}
+                            </RowActionItem>
+                          )}
+                        </RowActions>
                       </TableCell>
                     )}
                   </TableRow>

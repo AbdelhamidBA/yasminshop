@@ -34,9 +34,22 @@ export function SubAdminEditDialog({
   const t = useTranslations('subAdmins');
   const [pending, startTransition] = useTransition();
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  // React 19 resets an uncontrolled <form action={...}> once the action
+  // settles — including when it FAILS validation, which wiped the name and
+  // phone that were just typed. Replay the submitted values as the new
+  // defaults; `entryKey` remounts just those inputs (product-form idiom).
+  const [entered, setEntered] = useState<Record<string, string>>({});
+  const [entryKey, setEntryKey] = useState(0);
+  const initial = (field: string, fallback: string | number | null | undefined) =>
+    entered[field] ?? (fallback === null || fallback === undefined ? '' : String(fallback));
 
   useEffect(() => {
-    if (open) setFieldErrors({});
+    if (open) {
+      setFieldErrors({});
+      // A fresh open must show the row's own values, never the previous
+      // attempt's replayed text.
+      setEntered({});
+    }
   }, [open]);
 
   function errorLine(key: string) {
@@ -46,7 +59,21 @@ export function SubAdminEditDialog({
   }
 
   function submit(formData: FormData) {
-    if (!subAdmin) return;
+    // Snapshot what was typed BEFORE the early return below: React resets the
+    // form as soon as this action returns, whatever the outcome.
+    const typed: Record<string, string> = {};
+    for (const [key, value] of formData.entries()) {
+      if (typeof value === 'string') typed[key] = value;
+    }
+    const restoreTypedValues = () => {
+      setEntered(typed);
+      setEntryKey((key) => key + 1);
+    };
+
+    if (!subAdmin) {
+      restoreTypedValues();
+      return;
+    }
     startTransition(async () => {
       const result = await updateSubAdmin(subAdmin.id, formData);
       if (result.ok) {
@@ -54,6 +81,7 @@ export function SubAdminEditDialog({
         onOpenChange(false);
       } else {
         setFieldErrors(result.fieldErrors ?? {});
+        restoreTypedValues();
         toast.error(t(`errors.${result.error}` as never));
       }
     });
@@ -73,7 +101,13 @@ export function SubAdminEditDialog({
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="sub-admin-name">{t('name')}</Label>
-            <Input id="sub-admin-name" name="name" defaultValue={subAdmin?.name ?? ''} required />
+            <Input
+              id="sub-admin-name"
+              name="name"
+              required
+              key={`name-${entryKey}`}
+              defaultValue={initial('name', subAdmin?.name)}
+            />
             {errorLine('name')}
           </div>
           <div className="flex flex-col gap-2">
@@ -82,7 +116,8 @@ export function SubAdminEditDialog({
               id="sub-admin-phone"
               name="phone"
               dir="ltr"
-              defaultValue={subAdmin?.phone ?? ''}
+              key={`phone-${entryKey}`}
+              defaultValue={initial('phone', subAdmin?.phone)}
             />
             {errorLine('phone')}
           </div>

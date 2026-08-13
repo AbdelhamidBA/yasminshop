@@ -87,6 +87,15 @@ export function ManualOrderForm({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
   const [promoPending, startPromoTransition] = useTransition();
+  // React 19 resets an uncontrolled <form action={...}> once the action
+  // settles — including when it FAILS validation, which wiped the customer
+  // fields that had just been typed. Replay the submitted values as the new
+  // defaults; `entryKey` remounts just those inputs (product-form idiom). The
+  // line list, the search box and the promo box are React state and already
+  // survive.
+  const [entered, setEntered] = useState<Record<string, string>>({});
+  const [entryKey, setEntryKey] = useState(0);
+  const initial = (field: string) => entered[field] ?? '';
 
   useEffect(() => {
     const q = query.trim();
@@ -226,7 +235,21 @@ export function ManualOrderForm({
   }
 
   function submit(formData: FormData) {
-    if (lines.length === 0) return;
+    // Snapshot what was typed BEFORE the early return below: React resets the
+    // form as soon as this action returns, whatever the outcome.
+    const typed: Record<string, string> = {};
+    for (const [key, value] of formData.entries()) {
+      if (typeof value === 'string') typed[key] = value;
+    }
+    const restoreTypedValues = () => {
+      setEntered(typed);
+      setEntryKey((key) => key + 1);
+    };
+
+    if (lines.length === 0) {
+      restoreTypedValues();
+      return;
+    }
     // Only {productId, qty} is submitted — client prices never reach the
     // server (checkout hidden-JSON idiom).
     formData.set('items', JSON.stringify(lines.map(({productId, qty}) => ({productId, qty}))));
@@ -241,6 +264,7 @@ export function ManualOrderForm({
       } else {
         setFieldErrors(result.fieldErrors ?? {});
         if (result.fieldErrors?.promoCode) setPromoInvalid(true);
+        restoreTypedValues();
         toast.error(errorText(result.error));
       }
     });
@@ -424,7 +448,14 @@ export function ManualOrderForm({
               error={errorLine('name')}
               className="sm:col-span-2"
             >
-              <Input id={`${id}-name`} name="name" className={adminControl} autoComplete="off" />
+              <Input
+                id={`${id}-name`}
+                name="name"
+                className={adminControl}
+                autoComplete="off"
+                key={`name-${entryKey}`}
+                defaultValue={initial('name')}
+              />
             </Field>
             <Field label={t('phone')} htmlFor={`${id}-phone`} error={errorLine('phone')}>
               <Input
@@ -434,10 +465,19 @@ export function ManualOrderForm({
                 inputMode="tel"
                 className={adminControl}
                 autoComplete="off"
+                key={`phone-${entryKey}`}
+                defaultValue={initial('phone')}
               />
             </Field>
             <Field label={t('city')} htmlFor={`${id}-city`} error={errorLine('city')}>
-              <Input id={`${id}-city`} name="city" className={adminControl} autoComplete="off" />
+              <Input
+                id={`${id}-city`}
+                name="city"
+                className={adminControl}
+                autoComplete="off"
+                key={`city-${entryKey}`}
+                defaultValue={initial('city')}
+              />
             </Field>
             <Field
               label={t('address')}
@@ -450,6 +490,8 @@ export function ManualOrderForm({
                 name="address"
                 className={adminControl}
                 autoComplete="off"
+                key={`address-${entryKey}`}
+                defaultValue={initial('address')}
               />
             </Field>
             <Field
@@ -458,7 +500,14 @@ export function ManualOrderForm({
               error={errorLine('notes')}
               className="sm:col-span-2"
             >
-              <Textarea id={`${id}-notes`} name="notes" rows={3} className={adminTextarea} />
+              <Textarea
+                id={`${id}-notes`}
+                name="notes"
+                rows={3}
+                className={adminTextarea}
+                key={`notes-${entryKey}`}
+                defaultValue={initial('notes')}
+              />
             </Field>
           </FormSection>
         </fieldset>

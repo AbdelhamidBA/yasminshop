@@ -19,19 +19,29 @@ function flattenValues(obj: Record<string, unknown>): unknown[] {
   );
 }
 
+// Arabic was removed from the product; messages/ar.json is kept on disk so the
+// locale can be switched back on without re-translating, but it is no longer
+// shipped and is allowed to drift behind fr.json. French is the only catalogue
+// that must stay complete — these tests guard THAT.
 describe('message catalogs', () => {
-  test('ar.json has exactly the same keys as fr.json', () => {
-    expect(flattenKeys(ar).sort()).toEqual(flattenKeys(fr).sort());
+  test('fr.json has no empty leaves', () => {
+    for (const value of flattenValues(fr)) {
+      expect(typeof value).toBe('string');
+      expect((value as string).length).toBeGreaterThan(0);
+    }
   });
 
-  test('every leaf value is a non-empty string', () => {
-    const assertAllNonEmpty = (catalog: Record<string, unknown>) => {
-      for (const value of flattenValues(catalog)) {
-        expect(typeof value).toBe('string');
-        expect((value as string).length).toBeGreaterThan(0);
-      }
-    };
-    assertAllNonEmpty(fr);
-    assertAllNonEmpty(ar);
+  test('fr.json has no duplicate key paths', () => {
+    const keys = flattenKeys(fr);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  test('the parked ar.json is still valid JSON with non-empty leaves', () => {
+    const keys = flattenKeys(ar);
+    expect(keys.length).toBeGreaterThan(0);
+    for (const value of flattenValues(ar)) {
+      expect(typeof value).toBe('string');
+      expect((value as string).length).toBeGreaterThan(0);
+    }
   });
 });

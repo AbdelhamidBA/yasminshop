@@ -12,7 +12,6 @@ test('admin creates a category with a subcategory', async ({page}) => {
   await page.getByRole('button', {name: 'Ajouter une catégorie'}).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Nom (français)').fill('E2E Maison');
-  await dialog.getByLabel('Nom (arabe)').fill('E2E منزل');
   await dialog.getByRole('button', {name: 'Enregistrer'}).click();
   await expect(page.getByText('Catégorie enregistrée.').first()).toBeVisible();
   await expect(page.getByRole('cell', {name: 'E2E Maison'})).toBeVisible();
@@ -21,7 +20,6 @@ test('admin creates a category with a subcategory', async ({page}) => {
   // is not programmatically associated — target the dialog's only combobox.
   await page.getByRole('button', {name: 'Ajouter une catégorie'}).click();
   await dialog.getByLabel('Nom (français)').fill('E2E Salon');
-  await dialog.getByLabel('Nom (arabe)').fill('E2E صالون');
   await dialog.getByRole('combobox').click();
   await page.getByRole('option', {name: 'E2E Maison'}).click();
   await dialog.getByRole('button', {name: 'Enregistrer'}).click();
@@ -34,9 +32,7 @@ test('admin creates a product with an uploaded image', async ({page}) => {
 
   await page.getByLabel('Référence').fill('E2E-PROD-1');
   await page.getByLabel('Nom (français)').fill('E2E Lampe');
-  await page.getByLabel('Nom (arabe)').fill('E2E مصباح');
   await page.getByLabel('Description (français)').fill('Lampe de test e2e.');
-  await page.getByLabel('Description (arabe)').fill('مصباح اختبار.');
   await page.getByLabel('Prix (DT)').fill('45.500');
   await page.getByLabel('Quantité').fill('7');
 

@@ -59,6 +59,15 @@ export function CheckoutForm({
   // Set before clear() so the just-emptied cart does not flash the empty
   // state while the confirmation redirect is in flight.
   const [placed, setPlaced] = useState(false);
+  // React 19 resets an uncontrolled <form action={...}> once the action
+  // settles — including when it FAILS validation, which wiped the name, phone,
+  // address and notes the customer had just typed (product-form idiom). Keep
+  // the submitted text values and replay them as the new defaults; `entryKey`
+  // remounts just those inputs so the new defaults take effect.
+  const [entered, setEntered] = useState<Record<string, string>>({});
+  const [entryKey, setEntryKey] = useState(0);
+  const initial = (field: string, fallback: string | number | null | undefined) =>
+    entered[field] ?? (fallback === null || fallback === undefined ? '' : String(fallback));
 
   // Letter-spacing breaks joined Arabic: every tracked treatment is gated.
   const isAr = locale === 'ar';
@@ -103,7 +112,22 @@ export function CheckoutForm({
   }
 
   function submit(formData: FormData) {
-    if (state.items.length === 0) return;
+    // Snapshot what was typed BEFORE any early return: React resets the form
+    // as soon as this action returns, whatever the outcome, so every failure
+    // path has to put the values back — not just the server-rejected one.
+    const typed: Record<string, string> = {};
+    for (const [key, value] of formData.entries()) {
+      if (typeof value === 'string') typed[key] = value;
+    }
+    const restoreTypedValues = () => {
+      setEntered(typed);
+      setEntryKey((key) => key + 1);
+    };
+
+    if (state.items.length === 0) {
+      restoreTypedValues();
+      return;
+    }
     // Only {productId, qty} is submitted — client prices never reach the
     // server (product-form hidden-JSON idiom).
     formData.set(
@@ -119,6 +143,7 @@ export function CheckoutForm({
         router.push(`/order-confirmation/${result.data.orderId}`);
       } else {
         setFieldErrors(result.fieldErrors ?? {});
+        restoreTypedValues();
         toast.error(errorText(result.error));
       }
     });
@@ -164,7 +189,8 @@ export function CheckoutForm({
                     id="name"
                     name="name"
                     autoComplete="name"
-                    defaultValue={prefill.name}
+                    key={`name-${entryKey}`}
+                    defaultValue={initial('name', prefill.name)}
                     aria-invalid={fieldErrors.name ? true : undefined}
                     className={inputClass}
                   />
@@ -179,7 +205,8 @@ export function CheckoutForm({
                   dir="ltr"
                   inputMode="tel"
                   autoComplete="tel"
-                  defaultValue={prefill.phone}
+                  key={`phone-${entryKey}`}
+                  defaultValue={initial('phone', prefill.phone)}
                   aria-invalid={fieldErrors.phone ? true : undefined}
                   className={inputClass}
                 />
@@ -191,7 +218,8 @@ export function CheckoutForm({
                   id="city"
                   name="city"
                   autoComplete="address-level2"
-                  defaultValue={prefill.city}
+                  key={`city-${entryKey}`}
+                  defaultValue={initial('city', prefill.city)}
                   aria-invalid={fieldErrors.city ? true : undefined}
                   className={inputClass}
                 />
@@ -209,7 +237,8 @@ export function CheckoutForm({
                   id="address"
                   name="address"
                   autoComplete="street-address"
-                  defaultValue={prefill.address}
+                  key={`address-${entryKey}`}
+                  defaultValue={initial('address', prefill.address)}
                   aria-invalid={fieldErrors.address ? true : undefined}
                   className={inputClass}
                 />
@@ -221,6 +250,8 @@ export function CheckoutForm({
                   id="notes"
                   name="notes"
                   rows={3}
+                  key={`notes-${entryKey}`}
+                  defaultValue={initial('notes', '')}
                   aria-invalid={fieldErrors.notes ? true : undefined}
                   className="bg-card"
                 />

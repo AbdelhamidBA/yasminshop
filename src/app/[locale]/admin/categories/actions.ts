@@ -14,7 +14,6 @@ const PATH = '/[locale]/admin/categories';
 function formToInput(formData: FormData) {
   return {
     nameFr: String(formData.get('nameFr') ?? ''),
-    nameAr: String(formData.get('nameAr') ?? ''),
     parentId: String(formData.get('parentId') ?? '')
   };
 }
@@ -44,7 +43,10 @@ export async function createCategory(formData: FormData): Promise<ActionResult> 
       async (s) => (await prisma.category.count({where: {slug: s}})) > 0
     );
     await prisma.category.create({
-      data: {nameFr: parsed.data.nameFr, nameAr: parsed.data.nameAr, parentId: parsed.data.parentId, slug}
+      // nameAr is a parked NOT NULL column (Arabic was removed from the
+      // product): seed it from the French name on create, and never touch it
+      // on update so any existing translation survives.
+      data: {nameFr: parsed.data.nameFr, nameAr: parsed.data.nameFr, parentId: parsed.data.parentId, slug}
     });
     revalidatePath(PATH, 'page');
     return success(undefined);
@@ -66,7 +68,7 @@ export async function updateCategory(id: string, formData: FormData): Promise<Ac
 
     await prisma.category.update({
       where: {id},
-      data: {nameFr: parsed.data.nameFr, nameAr: parsed.data.nameAr, parentId: parsed.data.parentId}
+      data: {nameFr: parsed.data.nameFr, parentId: parsed.data.parentId}
     });
     revalidatePath(PATH, 'page');
     return success(undefined);

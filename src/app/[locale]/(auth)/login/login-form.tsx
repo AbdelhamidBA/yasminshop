@@ -1,6 +1,6 @@
 'use client';
 
-import {useActionState} from 'react';
+import {useActionState, useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {Eyebrow} from '@/components/storefront/brand';
 import {Button} from '@/components/ui/button';
@@ -12,9 +12,23 @@ export function LoginForm() {
   const t = useTranslations('auth');
   const isAr = useLocale() === 'ar';
   const [error, formAction, pending] = useActionState(authenticate, undefined);
+  // React 19 resets an uncontrolled form as soon as its action settles, so a
+  // refused sign-in wiped the e-mail too and the whole address had to be typed
+  // again. Replay ONLY the e-mail (product-form idiom); the password field is
+  // deliberately left to come back empty.
+  const [enteredEmail, setEnteredEmail] = useState('');
+  const [entryKey, setEntryKey] = useState(0);
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form
+      action={formAction}
+      onSubmit={(event) => {
+        const formData = new FormData(event.currentTarget);
+        setEnteredEmail(String(formData.get('email') ?? ''));
+        setEntryKey((key) => key + 1);
+      }}
+      className="flex flex-col gap-5"
+    >
       <div className="flex flex-col gap-2">
         {/* Utility-face labels, as on the checkout form. The label TEXT is
             unchanged — only its face — so the field locators still resolve. */}
@@ -29,6 +43,8 @@ export function LoginForm() {
           required
           dir="ltr"
           className="h-11"
+          key={`email-${entryKey}`}
+          defaultValue={enteredEmail}
         />
       </div>
       <div className="flex flex-col gap-2">

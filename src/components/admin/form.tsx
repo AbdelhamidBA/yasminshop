@@ -20,6 +20,14 @@ import {AdminCard, Overline} from './ui';
 
 /** Roomy admin control: pair with Input / SelectTrigger. */
 export const adminControl = 'h-11 rounded-lg px-3';
+/**
+ * The popup half of an admin Select. It PORTALS to <body>, outside the admin
+ * subtree, so it carries the token scope itself — same precedent as dialog.tsx
+ * and the row action menus — and takes the kit's float shadow in place of the
+ * shared primitive's hairline ring, because Minimal surfaces separate by
+ * shadow rather than by a rule.
+ */
+export const adminSelectContent = 'theme-minimal rounded-xl shadow-float ring-0';
 /** Same language for a multi-line control. */
 export const adminTextarea = 'min-h-24 rounded-lg px-3 py-2.5';
 /** Solid primary action with the kit's primary-tinted shadow. */

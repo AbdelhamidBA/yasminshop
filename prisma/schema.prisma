@@ -71,6 +71,7 @@ model Product {
   nameAr        String
   descriptionFr String
   descriptionAr String
+  brand         String?
   priceMillimes Int
   discountPct   Int            @default(0)
   quantity      Int            @default(0)

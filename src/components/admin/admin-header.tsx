@@ -1,4 +1,3 @@
-import {LanguageSwitcher} from '@/components/language-switcher';
 import {LogoutButton} from '@/components/logout-button';
 import {ThemeToggle} from '@/components/theme-toggle';
 import {NotificationBell} from '@/components/admin/notification-bell';
@@ -15,7 +14,7 @@ const BELL_LIMIT = 8;
 // Minimal-UI header: no chrome band — a translucent, blurred strip that lets the
 // page scroll under it, with the actions collected on the inline end.
 //
-// LanguageSwitcher / ThemeToggle / LogoutButton live in src/components and are
+// ThemeToggle / LogoutButton live in src/components and are
 // shared-by-location, so they are restyled from HERE through wrapper child
 // selectors (descendant specificity beats the component's own utilities)
 // instead of being edited — the storefront must stay free to use them as they
@@ -49,7 +48,6 @@ export async function AdminHeader({userName}: {userName: string}) {
           <ThemeToggle />
         </span>
         <span className={PILL_ACTION}>
-          <LanguageSwitcher />
         </span>
         <span aria-hidden className="mx-2 hidden h-6 w-px bg-border sm:block" />
         <span className="flex items-center gap-2.5">

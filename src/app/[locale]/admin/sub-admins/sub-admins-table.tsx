@@ -1,7 +1,7 @@
 'use client';
 
 import {type ReactNode, useState, useTransition} from 'react';
-import {MoreHorizontal, Plus} from 'lucide-react';
+import {Plus} from 'lucide-react';
 import {useSearchParams} from 'next/navigation';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
@@ -11,12 +11,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import {Button} from '@/components/ui/button';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
+import {RowActionItem, RowActions, RowActionSeparator} from '@/components/admin/row-actions';
 import {
   AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
   EntityCell
@@ -214,45 +212,36 @@ export function SubAdminsTable({
                       {dateFormatter.format(subAdmin.createdAt)}
                     </TableCell>
                     <TableCell className="text-end">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={t('actions')}
-                              disabled={pending}
+                      <RowActions label={t('actions')} disabled={pending}>
+                        {archived ? (
+                          <RowActionItem action="restore" onClick={() => runRestore(subAdmin.id)}>
+                            {t('restore')}
+                          </RowActionItem>
+                        ) : (
+                          <>
+                            <RowActionItem
+                              action="edit"
+                              onClick={() =>
+                                setEditing({
+                                  id: subAdmin.id,
+                                  name: subAdmin.name,
+                                  email: subAdmin.email,
+                                  phone: subAdmin.phone
+                                })
+                              }
                             >
-                              <MoreHorizontal className="size-4" />
-                            </Button>
-                          }
-                        />
-                        <DropdownMenuContent align="end">
-                          {archived ? (
-                            <DropdownMenuItem onClick={() => runRestore(subAdmin.id)}>
-                              {t('restore')}
-                            </DropdownMenuItem>
-                          ) : (
-                            <>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  setEditing({
-                                    id: subAdmin.id,
-                                    name: subAdmin.name,
-                                    email: subAdmin.email,
-                                    phone: subAdmin.phone
-                                  })
-                                }
-                              >
-                                {t('edit')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setConfirmArchiveId(subAdmin.id)}>
-                                {t('archive')}
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                              {t('edit')}
+                            </RowActionItem>
+                            <RowActionSeparator />
+                            <RowActionItem
+                              action="archive"
+                              onClick={() => setConfirmArchiveId(subAdmin.id)}
+                            >
+                              {t('archive')}
+                            </RowActionItem>
+                          </>
+                        )}
+                      </RowActions>
                     </TableCell>
                   </TableRow>
                 );

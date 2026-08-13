@@ -1,6 +1,6 @@
 'use client';
 
-import {useActionState} from 'react';
+import {useActionState, useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {Eyebrow} from '@/components/storefront/brand';
 import {Button} from '@/components/ui/button';
@@ -18,6 +18,13 @@ export function RequestResetForm() {
   const locale = useLocale();
   const isAr = locale === 'ar';
   const [state, formAction, pending] = useActionState(requestPasswordReset, undefined);
+  // React 19 resets an uncontrolled form as soon as its action settles — the
+  // one failure this action can return (rate limit) therefore wiped the
+  // address that was just typed. Snapshot it on submit and replay it as the
+  // new default; `entryKey` remounts the input (product-form idiom).
+  const [entered, setEntered] = useState<Record<string, string>>({});
+  const [entryKey, setEntryKey] = useState(0);
+  const initial = (field: string) => entered[field] ?? '';
 
   // Shared localizer: maps a message-KEY through this form's errors.* namespace,
   // falling back to errors.validation — never echoes a raw zod code.
@@ -41,7 +48,18 @@ export function RequestResetForm() {
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form
+      action={formAction}
+      onSubmit={(event) => {
+        // Snapshot before the action runs: with useActionState there is no
+        // client-side failure branch to hook, and a rate-limited submit ends
+        // in a reset like any other.
+        const formData = new FormData(event.currentTarget);
+        setEntered({email: String(formData.get('email') ?? '')});
+        setEntryKey((key) => key + 1);
+      }}
+      className="flex flex-col gap-5"
+    >
       <p className="text-sm text-muted-foreground">{t('reset.requestIntro')}</p>
       {/* Locale rides along only to build the logged dev URL's prefix. */}
       <input type="hidden" name="locale" value={locale} />
@@ -57,6 +75,8 @@ export function RequestResetForm() {
           required
           dir="ltr"
           className="h-11"
+          key={`email-${entryKey}`}
+          defaultValue={initial('email')}
         />
       </div>
       {/* The action otherwise ALWAYS succeeds (no account-existence oracle); the

@@ -1,7 +1,7 @@
 'use client';
 
 import {type ReactNode, useState, useTransition} from 'react';
-import {Check, MoreHorizontal, Plus} from 'lucide-react';
+import {Check, Plus} from 'lucide-react';
 import {useSearchParams} from 'next/navigation';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
@@ -11,12 +11,10 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
+import {RowActionItem, RowActions, RowActionSeparator} from '@/components/admin/row-actions';
 import {
   AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
   EntityCell
@@ -221,8 +219,23 @@ export function ProductsTable({
                           />
                         }
                         primary={name(product)}
-                        secondary={product.reference}
-                        secondaryDir="ltr"
+                        // Reference keeps its own LTR text node (a row's
+                        // accessible name must still contain it); the brand
+                        // follows the page direction and is simply absent when
+                        // the product has none.
+                        secondary={
+                          <span className="flex flex-wrap items-center gap-x-1.5">
+                            <span dir="ltr">{product.reference}</span>
+                            {product.brand ? (
+                              <>
+                                <span aria-hidden="true" className="opacity-40">
+                                  ·
+                                </span>
+                                <span className="font-semibold">{product.brand}</span>
+                              </>
+                            ) : null}
+                          </span>
+                        }
                         badge={
                           archived ? <StatusLabel tone="neutral">{t('archived')}</StatusLabel> : undefined
                         }
@@ -281,29 +294,27 @@ export function ProductsTable({
                     </TableCell>
                     {isAdmin && (
                       <TableCell className="text-end">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            render={
-                              <Button variant="ghost" size="icon" aria-label={t('actions')} disabled={pending}>
-                                <MoreHorizontal className="size-4" />
-                              </Button>
-                            }
-                          />
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem render={<Link href={`/admin/products/${product.id}/edit`} />}>
-                              {t('edit')}
-                            </DropdownMenuItem>
-                            {archived ? (
-                              <DropdownMenuItem onClick={() => runRestore(product.id)}>
-                                {t('restore')}
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem onClick={() => setConfirmArchiveId(product.id)}>
-                                {t('archive')}
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <RowActions label={t('actions')} disabled={pending}>
+                          <RowActionItem
+                            action="edit"
+                            render={<Link href={`/admin/products/${product.id}/edit`} />}
+                          >
+                            {t('edit')}
+                          </RowActionItem>
+                          <RowActionSeparator />
+                          {archived ? (
+                            <RowActionItem action="restore" onClick={() => runRestore(product.id)}>
+                              {t('restore')}
+                            </RowActionItem>
+                          ) : (
+                            <RowActionItem
+                              action="archive"
+                              onClick={() => setConfirmArchiveId(product.id)}
+                            >
+                              {t('archive')}
+                            </RowActionItem>
+                          )}
+                        </RowActions>
                       </TableCell>
                     )}
                   </TableRow>
