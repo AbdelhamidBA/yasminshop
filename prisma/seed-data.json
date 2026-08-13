@@ -1,5 +1,5 @@
 {
-  "exportedAt": "2026-08-13T12:24:15.141Z",
+  "exportedAt": "2026-08-13T14:46:39.677Z",
   "categories": [
     {
       "slug": "audio",
@@ -109,48 +109,6 @@
       ]
     },
     {
-      "reference": "MAIS-002",
-      "slug": "cafetiere-italienne",
-      "nameFr": "Cafetière italienne",
-      "nameAr": "ركوة قهوة إيطالية",
-      "descriptionFr": "Cafetière moka en aluminium pour 6 tasses.",
-      "descriptionAr": "ركوة قهوة موكا من الألومنيوم لست فناجين.",
-      "priceMillimes": 24500,
-      "discountPct": 0,
-      "quantity": 30,
-      "featured": false,
-      "archived": true,
-      "categorySlug": "maison",
-      "subCategorySlug": "cuisine",
-      "images": [
-        {
-          "url": "/api/uploads/products/seed-cafetiere-italienne.webp",
-          "sortOrder": 0
-        }
-      ]
-    },
-    {
-      "reference": "DEMO-001",
-      "slug": "casque-sans-fil",
-      "nameFr": "Casque sans fil",
-      "nameAr": "سماعات لاسلكية",
-      "descriptionFr": "Casque Bluetooth avec réduction de bruit.",
-      "descriptionAr": "سماعات بلوتوث مع خاصية عزل الضوضاء.",
-      "priceMillimes": 89000,
-      "discountPct": 0,
-      "quantity": 25,
-      "featured": true,
-      "archived": true,
-      "categorySlug": "electronique",
-      "subCategorySlug": "audio",
-      "images": [
-        {
-          "url": "/api/uploads/products/seed-casque-sans-fil.webp",
-          "sortOrder": 0
-        }
-      ]
-    },
-    {
       "reference": "07500575",
       "slug": "elseve-dream-long-masque",
       "nameFr": "Elseve Dream long Masque",
@@ -235,48 +193,6 @@
       ]
     },
     {
-      "reference": "ELEC-002",
-      "slug": "enceinte-bluetooth",
-      "nameFr": "Enceinte Bluetooth",
-      "nameAr": "مكبر صوت بلوتوث",
-      "descriptionFr": "Enceinte portable étanche avec 12 heures d'autonomie.",
-      "descriptionAr": "مكبر صوت محمول مقاوم للماء مع بطارية تدوم 12 ساعة.",
-      "priceMillimes": 59900,
-      "discountPct": 0,
-      "quantity": 4,
-      "featured": false,
-      "archived": true,
-      "categorySlug": "electronique",
-      "subCategorySlug": "audio",
-      "images": [
-        {
-          "url": "/api/uploads/products/seed-enceinte-bluetooth.webp",
-          "sortOrder": 0
-        }
-      ]
-    },
-    {
-      "reference": "ELEC-003",
-      "slug": "montre-connectee",
-      "nameFr": "Montre connectée",
-      "nameAr": "ساعة ذكية",
-      "descriptionFr": "Montre connectée avec suivi d'activité et GPS intégré.",
-      "descriptionAr": "ساعة ذكية مع تتبع النشاط ونظام تحديد المواقع المدمج.",
-      "priceMillimes": 249000,
-      "discountPct": 0,
-      "quantity": 12,
-      "featured": true,
-      "archived": true,
-      "categorySlug": "electronique",
-      "subCategorySlug": null,
-      "images": [
-        {
-          "url": "/api/uploads/products/seed-montre-connectee.webp",
-          "sortOrder": 0
-        }
-      ]
-    },
-    {
       "reference": "0750046",
       "slug": "moulinex-easy-fry-mega",
       "nameFr": "Moulinex Easy Fry Mega",
@@ -327,27 +243,6 @@
       ]
     },
     {
-      "reference": "MAIS-001",
-      "slug": "robot-de-cuisine",
-      "nameFr": "Robot de cuisine",
-      "nameAr": "روبوت مطبخ",
-      "descriptionFr": "Robot multifonction 1000 W avec bol en inox de 4,5 litres.",
-      "descriptionAr": "روبوت مطبخ متعدد الوظائف بقوة 1000 واط مع وعاء ستانلس 4.5 لتر.",
-      "priceMillimes": 329000,
-      "discountPct": 15,
-      "quantity": 8,
-      "featured": false,
-      "archived": true,
-      "categorySlug": "maison",
-      "subCategorySlug": "cuisine",
-      "images": [
-        {
-          "url": "/api/uploads/products/seed-robot-de-cuisine.webp",
-          "sortOrder": 0
-        }
-      ]
-    },
-    {
       "reference": "0750057",
       "slug": "rowenta-signature-pro-ac",
       "nameFr": "Rowenta Signature Pro AC",
@@ -390,27 +285,6 @@
         {
           "url": "/api/uploads/products/d51b71e5-d849-4569-8389-27193ff86226.webp",
           "sortOrder": 1
-        }
-      ]
-    },
-    {
-      "reference": "MODE-002",
-      "slug": "sac-a-main-cuir",
-      "nameFr": "Sac à main en cuir",
-      "nameAr": "حقيبة يد جلدية",
-      "descriptionFr": "Sac à main en cuir véritable avec bandoulière amovible.",
-      "descriptionAr": "حقيبة يد من الجلد الطبيعي مع حزام كتف قابل للفصل.",
-      "priceMillimes": 189000,
-      "discountPct": 0,
-      "quantity": 0,
-      "featured": false,
-      "archived": true,
-      "categorySlug": "mode",
-      "subCategorySlug": null,
-      "images": [
-        {
-          "url": "/api/uploads/products/seed-sac-a-main-cuir.webp",
-          "sortOrder": 0
         }
       ]
     },
@@ -532,27 +406,6 @@
       ]
     },
     {
-      "reference": "MODE-001",
-      "slug": "t-shirt-coton-bio",
-      "nameFr": "T-shirt coton bio",
-      "nameAr": "قميص قطن عضوي",
-      "descriptionFr": "T-shirt unisexe en coton biologique, coupe classique.",
-      "descriptionAr": "قميص للجنسين من القطن العضوي بقصة كلاسيكية.",
-      "priceMillimes": 9900,
-      "discountPct": 0,
-      "quantity": 50,
-      "featured": false,
-      "archived": true,
-      "categorySlug": "mode",
-      "subCategorySlug": null,
-      "images": [
-        {
-          "url": "/api/uploads/products/seed-t-shirt-coton-bio.webp",
-          "sortOrder": 0
-        }
-      ]
-    },
-    {
       "reference": "ELEC-004",
       "slug": "televiseur-4k-55",
       "nameFr": "Téléviseur 4K 55 pouces",
@@ -584,7 +437,9 @@
     }
   ],
   "settings": {
-    "copyright": "© 2026 Ma Boutique",
+    "contactEmail": "",
+    "contactPhone": "",
+    "copyright": "© 2026 Yasmin Shop",
     "currency": "TND",
     "deliveryCostMillimes": 7000,
     "freeDeliveryThresholdMillimes": 100000,
@@ -593,9 +448,9 @@
     "massDiscountPct": null,
     "siteDescription": "",
     "socialLinks": {
-      "tiktok": "",
-      "facebook": "",
-      "instagram": ""
+      "tiktok": "https://www.instagram.com/produit_importe1/",
+      "facebook": "https://www.facebook.com/profile.php?id=100042816777116",
+      "instagram": "https://www.instagram.com/produit_importe1/"
     }
   }
 }
