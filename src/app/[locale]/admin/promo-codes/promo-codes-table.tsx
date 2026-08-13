@@ -1,10 +1,9 @@
 'use client';
 
 import {useState, useTransition} from 'react';
-import {MoreHorizontal, Plus} from 'lucide-react';
+import {MoreHorizontal, Plus, Ticket} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
-import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -18,7 +17,11 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
-import {Link} from '@/i18n/navigation';
+import {
+  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
+  EntityCell
+} from '@/components/admin/list-shell';
+import {IconBox, StatusLabel} from '@/components/admin/ui';
 import type {PromoCodeRow} from '@/server/promo-codes';
 import {archivePromoCode, restorePromoCode, togglePromoCode} from './actions';
 import {PromoCodeFormDialog, type EditablePromoCode} from './promo-code-form-dialog';
@@ -33,6 +36,7 @@ export function PromoCodesTable({
   includeArchived: boolean;
 }) {
   const t = useTranslations('admin.promoCodesPage');
+  const tList = useTranslations('admin.list');
   const locale = useLocale();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<EditablePromoCode | null>(null);
@@ -46,7 +50,12 @@ export function PromoCodesTable({
   function runToggle(id: string, active: boolean) {
     startTransition(async () => {
       const result = await togglePromoCode(id, active);
-      if (result.ok) toast.success(t(active ? 'toggledOn' : 'toggledOff'));
+      // Activating is an achievement, deactivating is a state change — the
+      // severity follows the direction, the message strings are untouched.
+      if (result.ok) {
+        if (active) toast.success(t('toggledOn'));
+        else toast.info(t('toggledOff'));
+      }
       else toast.error(t(`errors.${result.error}` as never));
     });
   }
@@ -54,7 +63,8 @@ export function PromoCodesTable({
   function runArchive(id: string) {
     startTransition(async () => {
       const result = await archivePromoCode(id);
-      if (result.ok) toast.success(t('archivedToast'));
+      // Archiving hides a record rather than achieving something — info.
+      if (result.ok) toast.info(t('archivedToast'));
       else toast.error(t(`errors.${result.error}` as never));
     });
   }
@@ -68,25 +78,34 @@ export function PromoCodesTable({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        {isAdmin && (
-          <Button onClick={() => setCreating(true)}>
-            <Plus className="size-4" /> {t('add')}
-          </Button>
-        )}
-        <Link
-          href={includeArchived ? '/admin/promo-codes' : '/admin/promo-codes?archived=1'}
-          className="ms-auto text-sm underline-offset-4 hover:underline"
-        >
-          {t('showArchived')}
-        </Link>
-      </div>
+    <div className="flex flex-col gap-5">
+      <AdminListHeader
+        title={t('title')}
+        action={
+          isAdmin ? (
+            <Button onClick={() => setCreating(true)}>
+              <Plus className="size-4" /> {t('add')}
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {promoCodes.length === 0 ? (
-        <AdminEmptyState>{t('empty')}</AdminEmptyState>
-      ) : (
-        <div className="rounded-md border">
+      <AdminTableCard
+        toolbar={
+          <AdminToolbarEnd>
+            <AdminResultCount>{tList('results', {count: promoCodes.length})}</AdminResultCount>
+            <AdminFilterToggle
+              href={includeArchived ? '/admin/promo-codes' : '/admin/promo-codes?archived=1'}
+              active={includeArchived}
+            >
+              {t('showArchived')}
+            </AdminFilterToggle>
+          </AdminToolbarEnd>
+        }
+      >
+        {promoCodes.length === 0 ? (
+          <AdminEmptyState>{t('empty')}</AdminEmptyState>
+        ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -102,11 +121,28 @@ export function PromoCodesTable({
                 const archived = row.archivedAt !== null;
                 return (
                   <TableRow key={row.id}>
-                    <TableCell className="font-medium">
-                      <span dir="ltr" className="font-mono">{row.code}</span>
-                      {archived && <Badge variant="outline" className="ms-2">{t('archived')}</Badge>}
+                    <TableCell>
+                      <EntityCell
+                        media={
+                          <IconBox tone="primary" className="size-10 rounded-xl">
+                            <Ticket className="size-5" />
+                          </IconBox>
+                        }
+                        primary={
+                          <span dir="ltr" className="font-mono">
+                            {row.code}
+                          </span>
+                        }
+                        badge={
+                          archived ? <StatusLabel tone="neutral">{t('archived')}</StatusLabel> : undefined
+                        }
+                      />
                     </TableCell>
-                    <TableCell dir="ltr">-{row.percentOff}%</TableCell>
+                    <TableCell>
+                      <StatusLabel tone="primary">
+                        <span dir="ltr">-{row.percentOff}%</span>
+                      </StatusLabel>
+                    </TableCell>
                     <TableCell>
                       <Switch
                         checked={row.active}
@@ -117,7 +153,7 @@ export function PromoCodesTable({
                         aria-label={t('active')}
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-muted-foreground">
                       {row.expiresAt ? dateFormatter.format(row.expiresAt) : t('noExpiry')}
                     </TableCell>
                     {isAdmin && (
@@ -162,8 +198,8 @@ export function PromoCodesTable({
               })}
             </TableBody>
           </Table>
-        </div>
-      )}
+        )}
+      </AdminTableCard>
 
       {isAdmin && (
         <>

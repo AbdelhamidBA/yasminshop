@@ -42,20 +42,26 @@ export default async function SubAdminsPage({
   const paginationParams: Record<string, string> = {};
   if (q) paginationParams.q = q;
   if (includeArchived) paginationParams.archived = '1';
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">{t('title')}</h1>
-      <SubAdminsSearch initialValue={q} includeArchived={includeArchived} />
-      <SubAdminsTable subAdmins={subAdmins} includeArchived={includeArchived} />
-      <AdminPagination
-        basePath="/admin/sub-admins"
-        page={page}
-        totalPages={Math.ceil(total / PAGE_SIZE)}
-        params={paginationParams}
-        prevLabel={t('prev')}
-        nextLabel={t('next')}
-      />
-    </div>
+    <SubAdminsTable
+      subAdmins={subAdmins}
+      total={total}
+      includeArchived={includeArchived}
+      search={<SubAdminsSearch initialValue={q} includeArchived={includeArchived} />}
+      pagination={
+        totalPages > 1 ? (
+          <AdminPagination
+            basePath="/admin/sub-admins"
+            page={page}
+            totalPages={totalPages}
+            params={paginationParams}
+            prevLabel={t('prev')}
+            nextLabel={t('next')}
+          />
+        ) : null
+      }
+    />
   );
 }

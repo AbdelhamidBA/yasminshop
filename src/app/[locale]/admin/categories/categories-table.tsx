@@ -1,10 +1,9 @@
 'use client';
 
 import {useState, useTransition} from 'react';
-import {MoreHorizontal, Plus} from 'lucide-react';
+import {CornerDownRight, MoreHorizontal, Plus} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
-import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -17,7 +16,11 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
-import {Link} from '@/i18n/navigation';
+import {
+  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
+  EntityCell
+} from '@/components/admin/list-shell';
+import {Avatar, StatusLabel} from '@/components/admin/ui';
 import type {CategoryRow} from '@/server/categories';
 import {archiveCategory, restoreCategory} from './actions';
 import {CategoryFormDialog, type EditableCategory} from './category-form-dialog';
@@ -36,6 +39,7 @@ export function CategoriesTable({
   includeArchived: boolean;
 }) {
   const t = useTranslations('admin.categories');
+  const tList = useTranslations('admin.list');
   const locale = useLocale();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<EditableCategory | null>(null);
@@ -44,10 +48,15 @@ export function CategoriesTable({
 
   const name = (row: {nameFr: string; nameAr: string}) => (locale === 'ar' ? row.nameAr : row.nameFr);
 
+  // Roots + their children — the tree is rendered flat, so the count is the
+  // number of rows the table actually shows.
+  const rowCount = categories.reduce((sum, root) => sum + 1 + root.children.length, 0);
+
   function runArchive(id: string) {
     startTransition(async () => {
       const result = await archiveCategory(id);
-      if (result.ok) toast.success(t('archivedToast'));
+      // Archiving hides a record rather than achieving something — info.
+      if (result.ok) toast.info(t('archivedToast'));
       else toast.error(t(`errors.${result.error}` as never));
     });
   }
@@ -64,12 +73,27 @@ export function CategoriesTable({
     const archived = row.archivedAt !== null;
     return (
       <TableRow key={row.id}>
-        <TableCell className={isChild ? 'ps-8' : 'font-medium'}>
-          {name(row)}
-          {archived && <Badge variant="outline" className="ms-2">{t('archived')}</Badge>}
+        {/* Name over slug. Children keep their indent and swap the monogram for
+            a branch glyph, so the hierarchy still reads at a glance. */}
+        <TableCell className={isChild ? 'ps-10' : undefined}>
+          <EntityCell
+            media={
+              isChild ? (
+                <CornerDownRight
+                  aria-hidden="true"
+                  className="size-5 shrink-0 text-muted-foreground"
+                />
+              ) : (
+                <Avatar name={name(row)} />
+              )
+            }
+            primary={name(row)}
+            secondary={row.slug}
+            secondaryDir="ltr"
+            badge={archived ? <StatusLabel tone="neutral">{t('archived')}</StatusLabel> : undefined}
+          />
         </TableCell>
-        <TableCell dir="ltr" className="text-muted-foreground">{row.slug}</TableCell>
-        <TableCell>{row._count.products}</TableCell>
+        <TableCell className="tabular-nums">{row._count.products}</TableCell>
         {isAdmin && (
           <TableCell className="text-end">
             <DropdownMenu>
@@ -107,30 +131,38 @@ export function CategoriesTable({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        {isAdmin && (
-          <Button onClick={() => setCreating(true)}>
-            <Plus className="size-4" /> {t('add')}
-          </Button>
-        )}
-        <Link
-          href={includeArchived ? '/admin/categories' : '/admin/categories?archived=1'}
-          className="ms-auto text-sm underline-offset-4 hover:underline"
-        >
-          {t('showArchived')}
-        </Link>
-      </div>
+    <div className="flex flex-col gap-5">
+      <AdminListHeader
+        title={t('title')}
+        action={
+          isAdmin ? (
+            <Button onClick={() => setCreating(true)}>
+              <Plus className="size-4" /> {t('add')}
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {categories.length === 0 ? (
-        <AdminEmptyState>{t('empty')}</AdminEmptyState>
-      ) : (
-        <div className="rounded-md border">
+      <AdminTableCard
+        toolbar={
+          <AdminToolbarEnd>
+            <AdminResultCount>{tList('results', {count: rowCount})}</AdminResultCount>
+            <AdminFilterToggle
+              href={includeArchived ? '/admin/categories' : '/admin/categories?archived=1'}
+              active={includeArchived}
+            >
+              {t('showArchived')}
+            </AdminFilterToggle>
+          </AdminToolbarEnd>
+        }
+      >
+        {categories.length === 0 ? (
+          <AdminEmptyState>{t('empty')}</AdminEmptyState>
+        ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('title')}</TableHead>
-                <TableHead>{t('slug')}</TableHead>
+                <TableHead>{t('name')}</TableHead>
                 <TableHead>{t('products')}</TableHead>
                 {isAdmin && <TableHead className="text-end">{t('actions')}</TableHead>}
               </TableRow>
@@ -142,8 +174,8 @@ export function CategoriesTable({
               ])}
             </TableBody>
           </Table>
-        </div>
-      )}
+        )}
+      </AdminTableCard>
 
       {isAdmin && (
         <>

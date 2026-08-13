@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useTransition} from 'react';
+import {type ReactNode, useState, useTransition} from 'react';
 import {Eye, MoreHorizontal, Plus} from 'lucide-react';
 import {useSearchParams} from 'next/navigation';
 import {useLocale, useTranslations} from 'next-intl';
@@ -9,7 +9,6 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from '@/components/ui/alert-dialog';
-import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
@@ -18,7 +17,12 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
+import {
+  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
+  EntityCell
+} from '@/components/admin/list-shell';
 import {OrderStatusBadge} from '@/components/admin/order-status-badge';
+import {Avatar, StatusLabel} from '@/components/admin/ui';
 import {Link} from '@/i18n/navigation';
 import {formatMillimes} from '@/lib/money';
 import type {OrderRow} from '@/server/orders';
@@ -26,16 +30,27 @@ import {archiveOrder, restoreOrder} from './actions';
 
 export function OrdersTable({
   orders,
+  total,
   isAdmin,
   includeArchived,
-  currencyLabel
+  currencyLabel,
+  tabs,
+  search,
+  pagination
 }: {
   orders: OrderRow[];
+  total: number;
   isAdmin: boolean;
   includeArchived: boolean;
   currencyLabel: string;
+  // Server-rendered slots so the card owns the whole surface: the status tabs,
+  // the search field and the pagination all render inside it.
+  tabs?: ReactNode;
+  search?: ReactNode;
+  pagination?: ReactNode;
 }) {
   const t = useTranslations('adminOrders');
+  const tList = useTranslations('admin.list');
   const locale = useLocale();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
@@ -59,7 +74,8 @@ export function OrdersTable({
   function runArchive(id: string) {
     startTransition(async () => {
       const result = await archiveOrder(id);
-      if (result.ok) toast.success(t('archivedToast'));
+      // Archiving hides a record rather than achieving something — info.
+      if (result.ok) toast.info(t('archivedToast'), {description: t('archivedDescription')});
       else toast.error(t(`errors.${result.error}` as never));
     });
   }
@@ -67,28 +83,42 @@ export function OrdersTable({
   function runRestore(id: string) {
     startTransition(async () => {
       const result = await restoreOrder(id);
-      if (result.ok) toast.success(t('restoredToast'));
+      if (result.ok) toast.success(t('restoredToast'), {description: t('restoredDescription')});
       else toast.error(t(`errors.${result.error}` as never));
     });
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        {isAdmin && (
-          <Button render={<Link href="/admin/orders/new" />}>
-            <Plus className="size-4" /> {t('new.button')}
-          </Button>
-        )}
-        <Link href={toggleHref} className="ms-auto text-sm underline-offset-4 hover:underline">
-          {t('showArchived')}
-        </Link>
-      </div>
+    <div className="flex flex-col gap-5">
+      <AdminListHeader
+        title={t('title')}
+        action={
+          isAdmin ? (
+            <Button render={<Link href="/admin/orders/new" />}>
+              <Plus className="size-4" /> {t('new.button')}
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {orders.length === 0 ? (
-        <AdminEmptyState>{t('empty')}</AdminEmptyState>
-      ) : (
-        <div className="rounded-md border">
+      <AdminTableCard
+        tabs={tabs}
+        toolbar={
+          <>
+            {search}
+            <AdminToolbarEnd>
+              <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
+              <AdminFilterToggle href={toggleHref} active={includeArchived}>
+                {t('showArchived')}
+              </AdminFilterToggle>
+            </AdminToolbarEnd>
+          </>
+        }
+        footer={pagination}
+      >
+        {orders.length === 0 ? (
+          <AdminEmptyState>{t('empty')}</AdminEmptyState>
+        ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -106,30 +136,34 @@ export function OrdersTable({
                 const archived = order.archivedAt !== null;
                 return (
                   <TableRow key={order.id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/admin/orders/${order.id}`}
-                        dir="ltr"
-                        className="underline-offset-4 hover:underline"
-                      >
-                        #{order.number}
-                      </Link>
-                      {archived && (
-                        <Badge variant="outline" className="ms-2">{t('archived')}</Badge>
-                      )}
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/admin/orders/${order.id}`}
+                          dir="ltr"
+                          className="text-sm font-semibold underline-offset-4 hover:underline"
+                        >
+                          #{order.number}
+                        </Link>
+                        {archived && <StatusLabel tone="neutral">{t('archived')}</StatusLabel>}
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium">{order.customerName}</div>
-                      <div dir="ltr" className="text-xs text-muted-foreground">
-                        {order.customerPhone}
-                      </div>
+                      <EntityCell
+                        media={<Avatar name={order.customerName} />}
+                        primary={order.customerName}
+                        secondary={order.customerPhone}
+                        secondaryDir="ltr"
+                      />
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {dateFormatter.format(order.createdAt)}
                     </TableCell>
-                    <TableCell>{order._count.items}</TableCell>
-                    <TableCell className="tabular-nums">
-                      {formatMillimes(order.totalMillimes)} {currencyLabel}
+                    <TableCell className="tabular-nums">{order._count.items}</TableCell>
+                    <TableCell>
+                      <span className="text-sm font-semibold tabular-nums">
+                        {formatMillimes(order.totalMillimes)} {currencyLabel}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <OrderStatusBadge status={order.status} />
@@ -178,8 +212,8 @@ export function OrdersTable({
               })}
             </TableBody>
           </Table>
-        </div>
-      )}
+        )}
+      </AdminTableCard>
 
       {isAdmin && (
         <AlertDialog

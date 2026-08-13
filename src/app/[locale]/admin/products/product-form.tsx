@@ -3,6 +3,10 @@
 import {useState, useTransition} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
+import {
+  adminControl, adminPrimaryAction, adminQuietAction, adminTextarea, Field, FormActions,
+  FormSection, SoftNote
+} from '@/components/admin/form';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -83,147 +87,184 @@ export function ProductForm({
   }
 
   return (
-    <form action={submit} className="grid gap-4 md:grid-cols-2">
+    <form action={submit} className="flex flex-col gap-6">
+      {/* `contents` keeps the fieldset's disabled semantics while letting the
+          section cards be the form's own flex children. */}
       <fieldset disabled={readOnly || pending} className="contents">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="reference">{t('reference')}</Label>
-          <Input id="reference" name="reference" dir="ltr" defaultValue={product?.reference ?? ''} />
-          {errorLine('reference')}
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="nameFr">{t('nameFr')}</Label>
-          <Input id="nameFr" name="nameFr" defaultValue={product?.nameFr ?? ''} />
-          {errorLine('nameFr')}
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="nameAr">{t('nameAr')}</Label>
-          <Input id="nameAr" name="nameAr" dir="rtl" defaultValue={product?.nameAr ?? ''} />
-          {errorLine('nameAr')}
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="price">{t('price')}</Label>
-          <Input
-            id="price"
-            name="price"
-            dir="ltr"
-            defaultValue={product ? millimesToInput(product.priceMillimes) : ''}
-          />
-          {errorLine('price')}
-        </div>
-        <div className="flex flex-col gap-2 md:col-span-2">
-          <Label htmlFor="descriptionFr">{t('descriptionFr')}</Label>
-          <Textarea
-            id="descriptionFr"
-            name="descriptionFr"
-            defaultValue={product?.descriptionFr ?? ''}
-          />
-          {errorLine('descriptionFr')}
-        </div>
-        <div className="flex flex-col gap-2 md:col-span-2">
-          <Label htmlFor="descriptionAr">{t('descriptionAr')}</Label>
-          <Textarea
-            id="descriptionAr"
-            name="descriptionAr"
-            dir="rtl"
-            defaultValue={product?.descriptionAr ?? ''}
-          />
-          {errorLine('descriptionAr')}
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="discountPct">{t('discountPct')}</Label>
-          <Input
-            id="discountPct"
-            name="discountPct"
-            type="number"
-            min={0}
-            max={100}
-            defaultValue={product?.discountPct ?? 0}
-          />
-          {errorLine('discountPct')}
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="quantity">{t('quantity')}</Label>
-          <Input
-            id="quantity"
-            name="quantity"
-            type="number"
-            min={0}
-            defaultValue={product?.quantity ?? 0}
-          />
-          {errorLine('quantity')}
-        </div>
-        <div className="flex items-center gap-3 md:col-span-2">
-          <Switch
-            id="featured"
-            checked={featured}
-            onCheckedChange={(checked) => setFeatured(checked)}
-          />
-          <Label htmlFor="featured">{t('featured')}</Label>
-          <input type="hidden" name="featured" value={featured ? 'on' : ''} />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label>{t('category')}</Label>
-          <Select
-            value={categoryId || null}
-            onValueChange={(value) => {
-              setCategoryId(value ?? '');
-              setSubCategoryId(NO_SUB_CATEGORY);
-            }}
-            items={categories.map((category) => ({value: category.id, label: name(category)}))}
+        <FormSection title={t('sectionInfo')}>
+          <Field
+            label={t('reference')}
+            htmlFor="reference"
+            error={errorLine('reference')}
+            className="sm:col-span-2"
           >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {name(category)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errorLine('categoryId')}
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label>{t('subCategory')}</Label>
-          <Select
-            value={subCategoryId}
-            onValueChange={(value) => setSubCategoryId(value ?? NO_SUB_CATEGORY)}
-            items={[
-              {value: NO_SUB_CATEGORY, label: t('noSubCategory')},
-              ...subCategories.map((sub) => ({value: sub.id, label: name(sub)}))
-            ]}
+            <Input
+              id="reference"
+              name="reference"
+              dir="ltr"
+              className={adminControl}
+              defaultValue={product?.reference ?? ''}
+            />
+          </Field>
+          <Field label={t('nameFr')} htmlFor="nameFr" error={errorLine('nameFr')}>
+            <Input
+              id="nameFr"
+              name="nameFr"
+              className={adminControl}
+              defaultValue={product?.nameFr ?? ''}
+            />
+          </Field>
+          <Field label={t('nameAr')} htmlFor="nameAr" error={errorLine('nameAr')}>
+            <Input
+              id="nameAr"
+              name="nameAr"
+              dir="rtl"
+              className={adminControl}
+              defaultValue={product?.nameAr ?? ''}
+            />
+          </Field>
+          <Field
+            label={t('descriptionFr')}
+            htmlFor="descriptionFr"
+            error={errorLine('descriptionFr')}
+            className="sm:col-span-2"
           >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NO_SUB_CATEGORY}>{t('noSubCategory')}</SelectItem>
-              {subCategories.map((sub) => (
-                <SelectItem key={sub.id} value={sub.id}>
-                  {name(sub)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errorLine('subCategoryId')}
-        </div>
-        <div className="flex flex-col gap-2 md:col-span-2">
-          <Label>{t('images')}</Label>
-          <ImageUploader images={images} onChange={setImages} disabled={readOnly} />
-          {errorLine('images')}
-        </div>
+            <Textarea
+              id="descriptionFr"
+              name="descriptionFr"
+              className={adminTextarea}
+              defaultValue={product?.descriptionFr ?? ''}
+            />
+          </Field>
+          <Field
+            label={t('descriptionAr')}
+            htmlFor="descriptionAr"
+            error={errorLine('descriptionAr')}
+            className="sm:col-span-2"
+          >
+            <Textarea
+              id="descriptionAr"
+              name="descriptionAr"
+              dir="rtl"
+              className={adminTextarea}
+              defaultValue={product?.descriptionAr ?? ''}
+            />
+          </Field>
+        </FormSection>
+
+        <FormSection title={t('sectionPricing')} bodyClassName="sm:grid-cols-3">
+          <Field label={t('price')} htmlFor="price" error={errorLine('price')}>
+            <Input
+              id="price"
+              name="price"
+              dir="ltr"
+              className={adminControl}
+              defaultValue={product ? millimesToInput(product.priceMillimes) : ''}
+            />
+          </Field>
+          <Field label={t('discountPct')} htmlFor="discountPct" error={errorLine('discountPct')}>
+            <Input
+              id="discountPct"
+              name="discountPct"
+              type="number"
+              min={0}
+              max={100}
+              className={adminControl}
+              defaultValue={product?.discountPct ?? 0}
+            />
+          </Field>
+          <Field label={t('quantity')} htmlFor="quantity" error={errorLine('quantity')}>
+            <Input
+              id="quantity"
+              name="quantity"
+              type="number"
+              min={0}
+              className={adminControl}
+              defaultValue={product?.quantity ?? 0}
+            />
+          </Field>
+        </FormSection>
+
+        {/* Category MUST stay the first combobox in DOM order — the catalog
+            e2e picks it by position (category first, sub-category second). */}
+        <FormSection title={t('sectionOrganization')}>
+          <Field label={t('category')} error={errorLine('categoryId')}>
+            <Select
+              value={categoryId || null}
+              onValueChange={(value) => {
+                setCategoryId(value ?? '');
+                setSubCategoryId(NO_SUB_CATEGORY);
+              }}
+              items={categories.map((category) => ({value: category.id, label: name(category)}))}
+            >
+              <SelectTrigger className={`w-full ${adminControl}`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="theme-minimal">
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {name(category)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label={t('subCategory')} error={errorLine('subCategoryId')}>
+            <Select
+              value={subCategoryId}
+              onValueChange={(value) => setSubCategoryId(value ?? NO_SUB_CATEGORY)}
+              items={[
+                {value: NO_SUB_CATEGORY, label: t('noSubCategory')},
+                ...subCategories.map((sub) => ({value: sub.id, label: name(sub)}))
+              ]}
+            >
+              <SelectTrigger className={`w-full ${adminControl}`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="theme-minimal">
+                <SelectItem value={NO_SUB_CATEGORY}>{t('noSubCategory')}</SelectItem>
+                {subCategories.map((sub) => (
+                  <SelectItem key={sub.id} value={sub.id}>
+                    {name(sub)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <div className="flex items-center gap-3 rounded-xl bg-(--admin-neutral-soft) px-4 py-3 sm:col-span-2">
+            <Switch
+              id="featured"
+              checked={featured}
+              onCheckedChange={(checked) => setFeatured(checked)}
+            />
+            <Label htmlFor="featured" className="text-sm font-medium">
+              {t('featured')}
+            </Label>
+            <input type="hidden" name="featured" value={featured ? 'on' : ''} />
+          </div>
+        </FormSection>
+
+        <FormSection title={t('images')} bodyClassName="sm:grid-cols-1">
+          <Field hint={t('uploadHint')} error={errorLine('images')}>
+            <ImageUploader images={images} onChange={setImages} disabled={readOnly} />
+          </Field>
+        </FormSection>
+
         {readOnly ? (
-          <p className="text-sm text-muted-foreground md:col-span-2">{t('readOnly')}</p>
+          <SoftNote>{t('readOnly')}</SoftNote>
         ) : (
-          <div className="flex gap-3 md:col-span-2">
-            <Button type="submit" disabled={pending}>
-              {t('save')}
-            </Button>
-            <Button variant="outline" render={<Link href="/admin/products" />}>
+          <FormActions>
+            <Button
+              variant="ghost"
+              className={adminQuietAction}
+              render={<Link href="/admin/products" />}
+            >
               {t('cancel')}
             </Button>
-          </div>
+            <Button type="submit" className={adminPrimaryAction} disabled={pending}>
+              {t('save')}
+            </Button>
+          </FormActions>
         )}
       </fieldset>
     </form>

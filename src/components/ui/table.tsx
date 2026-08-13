@@ -4,6 +4,12 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+// Admin-only primitive (grep: every import lives under src/app/[locale]/admin).
+// Minimal-UI table: no outer box and no vertical rules — the header band sits
+// on the muted token, rows are separated by a DASHED hairline in the divider
+// colour, and the whole table scrolls inside its own container so a wide table
+// never pushes the page sideways.
+
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
@@ -23,7 +29,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("bg-muted/50 [&_tr]:border-b", className)}
+      className={cn("bg-muted [&_tr]:border-0 [&_tr]:hover:bg-transparent", className)}
       {...props}
     />
   )
@@ -44,7 +50,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+        "border-t border-dashed bg-muted/50 font-medium [&>tr]:last:border-b-0",
         className
       )}
       {...props}
@@ -57,7 +63,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
+        "border-b border-dashed transition-colors hover:bg-muted/60 has-aria-expanded:bg-muted/60 data-[state=selected]:bg-muted",
         className
       )}
       {...props}
@@ -70,7 +76,8 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-10 px-2 text-start align-middle text-xs font-medium whitespace-nowrap text-muted-foreground [&:has([role=checkbox])]:pe-0",
+        // Overline typography (see components/admin/ui.tsx): small, bold, tracked, secondary ink.
+        "h-13 px-4 text-start align-middle text-[12px] font-bold tracking-[0.09em] whitespace-nowrap text-muted-foreground uppercase [&:has([role=checkbox])]:pe-0",
         className
       )}
       {...props}
@@ -83,7 +90,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pe-0",
+        "px-4 py-3 align-middle whitespace-nowrap [&:has([role=checkbox])]:pe-0",
         className
       )}
       {...props}

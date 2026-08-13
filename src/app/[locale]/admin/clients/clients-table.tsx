@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useTransition} from 'react';
+import {type ReactNode, useState, useTransition} from 'react';
 import {Eye, MoreHorizontal} from 'lucide-react';
 import {useSearchParams} from 'next/navigation';
 import {useLocale, useTranslations} from 'next-intl';
@@ -9,7 +9,6 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from '@/components/ui/alert-dialog';
-import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
@@ -18,6 +17,11 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
+import {
+  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
+  EntityCell
+} from '@/components/admin/list-shell';
+import {Avatar, StatusLabel} from '@/components/admin/ui';
 import {Link} from '@/i18n/navigation';
 import type {ClientRow} from '@/server/clients';
 import {archiveClient, restoreClient} from './actions';
@@ -25,14 +29,21 @@ import {ClientEditDialog, type EditableClient} from './client-edit-dialog';
 
 export function ClientsTable({
   clients,
+  total,
   isAdmin,
-  includeArchived
+  includeArchived,
+  search,
+  pagination
 }: {
   clients: ClientRow[];
+  total: number;
   isAdmin: boolean;
   includeArchived: boolean;
+  search?: ReactNode;
+  pagination?: ReactNode;
 }) {
   const t = useTranslations('adminClients');
+  const tList = useTranslations('admin.list');
   const locale = useLocale();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
@@ -53,7 +64,8 @@ export function ClientsTable({
   function runArchive(id: string) {
     startTransition(async () => {
       const result = await archiveClient(id);
-      if (result.ok) toast.success(t('archivedToast'));
+      // Archiving hides a record rather than achieving something — info.
+      if (result.ok) toast.info(t('archivedToast'));
       else toast.error(t(`errors.${result.error}` as never));
     });
   }
@@ -67,22 +79,30 @@ export function ClientsTable({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <Link href={toggleHref} className="ms-auto text-sm underline-offset-4 hover:underline">
-          {t('showArchived')}
-        </Link>
-      </div>
+    <div className="flex flex-col gap-5">
+      <AdminListHeader title={t('title')} />
 
-      {clients.length === 0 ? (
-        <AdminEmptyState>{t('empty')}</AdminEmptyState>
-      ) : (
-        <div className="rounded-md border">
+      <AdminTableCard
+        toolbar={
+          <>
+            {search}
+            <AdminToolbarEnd>
+              <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
+              <AdminFilterToggle href={toggleHref} active={includeArchived}>
+                {t('showArchived')}
+              </AdminFilterToggle>
+            </AdminToolbarEnd>
+          </>
+        }
+        footer={pagination}
+      >
+        {clients.length === 0 ? (
+          <AdminEmptyState>{t('empty')}</AdminEmptyState>
+        ) : (
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>{t('name')}</TableHead>
-                <TableHead>{t('email')}</TableHead>
                 <TableHead>{t('phone')}</TableHead>
                 <TableHead>{t('orders')}</TableHead>
                 <TableHead>{t('joined')}</TableHead>
@@ -94,24 +114,30 @@ export function ClientsTable({
                 const archived = client.archivedAt !== null;
                 return (
                   <TableRow key={client.id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/admin/clients/${client.id}`}
-                        className="underline-offset-4 hover:underline"
-                      >
-                        {client.name}
-                      </Link>
-                      {archived && (
-                        <Badge variant="outline" className="ms-2">{t('archived')}</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell dir="ltr" className="text-muted-foreground">
-                      {client.email}
+                    {/* Monogram + name over e-mail — the e-mail keeps its own
+                        text node, so nothing that used to be findable is lost. */}
+                    <TableCell>
+                      <EntityCell
+                        media={<Avatar name={client.name} />}
+                        primary={
+                          <Link
+                            href={`/admin/clients/${client.id}`}
+                            className="underline-offset-4 hover:underline"
+                          >
+                            {client.name}
+                          </Link>
+                        }
+                        secondary={client.email}
+                        secondaryDir="ltr"
+                        badge={
+                          archived ? <StatusLabel tone="neutral">{t('archived')}</StatusLabel> : undefined
+                        }
+                      />
                     </TableCell>
                     <TableCell dir="ltr" className="text-muted-foreground">
                       {client.phone ?? '—'}
                     </TableCell>
-                    <TableCell>{client._count.orders}</TableCell>
+                    <TableCell className="tabular-nums">{client._count.orders}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {dateFormatter.format(client.createdAt)}
                     </TableCell>
@@ -175,8 +201,8 @@ export function ClientsTable({
               })}
             </TableBody>
           </Table>
-        </div>
-      )}
+        )}
+      </AdminTableCard>
 
       {isAdmin && (
         <>

@@ -7,9 +7,27 @@ import {Link} from '@/i18n/navigation';
 // same thing on one page. A footer's job is to help someone go somewhere, so
 // it now carries the brand line and real navigation instead. Every link here
 // points at a page that exists.
-export async function SiteFooter() {
+export async function SiteFooter({
+  isAuthenticated = false,
+  isStaff = false
+}: {
+  isAuthenticated?: boolean;
+  isStaff?: boolean;
+}) {
   const [t, locale] = await Promise.all([getTranslations(), getLocale()]);
   const tracked = locale !== 'ar';
+
+  // The account column follows the session: offering "Se connecter" to someone
+  // already signed in is noise, and staff get the route they actually use.
+  const accountLinks = isAuthenticated
+    ? [
+        {href: '/account/orders', label: t('myOrders.title')},
+        ...(isStaff ? [{href: '/admin', label: t('admin.blocks.dashboard')}] : [])
+      ]
+    : [
+        {href: '/login', label: t('common.login')},
+        {href: '/register', label: t('authPages.register.title')}
+      ];
 
   const columns = [
     {
@@ -29,10 +47,7 @@ export async function SiteFooter() {
     },
     {
       heading: t('nav.account'),
-      links: [
-        {href: '/account/orders', label: t('myOrders.title')},
-        {href: '/login', label: t('common.login')}
-      ]
+      links: accountLinks
     }
   ];
 

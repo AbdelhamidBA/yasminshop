@@ -7,6 +7,10 @@ import {cn} from '@/lib/utils';
 // base path and labels arrive as props so every admin list can reuse it. The
 // storefront Pagination stays untouched by design (it renders locale-aware
 // catalog URLs and is owned by the storefront surface).
+//
+// Minimal-UI presentation: quiet. No borders — the controls are muted ghosts
+// that tint on hover, and only the current page is filled with the primary
+// token. Every interactive item keeps a visible focus ring.
 export function AdminPagination({
   basePath,
   page,
@@ -33,18 +37,27 @@ export function AdminPagination({
   };
 
   const numbers = Array.from({length: totalPages}, (_, i) => i + 1);
-  const edgeClass =
-    'inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition-colors';
-  const numberClass = 'inline-flex size-8 items-center justify-center rounded-md text-sm';
+  const focus = 'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
+  const edgeClass = cn(
+    'inline-flex h-8 items-center rounded-lg px-3 text-sm font-semibold transition-colors',
+    focus
+  );
+  const numberClass = cn(
+    'inline-flex size-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors',
+    focus
+  );
 
   return (
-    <nav className="flex flex-wrap items-center justify-center gap-1.5">
+    <nav className="flex flex-wrap items-center justify-end gap-1">
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} className={cn(edgeClass, 'hover:bg-accent')}>
+        <Link
+          href={hrefFor(page - 1)}
+          className={cn(edgeClass, 'text-muted-foreground hover:bg-muted hover:text-foreground')}
+        >
           {prevLabel}
         </Link>
       ) : (
-        <span aria-disabled="true" className={cn(edgeClass, 'text-muted-foreground opacity-50')}>
+        <span aria-disabled="true" className={cn(edgeClass, 'text-muted-foreground opacity-40')}>
           {prevLabel}
         </span>
       )}
@@ -53,22 +66,29 @@ export function AdminPagination({
           <span
             key={n}
             aria-current="page"
-            className={cn(numberClass, 'bg-primary font-medium text-primary-foreground')}
+            className={cn(numberClass, 'bg-primary text-primary-foreground')}
           >
             {n}
           </span>
         ) : (
-          <Link key={n} href={hrefFor(n)} className={cn(numberClass, 'border hover:bg-accent')}>
+          <Link
+            key={n}
+            href={hrefFor(n)}
+            className={cn(numberClass, 'text-muted-foreground hover:bg-muted hover:text-foreground')}
+          >
             {n}
           </Link>
         )
       )}
       {page < totalPages ? (
-        <Link href={hrefFor(page + 1)} className={cn(edgeClass, 'hover:bg-accent')}>
+        <Link
+          href={hrefFor(page + 1)}
+          className={cn(edgeClass, 'text-muted-foreground hover:bg-muted hover:text-foreground')}
+        >
           {nextLabel}
         </Link>
       ) : (
-        <span aria-disabled="true" className={cn(edgeClass, 'text-muted-foreground opacity-50')}>
+        <span aria-disabled="true" className={cn(edgeClass, 'text-muted-foreground opacity-40')}>
           {nextLabel}
         </span>
       )}

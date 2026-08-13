@@ -1,22 +1,23 @@
 import {useTranslations} from 'next-intl';
-import {Badge} from '@/components/ui/badge';
 import type {OrderStatus} from '@/lib/orders';
-import {cn} from '@/lib/utils';
+import {StatusLabel, type AdminTone} from './ui';
 
-// Shared status pill (plan Global Constraints palette, reference image):
-// PENDING amber, CONFIRMED blue, DELIVERED green, CANCELED red — theme-safe
-// via the bg-<color>-500/15 + dark:text-<color>-400 pattern. Defined ONCE here;
-// admin list/detail (and later My Orders) all import it. No 'use client' so it
-// renders from both server and client trees.
-const STATUS_CLASSES: Record<OrderStatus, string> = {
-  PENDING: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
-  CONFIRMED: 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
-  DELIVERED: 'bg-green-500/15 text-green-600 dark:text-green-400',
-  CANCELED: 'bg-red-500/15 text-red-600 dark:text-red-400'
+// Shared order-status chip. Minimal UI never fills a status solid — it uses the
+// soft Label (semantic colour at 16% behind its own solid ink), which is the
+// StatusLabel primitive. Tones follow the dashboard's semantic mapping:
+// PENDING → warning, CONFIRMED → info, DELIVERED → success, CANCELED → error.
+// Defined ONCE here; admin list/detail and the storefront's My Orders all
+// import it. The label TEXT is unchanged (adminOrders.status.*). No
+// 'use client' so it renders from both server and client trees.
+const STATUS_TONE: Record<OrderStatus, AdminTone> = {
+  PENDING: 'warning',
+  CONFIRMED: 'info',
+  DELIVERED: 'success',
+  CANCELED: 'error'
 };
 
 export function OrderStatusBadge({status}: {status: OrderStatus}) {
   const t = useTranslations('adminOrders.status');
 
-  return <Badge className={cn(STATUS_CLASSES[status])}>{t(status as never)}</Badge>;
+  return <StatusLabel tone={STATUS_TONE[status]}>{t(status as never)}</StatusLabel>;
 }

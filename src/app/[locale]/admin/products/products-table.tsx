@@ -1,11 +1,10 @@
 'use client';
 
-import {useState, useTransition} from 'react';
+import {type ReactNode, useState, useTransition} from 'react';
 import {Check, MoreHorizontal, Plus} from 'lucide-react';
 import {useSearchParams} from 'next/navigation';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
-import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -18,6 +17,11 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import {AdminEmptyState} from '@/components/admin/empty-state';
+import {
+  AdminFilterToggle, AdminListHeader, AdminResultCount, AdminTableCard, AdminToolbarEnd,
+  EntityCell
+} from '@/components/admin/list-shell';
+import {StatusLabel} from '@/components/admin/ui';
 import {Link} from '@/i18n/navigation';
 import {effectivePriceMillimes, formatMillimes} from '@/lib/money';
 import type {ProductRow} from '@/server/products';
@@ -29,15 +33,18 @@ export function ProductsTable({
   isAdmin,
   includeArchived,
   lowStockThreshold,
-  currencyLabel
+  currencyLabel,
+  search
 }: {
   products: ProductRow[];
   isAdmin: boolean;
   includeArchived: boolean;
   lowStockThreshold: number;
   currencyLabel: string;
+  search?: ReactNode;
 }) {
   const t = useTranslations('admin.products');
+  const tList = useTranslations('admin.list');
   const locale = useLocale();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
@@ -54,7 +61,8 @@ export function ProductsTable({
   function runArchive(id: string) {
     startTransition(async () => {
       const result = await archiveProduct(id);
-      if (result.ok) toast.success(t('archivedToast'));
+      // Archiving hides a record rather than achieving something — info.
+      if (result.ok) toast.info(t('archivedToast'));
       else toast.error(t(`errors.${result.error}` as never));
     });
   }
@@ -68,27 +76,40 @@ export function ProductsTable({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        {isAdmin && (
-          <Button render={<Link href="/admin/products/new" />}>
-            <Plus className="size-4" /> {t('add')}
-          </Button>
-        )}
-        <Link href={toggleHref} className="ms-auto text-sm underline-offset-4 hover:underline">
-          {t('showArchived')}
-        </Link>
-      </div>
+    <div className="flex flex-col gap-5">
+      <AdminListHeader
+        title={t('title')}
+        action={
+          isAdmin ? (
+            <Button render={<Link href="/admin/products/new" />}>
+              <Plus className="size-4" /> {t('add')}
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {products.length === 0 ? (
-        <AdminEmptyState>{t('empty')}</AdminEmptyState>
-      ) : (
-        <div className="rounded-md border">
+      <AdminTableCard
+        toolbar={
+          <>
+            {/* The search field is created by the server page and handed down;
+                wrapping it here keeps it out of a bare array slot (React key
+                warning) and lets it take the free space in the toolbar row. */}
+            <div className="min-w-0 flex-1">{search}</div>
+            <AdminToolbarEnd>
+              <AdminResultCount>{tList('results', {count: products.length})}</AdminResultCount>
+              <AdminFilterToggle href={toggleHref} active={includeArchived}>
+                {t('showArchived')}
+              </AdminFilterToggle>
+            </AdminToolbarEnd>
+          </>
+        }
+      >
+        {products.length === 0 ? (
+          <AdminEmptyState>{t('empty')}</AdminEmptyState>
+        ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-14" />
-                <TableHead>{t('reference')}</TableHead>
                 <TableHead>{t('name')}</TableHead>
                 <TableHead>{t('category')}</TableHead>
                 <TableHead>{t('price')}</TableHead>
@@ -103,39 +124,52 @@ export function ProductsTable({
                 const discounted = product.discountPct > 0;
                 return (
                   <TableRow key={product.id}>
+                    {/* Thumbnail + name over reference: the reference keeps its own
+                        text node, so a row's accessible name still contains it. */}
                     <TableCell>
-                      <img
-                        src={product.images[0]?.url}
-                        alt=""
-                        className="size-10 rounded-md object-cover"
+                      <EntityCell
+                        media={
+                          <img
+                            src={product.images[0]?.url}
+                            alt=""
+                            className="size-10 shrink-0 rounded-lg bg-muted object-cover"
+                          />
+                        }
+                        primary={name(product)}
+                        secondary={product.reference}
+                        secondaryDir="ltr"
+                        badge={
+                          archived ? <StatusLabel tone="neutral">{t('archived')}</StatusLabel> : undefined
+                        }
                       />
                     </TableCell>
-                    <TableCell dir="ltr" className="text-muted-foreground">
-                      {product.reference}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {name(product)}
-                      {archived && <Badge variant="outline" className="ms-2">{t('archived')}</Badge>}
+                    <TableCell>
+                      <div className="text-sm">{name(product.category)}</div>
+                      {product.subCategory ? (
+                        <div className="mt-0.5 text-xs text-muted-foreground">
+                          {name(product.subCategory)}
+                        </div>
+                      ) : null}
                     </TableCell>
                     <TableCell>
-                      {name(product.category)}
-                      {product.subCategory ? ` / ${name(product.subCategory)}` : ''}
-                    </TableCell>
-                    <TableCell>
-                      {discounted && (
-                        <span className="line-through text-muted-foreground me-2">
-                          {formatMillimes(product.priceMillimes)}
+                      <div className="flex items-center gap-2">
+                        {discounted && (
+                          <span className="text-xs text-muted-foreground line-through">
+                            {formatMillimes(product.priceMillimes)}
+                          </span>
+                        )}
+                        <span className="text-sm font-semibold tabular-nums">
+                          {formatMillimes(
+                            discounted
+                              ? effectivePriceMillimes(product.priceMillimes, product.discountPct, null)
+                              : product.priceMillimes
+                          )}{' '}
+                          {currencyLabel}
                         </span>
-                      )}
-                      {formatMillimes(
-                        discounted
-                          ? effectivePriceMillimes(product.priceMillimes, product.discountPct, null)
-                          : product.priceMillimes
-                      )}{' '}
-                      {currencyLabel}
-                      {discounted && (
-                        <Badge className="ms-2">-{product.discountPct}%</Badge>
-                      )}
+                        {discounted && (
+                          <StatusLabel tone="primary">-{product.discountPct}%</StatusLabel>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -145,16 +179,20 @@ export function ProductsTable({
                           quantity={product.quantity}
                         />
                         {product.quantity === 0 ? (
-                          <Badge variant="destructive">{t('outOfStock')}</Badge>
+                          <StatusLabel tone="error">{t('outOfStock')}</StatusLabel>
                         ) : (
                           product.quantity <= lowStockThreshold && (
-                            <Badge variant="outline">{t('lowStock')}</Badge>
+                            <StatusLabel tone="warning">{t('lowStock')}</StatusLabel>
                           )
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      {product.featured ? <Check className="size-4" /> : '—'}
+                      {product.featured ? (
+                        <Check className="size-4 text-(--admin-success)" />
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     {isAdmin && (
                       <TableCell className="text-end">
@@ -188,8 +226,8 @@ export function ProductsTable({
               })}
             </TableBody>
           </Table>
-        </div>
-      )}
+        )}
+      </AdminTableCard>
 
       {isAdmin && (
         <AlertDialog open={confirmArchiveId !== null} onOpenChange={(open) => !open && setConfirmArchiveId(null)}>

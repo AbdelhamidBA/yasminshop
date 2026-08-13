@@ -6,6 +6,7 @@
     "cart": "Panier",
     "login": "Se connecter",
     "logout": "Se déconnecter",
+    "close": "Fermer",
     "welcome": "Bienvenue",
     "theme": {
       "toggle": "Changer le thème"
@@ -276,10 +277,14 @@
     },
     "collapse": "Réduire le menu",
     "notifications": "Notifications",
+    "list": {
+      "results": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}"
+    },
     "categories": {
       "title": "Catégories",
       "add": "Ajouter une catégorie",
       "edit": "Modifier la catégorie",
+      "name": "Nom",
       "nameFr": "Nom (français)",
       "nameAr": "Nom (arabe)",
       "parent": "Catégorie parente",
@@ -352,6 +357,9 @@
     "productForm": {
       "createTitle": "Nouveau produit",
       "editTitle": "Modifier le produit",
+      "sectionInfo": "Informations",
+      "sectionPricing": "Prix et stock",
+      "sectionOrganization": "Classement",
       "reference": "Référence",
       "nameFr": "Nom (français)",
       "nameAr": "Nom (arabe)",
@@ -371,6 +379,7 @@
       "moveDown": "Descendre",
       "uploading": "Téléversement...",
       "uploadFailed": "Échec du téléversement.",
+      "uploadHint": "Formats acceptés : JPEG, PNG, WebP, AVIF — 8 Mo maximum.",
       "minOneImage": "Ajoutez au moins une image.",
       "save": "Enregistrer",
       "cancel": "Annuler",
@@ -474,7 +483,9 @@
       "active": "Remise globale active : −{pct}%.",
       "inactive": "Aucune remise globale active.",
       "applied": "Remise globale appliquée.",
+      "appliedDescription": "Elle remplace les remises par produit tant qu'elle est active.",
       "removed": "Remise globale retirée.",
+      "removedDescription": "Les remises par produit s'appliquent de nouveau.",
       "errors": {
         "invalidPct": "Pourcentage invalide (entier de 0 à 100).",
         "forbidden": "Action non autorisée."
@@ -509,7 +520,9 @@
     "prev": "Précédent",
     "next": "Suivant",
     "archivedToast": "Commande archivée.",
+    "archivedDescription": "Elle est masquée de la liste par défaut.",
     "restoredToast": "Commande restaurée.",
+    "restoredDescription": "Elle réapparaît dans la liste par défaut.",
     "confirmArchiveTitle": "Archiver cette commande ?",
     "confirmArchiveBody": "La commande sera masquée de la liste par défaut.",
     "cancel": "Annuler",
@@ -539,6 +552,8 @@
       "CANCELED": "Annuler la commande"
     },
     "statusChanged": "Statut mis à jour.",
+    "statusChangedStockOut": "Les quantités commandées ont été déduites du stock.",
+    "statusChangedStockIn": "Les quantités commandées ont été remises en stock.",
     "confirmCancelTitle": "Annuler cette commande ?",
     "confirmCancelBody": "Si la commande était confirmée, les quantités seront remises en stock. Cette action est définitive.",
     "confirmCancelAction": "Annuler la commande",
@@ -561,7 +576,8 @@
       "promoApply": "Appliquer",
       "promoApplied": "Code {code} appliqué (−{pct}%).",
       "submit": "Créer la commande",
-      "created": "Commande créée."
+      "created": "Commande créée.",
+      "createdDescription": "Elle est en attente : confirmez-la pour déduire le stock."
     },
     "errors": {
       "validation": "Veuillez corriger les champs en rouge.",
@@ -646,6 +662,7 @@
     "passwordHint": "8 caractères minimum.",
     "create": "Créer",
     "createdToast": "Sous-admin créé.",
+    "createdDescription": "Il peut se connecter et gérer uniquement les statuts de commande et les quantités.",
     "archive": "Archiver",
     "restore": "Restaurer",
     "archived": "Archivé",
@@ -714,7 +731,8 @@
     "delta": {
       "increase": "En hausse de {value}% sur la période précédente",
       "decrease": "En baisse de {value}% sur la période précédente",
-      "unchanged": "Stable sur la période précédente"
+      "unchanged": "Stable sur la période précédente",
+      "caption": "vs période précédente"
     },
     "sales": {
       "title": "Aperçu des ventes",

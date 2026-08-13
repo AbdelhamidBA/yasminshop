@@ -67,7 +67,7 @@ export function ClientEditDialog({
         <DialogHeader>
           <DialogTitle>{t('editTitle')}</DialogTitle>
         </DialogHeader>
-        <form action={submit} className="flex flex-col gap-4">
+        <form action={submit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <Label htmlFor="client-email">{t('email')}</Label>
             <Input id="client-email" dir="ltr" value={client?.email ?? ''} disabled readOnly />
@@ -94,10 +94,16 @@ export function ClientEditDialog({
             {errorLine('city')}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="px-4"
+              onClick={() => onOpenChange(false)}
+            >
               {t('cancel')}
             </Button>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" size="lg" className="px-4" disabled={pending}>
               {t('save')}
             </Button>
           </DialogFooter>

@@ -48,7 +48,9 @@ export function SubAdminCreateDialog({
     startTransition(async () => {
       const result = await createSubAdmin(formData);
       if (result.ok) {
-        toast.success(t('createdToast'));
+        // The account's exact reach (server-enforced SUB_ADMIN scope): order
+        // status transitions and product quantity, nothing else.
+        toast.success(t('createdToast'), {description: t('createdDescription')});
         onOpenChange(false);
       } else {
         setFieldErrors(result.fieldErrors ?? {});
@@ -63,7 +65,7 @@ export function SubAdminCreateDialog({
         <DialogHeader>
           <DialogTitle>{t('addTitle')}</DialogTitle>
         </DialogHeader>
-        <form action={submit} className="flex flex-col gap-4">
+        <form action={submit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <Label htmlFor="new-sub-admin-name">{t('name')}</Label>
             <Input id="new-sub-admin-name" name="name" autoComplete="off" required />
@@ -95,10 +97,16 @@ export function SubAdminCreateDialog({
             {errorLine('password')}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="px-4"
+              onClick={() => onOpenChange(false)}
+            >
               {t('cancel')}
             </Button>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" size="lg" className="px-4" disabled={pending}>
               {t('create')}
             </Button>
           </DialogFooter>

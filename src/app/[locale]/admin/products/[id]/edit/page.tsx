@@ -1,5 +1,7 @@
 import {notFound} from 'next/navigation';
 import {getTranslations} from 'next-intl/server';
+import {PageHeader, PageTitle} from '@/components/admin/form';
+import {StatusLabel} from '@/components/admin/ui';
 import {requirePageStaff} from '@/server/authz';
 import {listCategoryTree} from '@/server/categories';
 import {getProduct} from '@/server/products';
@@ -17,8 +19,15 @@ export default async function EditProductPage({
   if (!product) notFound();
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold">{t('editTitle')}</h1>
+    <div className="flex max-w-4xl flex-col gap-6">
+      <PageHeader
+        title={<PageTitle>{t('editTitle')}</PageTitle>}
+        badges={
+          <StatusLabel tone="neutral">
+            <span dir="ltr">{product.reference}</span>
+          </StatusLabel>
+        }
+      />
       <ProductForm
         product={product}
         categories={categories}

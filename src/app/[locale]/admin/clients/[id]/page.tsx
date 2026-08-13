@@ -1,15 +1,13 @@
 import {ArrowLeft} from 'lucide-react';
 import {notFound} from 'next/navigation';
 import {getTranslations} from 'next-intl/server';
-import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
-import {
-  Card, CardContent, CardHeader, CardTitle
-} from '@/components/ui/card';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
+import {PageHeader, PageTitle, Panel} from '@/components/admin/form';
 import {OrderStatusBadge} from '@/components/admin/order-status-badge';
+import {Avatar, Overline, StatusLabel} from '@/components/admin/ui';
 import {Link} from '@/i18n/navigation';
 import {formatMillimes} from '@/lib/money';
 import {requirePageStaff} from '@/server/authz';
@@ -42,111 +40,102 @@ export default async function ClientDetailPage({
 
   const dash = t('notProvided');
 
+  // Profile rows are label/value pairs; a null optional renders the shared
+  // "not provided" dash in secondary ink rather than an invented value.
+  const profile: Array<{label: string; value: string; dir?: 'ltr'; muted?: boolean}> = [
+    {label: t('email'), value: client.email, dir: 'ltr'},
+    {label: t('phone'), value: client.phone ?? dash, dir: 'ltr', muted: client.phone === null},
+    {label: t('address'), value: client.address ?? dash, muted: client.address === null},
+    {label: t('city'), value: client.city ?? dash, muted: client.city === null},
+    {label: t('joined'), value: joinedFormatter.format(client.createdAt)},
+    {label: t('orders'), value: String(client._count.orders)}
+  ];
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={t('backToList')}
-          render={<Link href="/admin/clients" />}
-        >
-          <ArrowLeft className="size-4 rtl:rotate-180" />
-        </Button>
-        <h1 className="text-2xl font-semibold">{client.name}</h1>
-        {archived && <Badge variant="outline">{t('archived')}</Badge>}
-      </div>
+      <PageHeader
+        back={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-10 rounded-full"
+            aria-label={t('backToList')}
+            render={<Link href="/admin/clients" />}
+          >
+            <ArrowLeft className="rtl:rotate-180" />
+          </Button>
+        }
+        title={
+          <span className="flex items-center gap-3">
+            <Avatar name={client.name} />
+            <PageTitle>{client.name}</PageTitle>
+          </span>
+        }
+        badges={archived ? <StatusLabel tone="neutral">{t('archived')}</StatusLabel> : undefined}
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="self-start">
-          <CardHeader>
-            <CardTitle>{t('profileCard')}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3 text-sm">
-            <div>
-              <div className="text-xs text-muted-foreground">{t('email')}</div>
-              <div dir="ltr">{client.email}</div>
-            </div>
-            <div>
-              <div className="text-xs text-muted-foreground">{t('phone')}</div>
-              {client.phone !== null ? (
-                <div dir="ltr">{client.phone}</div>
-              ) : (
-                <div className="text-muted-foreground">{dash}</div>
-              )}
-            </div>
-            <div>
-              <div className="text-xs text-muted-foreground">{t('address')}</div>
-              <div className={client.address === null ? 'text-muted-foreground' : undefined}>
-                {client.address ?? dash}
+        <Panel
+          title={t('profileCard')}
+          className="self-start"
+          bodyClassName="flex flex-col gap-4 text-sm"
+        >
+          {profile.map((row) => (
+            <div key={row.label} className="flex flex-col gap-1">
+              <Overline>{row.label}</Overline>
+              <div dir={row.dir} className={row.muted ? 'text-muted-foreground' : undefined}>
+                {row.value}
               </div>
             </div>
-            <div>
-              <div className="text-xs text-muted-foreground">{t('city')}</div>
-              <div className={client.city === null ? 'text-muted-foreground' : undefined}>
-                {client.city ?? dash}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-muted-foreground">{t('joined')}</div>
-              <div>{joinedFormatter.format(client.createdAt)}</div>
-            </div>
-            <div>
-              <div className="text-xs text-muted-foreground">{t('orders')}</div>
-              <div>{client._count.orders}</div>
-            </div>
-          </CardContent>
-        </Card>
+          ))}
+        </Panel>
 
-        <Card className="self-start lg:col-span-2">
-          <CardHeader>
-            <CardTitle>{t('ordersCard')}</CardTitle>
-          </CardHeader>
-          {client.orders.length === 0 ? (
-            <CardContent>
-              <p className="text-sm text-muted-foreground">{t('noOrders')}</p>
-            </CardContent>
-          ) : (
-            <CardContent className="px-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="ps-4">{t('number')}</TableHead>
-                    <TableHead>{t('date')}</TableHead>
-                    <TableHead>{t('items')}</TableHead>
-                    <TableHead>{t('total')}</TableHead>
-                    <TableHead className="pe-4">{t('statusHeader')}</TableHead>
+        {client.orders.length === 0 ? (
+          <Panel title={t('ordersCard')} className="self-start lg:col-span-2">
+            <p className="rounded-xl bg-(--admin-neutral-soft) px-4 py-6 text-center text-sm text-muted-foreground">
+              {t('noOrders')}
+            </p>
+          </Panel>
+        ) : (
+          <Panel title={t('ordersCard')} flush className="min-w-0 self-start lg:col-span-2">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="ps-5 sm:ps-6">{t('number')}</TableHead>
+                  <TableHead>{t('date')}</TableHead>
+                  <TableHead>{t('items')}</TableHead>
+                  <TableHead>{t('total')}</TableHead>
+                  <TableHead className="pe-5 sm:pe-6">{t('statusHeader')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {client.orders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="ps-5 font-semibold sm:ps-6">
+                      <Link
+                        href={`/admin/orders/${order.id}`}
+                        dir="ltr"
+                        className="text-(--admin-primary-dark) underline-offset-4 hover:underline"
+                      >
+                        #{order.number}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {orderDateFormatter.format(order.createdAt)}
+                    </TableCell>
+                    <TableCell className="tabular-nums">{order._count.items}</TableCell>
+                    <TableCell className="font-semibold tabular-nums">
+                      {formatMillimes(order.totalMillimes)} {currencyLabel}
+                    </TableCell>
+                    <TableCell className="pe-5 sm:pe-6">
+                      <OrderStatusBadge status={order.status} />
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {client.orders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="ps-4 font-medium">
-                        <Link
-                          href={`/admin/orders/${order.id}`}
-                          dir="ltr"
-                          className="underline-offset-4 hover:underline"
-                        >
-                          #{order.number}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {orderDateFormatter.format(order.createdAt)}
-                      </TableCell>
-                      <TableCell>{order._count.items}</TableCell>
-                      <TableCell className="tabular-nums">
-                        {formatMillimes(order.totalMillimes)} {currencyLabel}
-                      </TableCell>
-                      <TableCell className="pe-4">
-                        <OrderStatusBadge status={order.status} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          )}
-        </Card>
+                ))}
+              </TableBody>
+            </Table>
+          </Panel>
+        )}
       </div>
     </div>
   );

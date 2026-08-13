@@ -31,24 +31,27 @@ export default async function ClientsPage({
   const paginationParams: Record<string, string> = {};
   if (q) paginationParams.q = q;
   if (includeArchived) paginationParams.archived = '1';
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">{t('title')}</h1>
-      <ClientsSearch initialValue={q} includeArchived={includeArchived} />
-      <ClientsTable
-        clients={clients}
-        isAdmin={session.user.role === 'ADMIN'}
-        includeArchived={includeArchived}
-      />
-      <AdminPagination
-        basePath="/admin/clients"
-        page={page}
-        totalPages={Math.ceil(total / PAGE_SIZE)}
-        params={paginationParams}
-        prevLabel={t('prev')}
-        nextLabel={t('next')}
-      />
-    </div>
+    <ClientsTable
+      clients={clients}
+      total={total}
+      isAdmin={session.user.role === 'ADMIN'}
+      includeArchived={includeArchived}
+      search={<ClientsSearch initialValue={q} includeArchived={includeArchived} />}
+      pagination={
+        totalPages > 1 ? (
+          <AdminPagination
+            basePath="/admin/clients"
+            page={page}
+            totalPages={totalPages}
+            params={paginationParams}
+            prevLabel={t('prev')}
+            nextLabel={t('next')}
+          />
+        ) : null
+      }
+    />
   );
 }

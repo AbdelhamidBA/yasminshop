@@ -77,7 +77,9 @@ export function OrderAdminActions({order}: {order: EditableOrderCustomer}) {
     startTransition(async () => {
       const result = await archiveOrder(order.id);
       if (result.ok) {
-        toast.success(t('archivedToast'));
+        // Hiding a record is a state change, not an achievement — info, and the
+        // description names where the order went (the list's default filter).
+        toast.info(t('archivedToast'), {description: t('archivedDescription')});
         router.refresh();
       } else {
         toast.error(t(`errors.${result.error}` as never));
@@ -89,7 +91,7 @@ export function OrderAdminActions({order}: {order: EditableOrderCustomer}) {
     startTransition(async () => {
       const result = await restoreOrder(order.id);
       if (result.ok) {
-        toast.success(t('restoredToast'));
+        toast.success(t('restoredToast'), {description: t('restoredDescription')});
         router.refresh();
       } else {
         toast.error(t(`errors.${result.error}` as never));
@@ -99,7 +101,12 @@ export function OrderAdminActions({order}: {order: EditableOrderCustomer}) {
 
   if (order.archived) {
     return (
-      <Button variant="outline" disabled={pending} onClick={runRestore}>
+      <Button
+        variant="ghost"
+        className="h-10 bg-(--admin-neutral-soft) px-4"
+        disabled={pending}
+        onClick={runRestore}
+      >
         {t('restore')}
       </Button>
     );
@@ -107,19 +114,29 @@ export function OrderAdminActions({order}: {order: EditableOrderCustomer}) {
 
   return (
     <>
-      <Button variant="outline" disabled={pending} onClick={() => setEditing(true)}>
+      <Button
+        variant="ghost"
+        className="h-10 bg-(--admin-neutral-soft) px-4"
+        disabled={pending}
+        onClick={() => setEditing(true)}
+      >
         {t('editCustomer')}
       </Button>
-      <Button variant="destructive" disabled={pending} onClick={() => setConfirmArchive(true)}>
+      <Button
+        variant="destructive"
+        className="h-10 px-4"
+        disabled={pending}
+        onClick={() => setConfirmArchive(true)}
+      >
         {t('archive')}
       </Button>
 
       <Dialog open={editing} onOpenChange={setEditing}>
-        <DialogContent>
+        <DialogContent className="theme-minimal">
           <DialogHeader>
             <DialogTitle>{t('editCustomer')}</DialogTitle>
           </DialogHeader>
-          <form action={submit} className="flex flex-col gap-4">
+          <form action={submit} className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
               <Label htmlFor="name">{t('name')}</Label>
               <Input id="name" name="name" defaultValue={order.customerName} required />
@@ -146,10 +163,16 @@ export function OrderAdminActions({order}: {order: EditableOrderCustomer}) {
               {errorLine('notes')}
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditing(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="px-4"
+                onClick={() => setEditing(false)}
+              >
                 {t('cancel')}
               </Button>
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" size="lg" className="px-4" disabled={pending}>
                 {t('save')}
               </Button>
             </DialogFooter>
@@ -166,6 +189,7 @@ export function OrderAdminActions({order}: {order: EditableOrderCustomer}) {
           <AlertDialogFooter>
             <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction
+              variant="destructive"
               onClick={() => {
                 runArchive();
                 setConfirmArchive(false);
