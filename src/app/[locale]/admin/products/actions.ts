@@ -7,6 +7,7 @@ import {AuthzError} from '@/lib/authz';
 import {requireAdmin, requireStaff} from '@/server/authz';
 import {prisma} from '@/lib/db';
 import {sanitizeIds} from '@/lib/bulk';
+import {isUniqueViolationOn} from '@/lib/prisma-errors';
 import {parseDinarsToMillimes} from '@/lib/money';
 import {productSchema, quantitySchema} from '@/lib/schemas/catalog';
 import {ensureUniqueSlug, slugify} from '@/lib/slugify';
@@ -70,16 +71,6 @@ function generateProductSlug(nameFr: string): Promise<string> {
     slugify(nameFr) || 'produit',
     async (s) => (await prisma.product.count({where: {slug: s}})) > 0
   );
-}
-
-// P2002 can fire on Product.reference or Product.slug — discriminate by the
-// violated constraint's target column.
-function isUniqueViolationOn(error: unknown, column: string): boolean {
-  if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') {
-    return false;
-  }
-  const target = error.meta?.target;
-  return Array.isArray(target) ? target.includes(column) : String(target ?? '').includes(column);
 }
 
 export async function createProduct(formData: FormData): Promise<ActionResult<{id: string}>> {

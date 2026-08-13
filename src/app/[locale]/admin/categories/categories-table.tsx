@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useTransition} from 'react';
+import {type ReactNode, useState, useTransition} from 'react';
 import {CornerDownRight, Plus} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
@@ -30,14 +30,25 @@ type ParentOption = {id: string; nameFr: string; nameAr: string};
 
 export function CategoriesTable({
   categories,
+  total,
   parentOptions,
   isAdmin,
-  includeArchived
+  includeArchived,
+  pagination
 }: {
   categories: CategoryRow[];
+  /**
+   * ROOT categories matching the current filter across ALL pages. The tree is
+   * paginated by root — each root's sub-categories always travel with it — so
+   * the result count and the footer range speak the same unit and can never
+   * disagree with one another.
+   */
+  total: number;
   parentOptions: ParentOption[];
   isAdmin: boolean;
   includeArchived: boolean;
+  // Server-rendered slot so the card owns the whole surface (orders idiom).
+  pagination?: ReactNode;
 }) {
   const t = useTranslations('admin.categories');
   const tList = useTranslations('admin.list');
@@ -53,9 +64,6 @@ export function CategoriesTable({
   // The tree is rendered flat, so selection is fed the SAME flat list of ids the
   // operator can see — roots first, each followed by its sub-categories.
   const rowIds = categories.flatMap((root) => [root.id, ...root.children.map((c) => c.id)]);
-  // Roots + their children — the tree is rendered flat, so the count is the
-  // number of rows the table actually shows.
-  const rowCount = rowIds.length;
   // Mass actions are ADMIN-only, so the whole selection column is absent for a
   // SUB_ADMIN — the server re-checks regardless.
   const selection = useRowSelection(isAdmin ? rowIds : []);
@@ -182,6 +190,7 @@ export function CategoriesTable({
       />
 
       <AdminTableCard
+        footer={pagination}
         toolbar={
           selection.count > 0 ? (
             // The selection bar REPLACES the toolbar: the actions appear where
@@ -214,7 +223,8 @@ export function CategoriesTable({
             </SelectionBar>
           ) : (
             <AdminToolbarEnd>
-              <AdminResultCount>{tList('results', {count: rowCount})}</AdminResultCount>
+              {/* Counts ROOT categories — the unit the list pages by. */}
+              <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
               <AdminFilterToggle
                 href={includeArchived ? '/admin/categories' : '/admin/categories?archived=1'}
                 active={includeArchived}

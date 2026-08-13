@@ -278,7 +278,11 @@
     "collapse": "Réduire le menu",
     "notifications": "Notifications",
     "list": {
-      "results": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}"
+      "results": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}",
+      "rowsPerPage": "Lignes par page",
+      "range": "{from}–{to} sur {total}",
+      "prev": "Précédent",
+      "next": "Suivant"
     },
     "categories": {
       "title": "Catégories",
@@ -361,7 +365,16 @@
       "deletedToast": "Produit(s) supprimé(s).",
       "deletedDescription": "Les images associées ont été supprimées avec le produit.",
       "bulkArchivedToast": "Produit(s) archivé(s).",
-      "bulkRestoredToast": "Produit(s) restauré(s)."
+      "bulkRestoredToast": "Produit(s) restauré(s).",
+      "stats": {
+        "total": "Produits actifs",
+        "outOfStock": "En rupture",
+        "lowStock": "Stock bas",
+        "archived": "Archivés",
+        "hint": {
+          "lowStock": "{count} en stock ou moins"
+        }
+      }
     },
     "productForm": {
       "createTitle": "Nouveau produit",

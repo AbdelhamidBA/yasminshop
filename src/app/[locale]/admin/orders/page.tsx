@@ -2,14 +2,13 @@ import {getTranslations} from 'next-intl/server';
 import {AdminPagination} from '@/components/admin/admin-pagination';
 import {Link} from '@/i18n/navigation';
 import {ALLOWED_TRANSITIONS, type OrderStatus} from '@/lib/orders';
+import {pageRange, parsePage, parsePageSize, totalPages} from '@/lib/pagination';
 import {cn} from '@/lib/utils';
 import {requirePageStaff} from '@/server/authz';
 import {listOrders} from '@/server/orders';
 import {getParameters} from '@/server/settings';
 import {OrdersSearch} from './orders-search';
 import {OrdersTable} from './orders-table';
-
-const PAGE_SIZE = 20;
 
 // Derived from the transition table so the whitelist can never drift from the
 // engine's enum (Task 2 carry-forward: the URL value is WHITELISTED before it
@@ -25,22 +24,28 @@ function parseStatus(value: string | undefined): OrderStatus | undefined {
 export default async function OrdersPage({
   searchParams
 }: {
-  searchParams: Promise<{status?: string; q?: string; archived?: string; page?: string}>;
+  searchParams: Promise<{
+    status?: string;
+    q?: string;
+    archived?: string;
+    page?: string;
+    per?: string;
+  }>;
 }) {
   const session = await requirePageStaff();
   const params = await searchParams;
   const status = parseStatus(params.status);
   const q = typeof params.q === 'string' ? params.q.trim() : '';
   const includeArchived = params.archived === '1';
-  const page =
-    typeof params.page === 'string' && /^\d{1,4}$/.test(params.page)
-      ? Number.parseInt(params.page, 10)
-      : 1;
+  // Both URL values go through the shared scalar guards — never parsed here.
+  const page = parsePage(params.page);
+  const pageSize = parsePageSize(params.per);
 
-  const [t, parameters, {orders, total}] = await Promise.all([
+  const [t, tList, parameters, {orders, total}] = await Promise.all([
     getTranslations('adminOrders'),
+    getTranslations('admin.list'),
     getParameters(),
-    listOrders({status, q: q || undefined, includeArchived, page, pageSize: PAGE_SIZE})
+    listOrders({status, q: q || undefined, includeArchived, page, pageSize})
   ]);
 
   // Non-page params, preserved by tab/pagination links and the search form.
@@ -65,9 +70,11 @@ export default async function OrdersPage({
         : 'text-muted-foreground after:bg-transparent hover:text-foreground'
     );
 
+  // `per` rides along with the filters so paging forward keeps the chosen size.
   const paginationParams = {...baseParams};
   if (status) paginationParams.status = status;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  if (params.per) paginationParams.per = String(pageSize);
+  const {from, to} = pageRange(page, pageSize, total);
 
   return (
     <OrdersTable
@@ -94,16 +101,16 @@ export default async function OrdersPage({
       }
       search={<OrdersSearch initialValue={q} status={status} includeArchived={includeArchived} />}
       pagination={
-        totalPages > 1 ? (
-          <AdminPagination
-            basePath="/admin/orders"
-            page={page}
-            totalPages={totalPages}
-            params={paginationParams}
-            prevLabel={t('prev')}
-            nextLabel={t('next')}
-          />
-        ) : null
+        <AdminPagination
+          basePath="/admin/orders"
+          page={page}
+          totalPages={totalPages(total, pageSize)}
+          params={paginationParams}
+          prevLabel={t('prev')}
+          nextLabel={t('next')}
+          pageSize={pageSize}
+          rangeLabel={tList('range', {from, to, total})}
+        />
       }
     />
   );

@@ -1,6 +1,7 @@
 import 'server-only';
 import type {OrderStatus, Prisma} from '@prisma/client';
 import {prisma} from '@/lib/db';
+import {pagingArgs} from './paging';
 
 // Admin orders data access. Search (q) matches the sequential order number
 // exactly when the query is numeric, and customerName / customerPhone
@@ -8,10 +9,6 @@ import {prisma} from '@/lib/db';
 // a $transaction'd count (storefront listing idiom).
 
 const CLIENT_SELECT = {select: {id: true, name: true, email: true}} as const;
-
-// Same hard cap as the storefront listing: keeps skip = (page-1)*pageSize from
-// producing absurd Postgres offsets for URL-sourced page values.
-const MAX_PAGE = 10_000;
 
 // Order.number is an Int4 autoincrement — numeric queries beyond Int4 range
 // can never match and would 500 inside Prisma if passed through.
@@ -26,15 +23,6 @@ export type ListOrdersParams = {
 };
 
 export async function listOrders(params: ListOrdersParams) {
-  const page =
-    Number.isSafeInteger(params.page) && params.page >= 1 && params.page <= MAX_PAGE
-      ? params.page
-      : 1;
-  const pageSize =
-    Number.isInteger(params.pageSize) && params.pageSize >= 1 && params.pageSize <= 100
-      ? params.pageSize
-      : 20;
-
   const filters: Prisma.OrderWhereInput[] = [];
   if (!params.includeArchived) filters.push({archivedAt: null});
   if (params.status) filters.push({status: params.status});
@@ -62,8 +50,7 @@ export async function listOrders(params: ListOrdersParams) {
         _count: {select: {items: true}},
         client: CLIENT_SELECT
       },
-      skip: (page - 1) * pageSize,
-      take: pageSize
+      ...pagingArgs(params)
     }),
     prisma.order.count({where})
   ]);

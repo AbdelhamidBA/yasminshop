@@ -278,7 +278,11 @@
     "collapse": "طي القائمة",
     "notifications": "الإشعارات",
     "list": {
-      "results": "{count, plural, =0 {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {# نتائج} many {# نتيجة} other {# نتيجة}}"
+      "results": "{count, plural, =0 {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {# نتائج} many {# نتيجة} other {# نتيجة}}",
+      "rowsPerPage": "صفوف لكل صفحة",
+      "range": "{from}–{to} من {total}",
+      "prev": "السابق",
+      "next": "التالي"
     },
     "categories": {
       "title": "الفئات",
@@ -361,7 +365,16 @@
       "deletedToast": "تم حذف المنتج (المنتجات).",
       "deletedDescription": "حُذفت الصور المرتبطة مع المنتج.",
       "bulkArchivedToast": "تمت أرشفة المنتج (المنتجات).",
-      "bulkRestoredToast": "تمت استعادة المنتج (المنتجات)."
+      "bulkRestoredToast": "تمت استعادة المنتج (المنتجات).",
+      "stats": {
+        "total": "منتجات نشطة",
+        "outOfStock": "نفد المخزون",
+        "lowStock": "مخزون منخفض",
+        "archived": "مؤرشفة",
+        "hint": {
+          "lowStock": "{count} في المخزون أو أقل"
+        }
+      }
     },
     "productForm": {
       "createTitle": "منتج جديد",

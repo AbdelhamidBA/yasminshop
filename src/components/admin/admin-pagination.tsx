@@ -1,4 +1,5 @@
 import {Link} from '@/i18n/navigation';
+import {RowsPerPage} from '@/components/admin/rows-per-page';
 import {cn} from '@/lib/utils';
 
 // Shared admin pagination (Task 3 review carry-forward: the storefront
@@ -17,7 +18,9 @@ export function AdminPagination({
   totalPages,
   params,
   prevLabel,
-  nextLabel
+  nextLabel,
+  pageSize,
+  rangeLabel
 }: {
   // Locale-less admin path, e.g. '/admin/orders' — i18n Link adds the locale.
   basePath: string;
@@ -27,8 +30,14 @@ export function AdminPagination({
   params: Record<string, string>;
   prevLabel: string;
   nextLabel: string;
+  /** Current rows-per-page; renders the selector when provided. */
+  pageSize?: number;
+  /** Already-formatted "1–25 of 57". */
+  rangeLabel?: string;
 }) {
-  if (totalPages <= 1) return null;
+  // The footer still renders on a single page: the operator needs the row
+  // count and the size control even when there is nothing to page through.
+  const showPages = totalPages > 1;
 
   const hrefFor = (target: number) => {
     const search = new URLSearchParams(params);
@@ -48,7 +57,15 @@ export function AdminPagination({
   );
 
   return (
-    <nav className="flex flex-wrap items-center justify-end gap-1">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-4">
+        {pageSize === undefined ? null : <RowsPerPage value={pageSize} />}
+        {rangeLabel ? (
+          <span className="text-sm text-muted-foreground tabular-nums">{rangeLabel}</span>
+        ) : null}
+      </div>
+      {!showPages ? null : (
+      <nav className="flex flex-wrap items-center justify-end gap-1">
       {page > 1 ? (
         <Link
           href={hrefFor(page - 1)}
@@ -92,6 +109,8 @@ export function AdminPagination({
           {nextLabel}
         </span>
       )}
-    </nav>
+      </nav>
+      )}
+    </div>
   );
 }

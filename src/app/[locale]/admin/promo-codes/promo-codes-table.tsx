@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useTransition} from 'react';
+import {type ReactNode, useState, useTransition} from 'react';
 import {Plus, Ticket} from 'lucide-react';
 import {useLocale, useTranslations} from 'next-intl';
 import {toast} from 'sonner';
@@ -32,12 +32,18 @@ import {PromoCodeFormDialog, type EditablePromoCode} from './promo-code-form-dia
 
 export function PromoCodesTable({
   promoCodes,
+  total,
   isAdmin,
-  includeArchived
+  includeArchived,
+  pagination
 }: {
   promoCodes: PromoCodeRow[];
+  /** Rows matching the current filter across ALL pages, not just this one. */
+  total: number;
   isAdmin: boolean;
   includeArchived: boolean;
+  // Server-rendered slot so the card owns the whole surface (orders idiom).
+  pagination?: ReactNode;
 }) {
   const t = useTranslations('admin.promoCodesPage');
   const tList = useTranslations('admin.list');
@@ -118,6 +124,7 @@ export function PromoCodesTable({
       />
 
       <AdminTableCard
+        footer={pagination}
         toolbar={
           selection.count > 0 ? (
             // The selection bar REPLACES the toolbar: the actions appear where
@@ -168,7 +175,7 @@ export function PromoCodesTable({
             </SelectionBar>
           ) : (
             <AdminToolbarEnd>
-              <AdminResultCount>{tList('results', {count: promoCodes.length})}</AdminResultCount>
+              <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
               <AdminFilterToggle
                 href={includeArchived ? '/admin/promo-codes' : '/admin/promo-codes?archived=1'}
                 active={includeArchived}

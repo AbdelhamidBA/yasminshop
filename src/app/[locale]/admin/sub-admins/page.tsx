@@ -3,16 +3,15 @@ import {getTranslations} from 'next-intl/server';
 import {auth} from '@/auth';
 import {requirePageStaff} from '@/server/authz';
 import {AdminPagination} from '@/components/admin/admin-pagination';
+import {pageRange, parsePage, parsePageSize, totalPages} from '@/lib/pagination';
 import {listSubAdmins} from '@/server/sub-admins';
 import {SubAdminsSearch} from './sub-admins-search';
 import {SubAdminsTable} from './sub-admins-table';
 
-const PAGE_SIZE = 20;
-
 export default async function SubAdminsPage({
   searchParams
 }: {
-  searchParams: Promise<{q?: string; archived?: string; page?: string}>;
+  searchParams: Promise<{q?: string; archived?: string; page?: string; per?: string}>;
 }) {
   // Funnel through the revocation check first (DB tokenVersion re-check): a
   // revoked/archived staff token is redirected to /login here, so an ADMIN who
@@ -28,21 +27,22 @@ export default async function SubAdminsPage({
   // Scalar guards on every URL-sourced value (clients-page idiom).
   const q = typeof params.q === 'string' ? params.q.trim() : '';
   const includeArchived = params.archived === '1';
-  const page =
-    typeof params.page === 'string' && /^\d{1,4}$/.test(params.page)
-      ? Number.parseInt(params.page, 10)
-      : 1;
+  const page = parsePage(params.page);
+  const pageSize = parsePageSize(params.per);
 
-  const [t, {subAdmins, total}] = await Promise.all([
+  const [t, tList, {subAdmins, total}] = await Promise.all([
     getTranslations('subAdmins'),
-    listSubAdmins({q: q || undefined, includeArchived, page, pageSize: PAGE_SIZE})
+    getTranslations('admin.list'),
+    listSubAdmins({q: q || undefined, includeArchived, page, pageSize})
   ]);
 
-  // Non-page params, preserved by pagination links.
+  // Non-page params, preserved by pagination links — `per` included, so paging
+  // forward keeps the chosen rows-per-page.
   const paginationParams: Record<string, string> = {};
   if (q) paginationParams.q = q;
   if (includeArchived) paginationParams.archived = '1';
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  if (params.per) paginationParams.per = String(pageSize);
+  const {from, to} = pageRange(page, pageSize, total);
 
   return (
     <SubAdminsTable
@@ -51,16 +51,16 @@ export default async function SubAdminsPage({
       includeArchived={includeArchived}
       search={<SubAdminsSearch initialValue={q} includeArchived={includeArchived} />}
       pagination={
-        totalPages > 1 ? (
-          <AdminPagination
-            basePath="/admin/sub-admins"
-            page={page}
-            totalPages={totalPages}
-            params={paginationParams}
-            prevLabel={t('prev')}
-            nextLabel={t('next')}
-          />
-        ) : null
+        <AdminPagination
+          basePath="/admin/sub-admins"
+          page={page}
+          totalPages={totalPages(total, pageSize)}
+          params={paginationParams}
+          prevLabel={t('prev')}
+          nextLabel={t('next')}
+          pageSize={pageSize}
+          rangeLabel={tList('range', {from, to, total})}
+        />
       }
     />
   );

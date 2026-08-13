@@ -33,18 +33,24 @@ import {QuantityCell} from './quantity-cell';
 
 export function ProductsTable({
   products,
+  total,
   isAdmin,
   includeArchived,
   lowStockThreshold,
   currencyLabel,
-  search
+  search,
+  pagination
 }: {
   products: ProductRow[];
+  /** Rows matching the current filters across ALL pages, not just this one. */
+  total: number;
   isAdmin: boolean;
   includeArchived: boolean;
   lowStockThreshold: number;
   currencyLabel: string;
+  // Server-rendered slots so the card owns the whole surface (orders idiom).
   search?: ReactNode;
+  pagination?: ReactNode;
 }) {
   const t = useTranslations('admin.products');
   const tList = useTranslations('admin.list');
@@ -115,6 +121,7 @@ export function ProductsTable({
       />
 
       <AdminTableCard
+        footer={pagination}
         toolbar={
           selection.count > 0 ? (
             // The selection bar REPLACES the toolbar: the actions appear where
@@ -160,7 +167,7 @@ export function ProductsTable({
                 warning) and lets it take the free space in the toolbar row. */}
             <div className="min-w-0 flex-1">{search}</div>
             <AdminToolbarEnd>
-              <AdminResultCount>{tList('results', {count: products.length})}</AdminResultCount>
+              <AdminResultCount>{tList('results', {count: total})}</AdminResultCount>
               <AdminFilterToggle href={toggleHref} active={includeArchived}>
                 {t('showArchived')}
               </AdminFilterToggle>

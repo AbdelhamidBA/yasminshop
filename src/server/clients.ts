@@ -1,6 +1,7 @@
 import 'server-only';
 import type {Prisma} from '@prisma/client';
 import {prisma} from '@/lib/db';
+import {pagingArgs} from './paging';
 
 // Admin clients data access. Two invariants hold on EVERY query in this
 // module: only role CLIENT rows are reachable (staff accounts are managed on
@@ -19,10 +20,6 @@ const CLIENT_SELECT = {
   _count: {select: {orders: true}}
 } as const;
 
-// Same hard cap as the orders listing: keeps skip = (page-1)*pageSize from
-// producing absurd Postgres offsets for URL-sourced page values.
-const MAX_PAGE = 10_000;
-
 export type ListClientsParams = {
   q?: string;
   includeArchived: boolean;
@@ -31,15 +28,6 @@ export type ListClientsParams = {
 };
 
 export async function listClients(params: ListClientsParams) {
-  const page =
-    Number.isSafeInteger(params.page) && params.page >= 1 && params.page <= MAX_PAGE
-      ? params.page
-      : 1;
-  const pageSize =
-    Number.isInteger(params.pageSize) && params.pageSize >= 1 && params.pageSize <= 100
-      ? params.pageSize
-      : 20;
-
   const filters: Prisma.UserWhereInput[] = [{role: 'CLIENT'}];
   if (!params.includeArchived) filters.push({archivedAt: null});
 
@@ -61,8 +49,7 @@ export async function listClients(params: ListClientsParams) {
       where,
       orderBy: [{createdAt: 'desc'}, {id: 'asc'}],
       select: CLIENT_SELECT,
-      skip: (page - 1) * pageSize,
-      take: pageSize
+      ...pagingArgs(params)
     }),
     prisma.user.count({where})
   ]);

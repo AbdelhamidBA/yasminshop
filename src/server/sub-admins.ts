@@ -1,6 +1,7 @@
 import 'server-only';
 import type {Prisma} from '@prisma/client';
 import {prisma} from '@/lib/db';
+import {pagingArgs} from './paging';
 
 // Admin sub-admins data access. Two invariants hold on EVERY query in this
 // module (same guarantees as the clients module): only role SUB_ADMIN rows are
@@ -17,10 +18,6 @@ const SUB_ADMIN_SELECT = {
   createdAt: true
 } as const;
 
-// Same hard cap as the clients/orders listings: keeps skip = (page-1)*pageSize
-// from producing absurd Postgres offsets for URL-sourced page values.
-const MAX_PAGE = 10_000;
-
 export type ListSubAdminsParams = {
   q?: string;
   includeArchived: boolean;
@@ -29,15 +26,6 @@ export type ListSubAdminsParams = {
 };
 
 export async function listSubAdmins(params: ListSubAdminsParams) {
-  const page =
-    Number.isSafeInteger(params.page) && params.page >= 1 && params.page <= MAX_PAGE
-      ? params.page
-      : 1;
-  const pageSize =
-    Number.isInteger(params.pageSize) && params.pageSize >= 1 && params.pageSize <= 100
-      ? params.pageSize
-      : 20;
-
   // Role SUB_ADMIN is pinned in the very first filter — every query below
   // carries it, so ADMIN / CLIENT rows are structurally unreachable.
   const filters: Prisma.UserWhereInput[] = [{role: 'SUB_ADMIN'}];
@@ -61,8 +49,7 @@ export async function listSubAdmins(params: ListSubAdminsParams) {
       where,
       orderBy: [{createdAt: 'desc'}, {id: 'asc'}],
       select: SUB_ADMIN_SELECT,
-      skip: (page - 1) * pageSize,
-      take: pageSize
+      ...pagingArgs(params)
     }),
     prisma.user.count({where})
   ]);

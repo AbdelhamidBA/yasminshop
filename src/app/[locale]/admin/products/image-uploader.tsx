@@ -174,9 +174,13 @@ export function ImageUploader({
           {images.map((image, index) => (
             <li
               key={image.url}
-              className="flex flex-col overflow-hidden rounded-xl bg-(--admin-neutral-soft)"
+              className="flex h-full flex-col overflow-hidden rounded-xl bg-(--admin-neutral-soft)"
             >
-              <div className="relative aspect-square">
+              {/* Square, and capped: on a wide screen a 4-column grid makes an
+                  uncapped square tile tall enough to push the controls off the
+                  fold, and any tile whose media reports a different intrinsic
+                  size drags its grid row taller than its neighbours. */}
+              <div className="relative aspect-square max-h-56">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={image.url} alt="" className="size-full object-cover" />
                 {index === 0 && (
