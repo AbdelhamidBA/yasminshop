@@ -276,6 +276,10 @@
       "parameters": "Paramètres généraux"
     },
     "collapse": "Réduire le menu",
+    "menu": "Menu",
+    "navLabel": "Navigation principale",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
     "notifications": "Notifications",
     "list": {
       "results": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}",

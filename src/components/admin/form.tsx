@@ -66,7 +66,13 @@ export function Panel({
             flush && 'px-5 sm:px-6'
           )}
         >
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          {/* basis-64 is what makes `flex-wrap` above do its job: without an
+              intrinsic basis the title column just shrinks to nothing beside a
+              nowrap status chip (the description collapsed to a ~65px ribbon on
+              a 390px screen). Below ~256px + chip the chip drops to its own
+              line and the copy gets the full card width; above it, nothing
+              changes — flex-1 still fills the row. */}
+          <div className="flex min-w-0 flex-1 basis-64 flex-col gap-1.5">
             {title !== undefined && (
               <h2>
                 <Overline>{title}</Overline>

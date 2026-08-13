@@ -4,6 +4,7 @@ import {AuthError} from 'next-auth';
 import {headers} from 'next/headers';
 import {signIn} from '@/auth';
 import {prisma} from '@/lib/db';
+import {routing} from '@/i18n/routing';
 import {RATE_LIMITS, clientIpFromHeaders, enforceRateLimit} from '@/lib/rate-limit';
 
 // Where a successful sign-in lands: staff go straight to the dashboard, every
@@ -11,15 +12,25 @@ import {RATE_LIMITS, clientIpFromHeaders, enforceRateLimit} from '@/lib/rate-lim
 // before it has authenticated anyone, so the role is read up front by email —
 // the same unnormalized lookup authorize() performs. This leaks nothing: the
 // form's answer to a wrong password is identical either way, and the redirect
-// only ever happens once signIn has actually succeeded. The path stays
-// locale-less on purpose; the proxy prefixes it (/admin → /fr/admin) exactly
-// as it already does for '/'.
+// only ever happens once signIn has actually succeeded.
+//
+// The target MUST carry the locale prefix. A locale-less '/admin' relies on
+// the proxy to redirect it, and that middleware hop does not resolve during
+// the client-side navigation the sign-in action performs: the address bar
+// moves to /admin while the page still shows the login form, and only a manual
+// refresh recovers. Prefixing here keeps the navigation a single hop.
+const LOCALE_PREFIX = `/${routing.defaultLocale}`;
+
 async function destinationFor(email: FormDataEntryValue | null): Promise<string> {
   // Scalar guard before the query (project idiom): only a plausible email
   // string ever reaches Prisma.
-  if (typeof email !== 'string' || email.length === 0 || email.length > 320) return '/';
+  if (typeof email !== 'string' || email.length === 0 || email.length > 320) {
+    return LOCALE_PREFIX;
+  }
   const user = await prisma.user.findUnique({where: {email}, select: {role: true}});
-  return user?.role === 'ADMIN' || user?.role === 'SUB_ADMIN' ? '/admin' : '/';
+  return user?.role === 'ADMIN' || user?.role === 'SUB_ADMIN'
+    ? `${LOCALE_PREFIX}/admin`
+    : LOCALE_PREFIX;
 }
 
 // Returned error strings: 'invalid' → bad credentials (the sole message the form

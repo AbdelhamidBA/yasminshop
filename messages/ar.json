@@ -276,6 +276,10 @@
       "parameters": "الإعدادات العامة"
     },
     "collapse": "طي القائمة",
+    "menu": "القائمة",
+    "navLabel": "التنقل الرئيسي",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق القائمة",
     "notifications": "الإشعارات",
     "list": {
       "results": "{count, plural, =0 {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {# نتائج} many {# نتيجة} other {# نتيجة}}",

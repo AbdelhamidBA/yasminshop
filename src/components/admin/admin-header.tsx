@@ -1,5 +1,6 @@
 import {LogoutButton} from '@/components/logout-button';
 import {ThemeToggle} from '@/components/theme-toggle';
+import {AdminMobileNav} from '@/components/admin/admin-mobile-nav';
 import {NotificationBell} from '@/components/admin/notification-bell';
 import {PushToggle} from '@/components/admin/push-toggle';
 import {Avatar} from '@/components/admin/ui';
@@ -12,7 +13,9 @@ import {getParameters} from '@/server/settings';
 const BELL_LIMIT = 8;
 
 // Minimal-UI header: no chrome band — a translucent, blurred strip that lets the
-// page scroll under it, with the actions collected on the inline end.
+// page scroll under it, with the actions collected on the inline end. Below
+// `lg` it also carries the burger that opens the nav drawer, since the desktop
+// rail is not rendered there.
 //
 // ThemeToggle / LogoutButton live in src/components and are
 // shared-by-location, so they are restyled from HERE through wrapper child
@@ -28,7 +31,7 @@ const PILL_ACTION =
 const QUIET_LINK =
   '[&_button]:whitespace-nowrap [&_button]:text-xs [&_button]:font-medium [&_button]:text-muted-foreground [&_button]:hover:text-foreground';
 
-export async function AdminHeader({userName}: {userName: string}) {
+export async function AdminHeader({userName, isAdmin}: {userName: string; isAdmin: boolean}) {
   const [unread, items, parameters] = await Promise.all([
     unreadCount(),
     listNotifications(BELL_LIMIT),
@@ -37,6 +40,7 @@ export async function AdminHeader({userName}: {userName: string}) {
 
   return (
     <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-1 bg-background/75 px-4 backdrop-blur-lg lg:h-[72px] lg:px-6">
+      <AdminMobileNav isAdmin={isAdmin} />
       <div className="ms-auto flex items-center gap-1">
         <NotificationBell
           unreadCount={unread}
