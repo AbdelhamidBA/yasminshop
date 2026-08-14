@@ -58,3 +58,32 @@ export const newPasswordSchema = z
   })
   .refine(matchesConfirm, passwordMatch);
 export type NewPasswordInput = z.output<typeof newPasswordSchema>;
+
+// Signed-in password change (the staff profile page). Same password rules as
+// registration and the token reset, plus two things the token flow does not
+// need. The CURRENT password, because a live session must not be enough on its
+// own to take an account over — the token flow proves ownership with a mailed
+// link instead, so it has no equivalent to ask for. And a difference check, so
+// "changing" a password cannot quietly be a no-op that still reports success.
+//
+// Both extra refinements skip empty fields for the same reason matchesConfirm
+// does: zod 4 runs refinements even when the per-field checks failed, and an
+// empty box should say 'required' rather than a cross-field complaint.
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .min(1, {message: 'required'})
+      .max(200, {message: 'tooLong'}),
+    password: passwordField,
+    confirmPassword: confirmField
+  })
+  .refine(matchesConfirm, passwordMatch)
+  .refine(
+    (data) =>
+      data.currentPassword.length === 0 ||
+      data.password.length === 0 ||
+      data.currentPassword !== data.password,
+    {message: 'passwordUnchanged', path: ['password']}
+  );
+export type ChangePasswordInput = z.output<typeof changePasswordSchema>;

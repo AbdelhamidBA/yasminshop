@@ -108,6 +108,12 @@ export const RATE_LIMITS = {
   // enough that a human — or the e2e suite's handful of logins — never trips it;
   // production behind a shared store / proxy-level throttle would tighten this.
   login: {limit: 30, windowMs: 60_000},
+  // Signed-in password change. Unlike every other entry here this one is keyed
+  // by USER id, not IP: the surface is authenticated, and what deserves a cap
+  // is repeated guessing at the CURRENT password from a session someone else is
+  // holding. A legitimate change is a once-in-months action, so ten a minute is
+  // already far beyond generous.
+  changePassword: {limit: 10, windowMs: 60_000},
   placeOrder: {limit: 30, windowMs: 60_000},
   checkPromo: {limit: 30, windowMs: 60_000},
   searchHits: {limit: 60, windowMs: 60_000}

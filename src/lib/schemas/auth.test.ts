@@ -1,6 +1,6 @@
 import {describe, expect, test} from 'vitest';
 import {fieldErrorsFromZod} from '../action-result';
-import {newPasswordSchema, registerSchema} from './auth';
+import {changePasswordSchema, newPasswordSchema, registerSchema} from './auth';
 
 // Same contract as checkoutSchema tests: every surfaced message must be a
 // translation KEY (consumed via t(`authPages.errors.${key}`)), never prose.
@@ -118,5 +118,75 @@ describe('newPasswordSchema', () => {
     expect(errorsFor({password: 'long-enough', confirmPassword: 'long-enuff'})).toEqual({
       confirmPassword: 'passwordMismatch'
     });
+  });
+});
+
+describe('changePasswordSchema', () => {
+  const errorsFor = (input: Partial<Record<string, string>>) => {
+    const result = changePasswordSchema.safeParse({
+      currentPassword: 'old-password',
+      password: 'fresh-password',
+      confirmPassword: 'fresh-password',
+      ...input
+    });
+    return result.success ? {} : fieldErrorsFromZod(result.error);
+  };
+
+  test('accepts a valid change', () => {
+    expect(errorsFor({})).toEqual({});
+  });
+
+  test('requires the current password', () => {
+    expect(errorsFor({currentPassword: ''})).toEqual({currentPassword: 'required'});
+  });
+
+  test('inherits the new-password rules', () => {
+    expect(errorsFor({password: 'short', confirmPassword: 'short'})).toEqual({
+      password: 'passwordTooShort'
+    });
+    expect(errorsFor({confirmPassword: 'something-else'})).toEqual({
+      confirmPassword: 'passwordMismatch'
+    });
+  });
+
+  test('rejects a new password identical to the current one', () => {
+    expect(
+      errorsFor({password: 'old-password', confirmPassword: 'old-password'})
+    ).toEqual({password: 'passwordUnchanged'});
+  });
+
+  test('an empty box says required rather than a cross-field complaint', () => {
+    // Both refinements skip empty fields, so a blank form reports exactly the
+    // three 'required's and nothing about matching or sameness.
+    expect(errorsFor({currentPassword: '', password: '', confirmPassword: ''})).toEqual({
+      currentPassword: 'required',
+      password: 'required',
+      confirmPassword: 'required'
+    });
+  });
+
+  test('passwords are not trimmed (bcrypt compares verbatim)', () => {
+    const padded = ' spaced pass ';
+    const result = changePasswordSchema.safeParse({
+      currentPassword: 'old-password',
+      password: padded,
+      confirmPassword: padded
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.password).toBe(padded);
+  });
+
+  test('every surfaced message is a known key, never English prose', () => {
+    const surfaced = [
+      errorsFor({currentPassword: ''}),
+      errorsFor({password: 'short', confirmPassword: 'short'}),
+      errorsFor({confirmPassword: 'something-else'}),
+      errorsFor({password: 'old-password', confirmPassword: 'old-password'})
+    ].flatMap((fieldErrors) => Object.values(fieldErrors));
+    expect(surfaced.length).toBeGreaterThan(0);
+    for (const message of surfaced) {
+      expect([...KNOWN_KEYS, 'passwordUnchanged']).toContain(message);
+      expect(message).toMatch(/^[a-zA-Z]+$/);
+    }
   });
 });

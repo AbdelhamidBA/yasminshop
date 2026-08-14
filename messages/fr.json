@@ -273,7 +273,8 @@
       "categories": "Catégories",
       "promoCodes": "Codes promo",
       "subAdmins": "Sous-admins",
-      "parameters": "Paramètres généraux"
+      "parameters": "Paramètres généraux",
+      "profile": "Mon profil"
     },
     "collapse": "Réduire le menu",
     "menu": "Menu",
@@ -709,6 +710,39 @@
       "invalidPhone": "Numéro de téléphone invalide.",
       "tooShort": "Trop court.",
       "tooLong": "Trop long."
+    }
+  },
+  "adminProfile": {
+    "title": "Mon profil",
+    "identityCard": "Mon compte",
+    "name": "Nom",
+    "email": "E-mail",
+    "role": "Rôle",
+    "roles": {
+      "ADMIN": "Administrateur",
+      "SUB_ADMIN": "Sous-admin"
+    },
+    "emailReadOnly": "L'e-mail n'est pas modifiable : c'est votre identifiant de connexion.",
+    "passwordCard": "Changer le mot de passe",
+    "passwordLead": "Choisissez un mot de passe d'au moins 8 caractères. Par sécurité, toutes vos sessions seront fermées : vous devrez vous reconnecter juste après.",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "submit": "Mettre à jour le mot de passe",
+    "changed": "Mot de passe mis à jour.",
+    "changedTitle": "Mot de passe mis à jour",
+    "changedBody": "Vos sessions ont été fermées. Reconnectez-vous avec votre nouveau mot de passe.",
+    "signInAgain": "Se reconnecter",
+    "errors": {
+      "validation": "Veuillez corriger les champs en rouge.",
+      "forbidden": "Action non autorisée.",
+      "rateLimited": "Trop de tentatives. Réessayez dans une minute.",
+      "required": "Champ requis.",
+      "tooLong": "Trop long.",
+      "passwordTooShort": "8 caractères minimum.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "passwordUnchanged": "Le nouveau mot de passe doit être différent de l'actuel.",
+      "wrongPassword": "Mot de passe actuel incorrect."
     }
   },
   "subAdmins": {

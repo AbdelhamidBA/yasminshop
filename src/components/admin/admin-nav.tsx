@@ -8,6 +8,7 @@ import {
   Shield,
   ShoppingBag,
   TicketPercent,
+  UserCog,
   Users
 } from 'lucide-react';
 import {useTranslations} from 'next-intl';
@@ -35,7 +36,8 @@ type NavItem = {
     | 'categories'
     | 'promoCodes'
     | 'subAdmins'
-    | 'parameters';
+    | 'parameters'
+    | 'profile';
   icon: typeof Users;
 };
 
@@ -62,9 +64,12 @@ export function AdminNav({
 
   // /admin/sub-admins is ADMIN-only (the page itself notFound()s for a
   // SUB_ADMIN); the rail and the drawer must not advertise it either.
+  // /admin/profile is the one entry both roles always get: it only ever shows
+  // and edits the signed-in member's own account.
   const settingsItems: NavItem[] = [
     ...(isAdmin ? ([{href: '/admin/sub-admins', labelKey: 'subAdmins', icon: Shield}] as NavItem[]) : []),
-    {href: '/admin/parameters', labelKey: 'parameters', icon: Settings}
+    {href: '/admin/parameters', labelKey: 'parameters', icon: Settings},
+    {href: '/admin/profile', labelKey: 'profile', icon: UserCog}
   ];
 
   function renderBlock(title: string, items: NavItem[]) {

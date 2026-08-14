@@ -31,6 +31,11 @@ const NEW_SUB_ADMIN = {
   password: 'E2eSub123!'
 };
 
+// What the profile test rotates that sub-admin's password TO. Only the tests
+// after it use this one — the account is deleted at the end of the run either
+// way, so nothing outlives it.
+const ROTATED_PASSWORD = 'E2eRotated456!';
+
 let orderNumber = '';
 
 // Placed as a guest (PENDING → no stock effect) so the dashboard has data in the
@@ -137,6 +142,34 @@ test('the created sub-admin can log in', async ({page}) => {
   // login() asserts the authenticated header ('Se déconnecter'), so a successful
   // sign-in proves the account persisted with the given credentials.
   await login(page, NEW_SUB_ADMIN.email, NEW_SUB_ADMIN.password);
+});
+
+test('the sub-admin changes their own password from their profile', async ({page}) => {
+  await login(page, NEW_SUB_ADMIN.email, NEW_SUB_ADMIN.password);
+
+  // The profile entry is staff-wide — a SUB_ADMIN must see it, not just an admin.
+  await page.getByRole('link', {name: 'Mon profil'}).first().click();
+  await page.waitForURL('**/fr/admin/profile');
+
+  // The current password is required: a live session alone must not be enough
+  // to take the account over.
+  await page.getByLabel('Mot de passe actuel').fill('not-the-password');
+  await page.getByLabel('Nouveau mot de passe', {exact: true}).fill(ROTATED_PASSWORD);
+  await page.getByLabel('Confirmer le nouveau mot de passe').fill(ROTATED_PASSWORD);
+  await page.getByRole('button', {name: 'Mettre à jour le mot de passe'}).click();
+  await expect(page.getByText('Mot de passe actuel incorrect')).toBeVisible();
+
+  await page.getByLabel('Mot de passe actuel').fill(NEW_SUB_ADMIN.password);
+  await page.getByLabel('Nouveau mot de passe', {exact: true}).fill(ROTATED_PASSWORD);
+  await page.getByLabel('Confirmer le nouveau mot de passe').fill(ROTATED_PASSWORD);
+  await page.getByRole('button', {name: 'Mettre à jour le mot de passe'}).click();
+  await expect(page.getByText('Vos sessions ont été fermées')).toBeVisible();
+
+  // The change bumped tokenVersion, so this very session is revoked — signing
+  // back in is the only way forward, and only the NEW password works.
+  await page.getByRole('button', {name: 'Se reconnecter'}).click();
+  await page.waitForURL('**/fr/login**');
+  await login(page, NEW_SUB_ADMIN.email, ROTATED_PASSWORD);
 });
 
 test('mass discount applies a reduced storefront price and removing it restores', async ({
