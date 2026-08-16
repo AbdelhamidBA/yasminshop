@@ -1,6 +1,6 @@
 import {expect, test, type Page} from '@playwright/test';
 import {E2E_PRODUCTS} from './fixture-data';
-import {openAccountMenu, placeOrder} from './helpers';
+import {login, openAccountMenu, placeOrder} from './helpers';
 
 // Client account journey: register → lands signed in → places an order under
 // the session → My Orders lists it → logout. ONE continuous session (the
@@ -52,6 +52,30 @@ test('the signed-in client places an order', async () => {
     qty: 1,
     customerName: 'E2E Client 3'
   });
+});
+
+test("the client's profile picked up the order's address and phone", async ({browser}) => {
+  // Registration collects NEITHER a phone nor an address, so anything showing
+  // on this profile can only have come from the checkout above — which is
+  // exactly the sync being asserted.
+  //
+  // A separate admin context: `page` holds the client's session for the rest of
+  // this serial file, and staff are redirected off the storefront anyway.
+  const staff = await browser.newContext({locale: 'fr-FR'});
+  const admin = await staff.newPage();
+  try {
+    await login(admin, 'admin@local.test', 'admin123!');
+    await admin.goto(`/fr/admin/clients?q=${EMAIL}`);
+    await admin.getByRole('link', {name: 'E2E Client 3'}).click();
+    await admin.waitForURL(/\/fr\/admin\/clients\/[a-z0-9]+$/i);
+
+    // The three values e2e/helpers.ts placeOrder types into the checkout.
+    await expect(admin.getByText('21698765432')).toBeVisible();
+    await expect(admin.getByText('7 avenue des Fixtures')).toBeVisible();
+    await expect(admin.getByText('Sfax')).toBeVisible();
+  } finally {
+    await staff.close();
+  }
 });
 
 test('my orders lists the new order', async () => {

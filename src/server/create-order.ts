@@ -199,6 +199,31 @@ export async function createOrderCore(
         }
       }
     });
+    // The signed-in customer's PROFILE follows their latest order. Registration
+    // collects neither a phone nor an address (see clientProfileSchema — both
+    // are optional for exactly that reason), so without this a client's admin
+    // profile stays permanently blank while every one of their orders carries a
+    // full delivery address. The most recent order is the freshest thing the
+    // shop knows about where that person lives, so it wins.
+    //
+    // NAME is deliberately NOT copied: an order may be placed for someone else
+    // (a gift, a relative), and the account holder's own name is not up for
+    // revision by the delivery label. Guest orders carry no clientId and touch
+    // nothing.
+    //
+    // Inside the transaction on purpose: the profile can never reflect an order
+    // that rolled back. The write cannot realistically fail — users are
+    // archived, never deleted, so a session's clientId always still resolves.
+    if (clientId !== null) {
+      await tx.user.update({
+        where: {id: clientId},
+        data: {
+          phone: customer.phone,
+          address: customer.address,
+          city: customer.city
+        }
+      });
+    }
     await tx.notification.create({
       data: {
         type: 'NEW_ORDER',

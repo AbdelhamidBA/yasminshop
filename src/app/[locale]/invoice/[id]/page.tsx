@@ -65,12 +65,15 @@ export default async function InvoicePage({
           would sit flush against — and be clipped by — the sheet edge. React
           hoists this into <head>. */}
       <style href="invoice-print" precedence="default">{`@page { margin: 14mm; }`}</style>
-      <div className="mx-auto w-full max-w-[210mm] px-8 py-8 print:max-w-none print:p-0">
+      {/* Narrower gutters on a phone: 32px each side out of a 360px screen was
+          a fifth of the width spent on margin. Print keeps its own gutter from
+          @page above, which is why padding drops entirely there. */}
+      <div className="mx-auto w-full max-w-[210mm] px-4 py-6 sm:px-8 sm:py-8 print:max-w-none print:p-0">
         <div className="mb-6 flex justify-end print:hidden">
           <PrintButton />
         </div>
 
-        <header className="flex flex-wrap items-start justify-between gap-6 border-b-2 border-neutral-900 pb-6">
+        <header className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-neutral-900 pb-6 sm:gap-6">
           <div className="flex flex-col gap-2">
             {/* The letterhead lockup: the shop's mark beside "Yasmine" in the
                 Betterlett script over a ruled SHOP — the storefront's
@@ -115,8 +118,11 @@ export default async function InvoicePage({
               </p>
             )}
           </div>
-          <div className="flex flex-col gap-1 text-end">
-            <h1 className="text-2xl font-semibold uppercase tracking-wide">
+          {/* Stacked under the letterhead on a phone, so it reads left-aligned
+              there and only swings to the outer edge once the two blocks
+              actually sit side by side. */}
+          <div className="flex flex-col gap-1 text-start sm:text-end">
+            <h1 className="text-xl font-semibold uppercase tracking-wide sm:text-2xl">
               {t('invoice.title')}
             </h1>
             <div className="text-sm font-medium">
@@ -141,36 +147,51 @@ export default async function InvoicePage({
           </div>
         </section>
 
-        <table className="mt-6 w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-neutral-400 text-xs uppercase tracking-wide text-neutral-500">
-              <th className="py-2 text-start font-semibold">{t('invoice.product')}</th>
-              <th className="py-2 text-end font-semibold">{t('invoice.unitPrice')}</th>
-              <th className="py-2 text-end font-semibold">{t('invoice.qty')}</th>
-              <th className="py-2 text-end font-semibold">{t('invoice.lineTotal')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {order.items.map((item) => (
-              <tr key={item.id} className="border-b border-neutral-200 break-inside-avoid">
-                <td className="py-2 pe-4">
-                  {/* Snapshot names — Arabic invoices prefer the Arabic
-                      snapshot, || falls back for pre-Phase-4 items. */}
-                  {locale === 'ar'
-                    ? item.nameArSnapshot || item.nameSnapshot
-                    : item.nameSnapshot}
-                </td>
-                <td className="py-2 text-end tabular-nums whitespace-nowrap">
-                  {formatMillimes(item.unitPriceMillimes)} {currencyLabel}
-                </td>
-                <td className="py-2 text-end tabular-nums">{item.qty}</td>
-                <td className="py-2 text-end tabular-nums whitespace-nowrap">
-                  {formatMillimes(item.lineTotalMillimes)} {currencyLabel}
-                </td>
+        {/* Last-resort horizontal scroll. The table is built to fit — text-xs,
+            a tight product column and no repeated currency — but a very long
+            product name on a 320px screen still has to go somewhere, and
+            scrolling one element beats the whole document scrolling sideways.
+            Removed under print:, where the sheet is 210mm and a scrollport
+            would clip instead of paginate. */}
+        <div className="mt-6 overflow-x-auto print:overflow-visible">
+          <table className="w-full border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-neutral-400 text-[10px] uppercase tracking-wide text-neutral-500">
+                <th className="py-2 text-start font-semibold">{t('invoice.product')}</th>
+                {/* Gutters on the numeric columns. Without them the wrapped
+                    'PRIX UNITAIRE' header ran straight into 'QTÉ' on a narrow
+                    screen — the columns were adjacent with nothing between
+                    them, since only the product cell carried any padding. */}
+                <th className="py-2 ps-3 text-end font-semibold">{t('invoice.unitPrice')}</th>
+                <th className="py-2 ps-3 text-end font-semibold">{t('invoice.qty')}</th>
+                <th className="py-2 ps-3 text-end font-semibold">{t('invoice.lineTotal')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {order.items.map((item) => (
+                <tr key={item.id} className="border-b border-neutral-200 break-inside-avoid">
+                  <td className="py-2 pe-4">
+                    {/* Snapshot names — Arabic invoices prefer the Arabic
+                        snapshot, || falls back for pre-Phase-4 items. */}
+                    {locale === 'ar'
+                      ? item.nameArSnapshot || item.nameSnapshot
+                      : item.nameSnapshot}
+                  </td>
+                  {/* Bare figures: the currency is stated once, on the Total.
+                      Repeating "TND" on every line cost a third of the row
+                      width to say the same thing four times. */}
+                  <td className="py-2 ps-3 text-end tabular-nums whitespace-nowrap">
+                    {formatMillimes(item.unitPriceMillimes)}
+                  </td>
+                  <td className="py-2 ps-3 text-end tabular-nums">{item.qty}</td>
+                  <td className="py-2 ps-3 text-end tabular-nums whitespace-nowrap">
+                    {formatMillimes(item.lineTotalMillimes)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* The closing block travels as ONE unit when printing: totals, the
             COD note and the signature. break-inside-avoid on the signature
@@ -179,12 +200,15 @@ export default async function InvoicePage({
             an orphan page holding only a signature. (The per-row
             break-inside-avoid above keeps working — it is scoped to <tr>.) */}
         <div className="break-inside-avoid">
+          {/* The Total is the ONLY figure on the document that names the
+              currency. Every other number — the line items above and the
+              subtotal, discount and delivery here — is bare, so the one place
+              the reader has to look to know what unit they are in is the
+              largest, boldest line on the page. */}
           <dl className="ms-auto mt-6 flex w-full max-w-xs flex-col gap-1.5 text-sm">
             <div className="flex items-center justify-between gap-4">
               <dt className="text-neutral-600">{t('invoice.subtotal')}</dt>
-              <dd className="tabular-nums">
-                {formatMillimes(order.subtotalMillimes)} {currencyLabel}
-              </dd>
+              <dd className="tabular-nums">{formatMillimes(order.subtotalMillimes)}</dd>
             </div>
             {order.promoDiscountMillimes > 0 && (
               <div className="flex items-center justify-between gap-4">
@@ -198,7 +222,7 @@ export default async function InvoicePage({
                   )}
                 </dt>
                 <dd dir="ltr" className="tabular-nums">
-                  -{formatMillimes(order.promoDiscountMillimes)} {currencyLabel}
+                  -{formatMillimes(order.promoDiscountMillimes)}
                 </dd>
               </div>
             )}
@@ -207,7 +231,7 @@ export default async function InvoicePage({
               <dd className="tabular-nums">
                 {order.deliveryCostMillimes === 0
                   ? t('invoice.deliveryFree')
-                  : `${formatMillimes(order.deliveryCostMillimes)} ${currencyLabel}`}
+                  : formatMillimes(order.deliveryCostMillimes)}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-4 border-t-2 border-neutral-900 pt-2 text-base font-bold">

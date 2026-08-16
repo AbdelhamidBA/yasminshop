@@ -15,6 +15,7 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Textarea} from '@/components/ui/textarea';
 import {useRouter} from '@/i18n/navigation';
+import {splitAddress} from '@/lib/address';
 import {fieldErrorText} from '@/lib/field-error';
 import {archiveOrder, restoreOrder, updateOrderCustomer} from '../actions';
 
@@ -27,14 +28,9 @@ export type EditableOrderCustomer = {
   archived: boolean;
 };
 
-// Inverse of the placeOrder fold (`${address}, ${city}`): the last ", "
-// segment is the best-effort city default; anything before it is the address.
-// No comma → whole string as address, city left for the admin to fill.
-function splitAddress(customerAddress: string): {address: string; city: string} {
-  const idx = customerAddress.lastIndexOf(', ');
-  if (idx === -1) return {address: customerAddress, city: ''};
-  return {address: customerAddress.slice(0, idx), city: customerAddress.slice(idx + 2)};
-}
+// splitAddress (the inverse of createOrderCore's `${address}, ${city}` fold)
+// moved to src/lib/address.ts when the client-profile backfill needed the same
+// operation — one definition, unit-tested, instead of two that can drift.
 
 // Staff controls, split by role. Editing the customer details is open to both
 // (updateOrderCustomer re-checks requireStaff); archive/restore is ADMIN-only,
