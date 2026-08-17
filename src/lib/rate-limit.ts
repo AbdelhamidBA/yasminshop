@@ -103,6 +103,10 @@ export function clientIpFromHeaders(headers: Headers): string {
 export const RATE_LIMITS = {
   register: {limit: 10, windowMs: 60_000},
   passwordReset: {limit: 10, windowMs: 60_000},
+  // Submitting a reset CODE. Tighter than the request above because this is the
+  // guessing surface: the per-code attempt cap (5, persisted on the row) bounds
+  // an attacker who knows one address, and this bounds one who sprays many.
+  passwordResetVerify: {limit: 10, windowMs: 60_000},
   // Credentials sign-in: caps flooded login attempts per IP as basic brute-force
   // defence-in-depth (each attempt also pays the bcrypt verify cost). Generous
   // enough that a human — or the e2e suite's handful of logins — never trips it;

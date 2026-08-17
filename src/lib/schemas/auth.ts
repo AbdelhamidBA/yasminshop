@@ -59,6 +59,34 @@ export const newPasswordSchema = z
   .refine(matchesConfirm, passwordMatch);
 export type NewPasswordInput = z.output<typeof newPasswordSchema>;
 
+// Forgotten-password reset by e-mailed one-time code. The e-mail travels with
+// the code because the code alone identifies nothing: it is looked up as
+// hash(userId + code), so the account has to be named first (see src/lib/otp.ts
+// for why the user id is mixed in).
+//
+// 'invalidCode' is NOT produced here — shape errors are the schema's business,
+// and every reason a well-formed code can still be refused (unknown, expired,
+// spent, out of attempts) collapses to one generic answer in the action, so
+// none of them can be used to probe state.
+export const otpResetSchema = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .min(1, {message: 'required'})
+      .max(254, {message: 'tooLong'})
+      .email({message: 'invalidEmail'}),
+    code: z
+      .string()
+      .trim()
+      .min(1, {message: 'required'})
+      .regex(/^\d{6}$/, {message: 'invalidCodeFormat'}),
+    password: passwordField,
+    confirmPassword: confirmField
+  })
+  .refine(matchesConfirm, passwordMatch);
+export type OtpResetInput = z.output<typeof otpResetSchema>;
+
 // Signed-in password change (the staff profile page). Same password rules as
 // registration and the token reset, plus two things the token flow does not
 // need. The CURRENT password, because a live session must not be enough on its

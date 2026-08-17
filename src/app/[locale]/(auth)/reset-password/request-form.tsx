@@ -6,13 +6,18 @@ import {Eyebrow} from '@/components/storefront/brand';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
-import {Link} from '@/i18n/navigation';
 import {fieldErrorText} from '@/lib/field-error';
 import {requestPasswordReset} from './actions';
+import {OtpResetForm} from './otp-form';
 
 // Reset-request form (login-form idiom). The action ALWAYS succeeds — the
 // sent-state copy is deliberately worded "if an account exists…" so the UI
 // carries no account-existence oracle either.
+//
+// On success it hands straight over to the code form on the SAME screen. That
+// is what makes a code better than the link this replaces: the user never
+// leaves the page, so there is no second device, no lost tab, and no URL
+// carrying a credential through history or a referrer header.
 export function RequestResetForm() {
   const t = useTranslations('authPages');
   const locale = useLocale();
@@ -34,15 +39,14 @@ export function RequestResetForm() {
 
   if (state?.ok) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
+        {/* Still worded "if an account exists": the action succeeds either way,
+            and this screen must not become the oracle the action refuses to
+            be. Someone who typed an unknown address sees exactly this. */}
         <p className="text-sm">{t('reset.sentBody')}</p>
-        <Button
-          variant="outline"
-          className="h-12 w-full text-sm font-semibold"
-          render={<Link href="/login" />}
-        >
-          {t('links.backToLogin')}
-        </Button>
+        {/* No "back to login" link here: the PAGE already renders one under the
+            form, and adding a second put the same link on screen twice. */}
+        <OtpResetForm email={initial('email')} />
       </div>
     );
   }
@@ -89,7 +93,7 @@ export function RequestResetForm() {
         disabled={pending}
         className="mt-1 h-12 w-full text-sm font-semibold"
       >
-        {t('reset.sendLink')}
+        {t('reset.sendCode')}
       </Button>
     </form>
   );

@@ -43,6 +43,10 @@ model PasswordResetToken {
   tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
+  // A six-digit code is a million guesses, which is nothing to a script. The
+  // count is persisted rather than kept in the process's rate-limiter memory so
+  // a restart cannot hand an attacker a fresh budget.
+  attempts  Int       @default(0)
   createdAt DateTime  @default(now())
 
   @@index([userId])

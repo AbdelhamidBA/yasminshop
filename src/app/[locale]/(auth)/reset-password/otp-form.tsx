@@ -8,22 +8,30 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Link} from '@/i18n/navigation';
 import {fieldErrorText} from '@/lib/field-error';
-import {resetPassword} from '../actions';
+import {resetPasswordWithOtp} from './actions';
 
-// New-password form — checkout-form idiom (useTransition + direct action
-// call) so resetPassword keeps its plain (token, formData) signature. Min-8 +
-// confirm-match are ALSO checked client-side before the action fires; the
-// server re-validates via newPasswordSchema regardless.
-export function ResetPasswordForm({token}: {token: string}) {
+// Step 2 of the reset: the mailed code plus the new password. Same shape and
+// styling as the form this replaces (checkout-form idiom: useTransition + a
+// direct action call), with the code field added above the password pair.
+//
+// The e-mail rides in a hidden field rather than being asked for again: the
+// code is looked up as hash(userId + code), so the account has to be named, and
+// the person on this screen just typed it on the previous one.
+//
+// The password inputs are NOT replayed after a failed attempt, unlike the other
+// forms in this project — re-seeding them would put the new secret back into
+// the DOM. The code IS replayed, since a typo in the password should not cost
+// the user their code.
+export function OtpResetForm({email}: {email: string}) {
   const t = useTranslations('authPages');
   const isAr = useLocale() === 'ar';
   const [pending, startTransition] = useTransition();
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [enteredCode, setEnteredCode] = useState('');
+  const [entryKey, setEntryKey] = useState(0);
   const [done, setDone] = useState(false);
 
-  // Shared localizer: maps a message-KEY through this form's errors.* namespace,
-  // falling back to errors.validation — never echoes a raw zod code.
   function errorText(code: string): string {
     return fieldErrorText(code, t);
   }
@@ -46,25 +54,35 @@ export function ResetPasswordForm({token}: {token: string}) {
   }
 
   function submit(formData: FormData) {
+    // Client-side pre-checks mirror the schema so the obvious mistakes never
+    // cost a network round trip — or, more importantly, an attempt against the
+    // code. The server re-validates everything regardless.
+    const code = String(formData.get('code') ?? '').trim();
     const password = String(formData.get('password') ?? '');
     const confirm = String(formData.get('confirmPassword') ?? '');
     const errors: Record<string, string> = {};
+    if (!/^\d{6}$/.test(code)) errors.code = 'invalidCodeFormat';
     if (password.length < 8) errors.password = 'passwordTooShort';
     else if (password !== confirm) errors.confirmPassword = 'passwordMismatch';
+
+    setEnteredCode(code);
+    setEntryKey((key) => key + 1);
+
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      setFormError(null);
       return;
     }
     setFieldErrors({});
     setFormError(null);
     startTransition(async () => {
-      const result = await resetPassword(token, formData);
+      const result = await resetPasswordWithOtp(formData);
       if (result.ok) {
         setDone(true);
       } else {
         setFieldErrors(result.fieldErrors ?? {});
-        // 'invalidToken' (and any non-field failure) renders as the generic
-        // line under the form; a fresh link is one click away.
+        // 'invalidCode' and 'rateLimited' render as the generic line under the
+        // form; a fresh code is one click away.
         setFormError(result.fieldErrors ? null : result.error);
       }
     });
@@ -72,6 +90,28 @@ export function ResetPasswordForm({token}: {token: string}) {
 
   return (
     <form action={submit} className="flex flex-col gap-5">
+      <input type="hidden" name="email" value={email} />
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="code" className="text-muted-foreground">
+          <Eyebrow tracked={!isAr}>{t('reset.code')}</Eyebrow>
+        </Label>
+        <Input
+          id="code"
+          name="code"
+          // inputMode + autoComplete let a phone offer the code straight from
+          // the notification instead of making the user switch apps.
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={6}
+          required
+          dir="ltr"
+          className="h-11 text-center text-lg tracking-[0.4em]"
+          key={`code-${entryKey}`}
+          defaultValue={enteredCode}
+        />
+        <p className="text-xs text-muted-foreground">{t('reset.codeHint')}</p>
+        {errorLine('code')}
+      </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="password" className="text-muted-foreground">
           <Eyebrow tracked={!isAr}>{t('reset.newPassword')}</Eyebrow>
@@ -106,18 +146,15 @@ export function ResetPasswordForm({token}: {token: string}) {
       {formError && (
         <div className="flex flex-col gap-2">
           <p className="text-sm text-destructive">{errorText(formError)}</p>
-          {formError === 'invalidToken' && (
-            <Link href="/reset-password" className="text-sm font-medium text-primary hover:underline">
-              {t('reset.requestNew')}
-            </Link>
-          )}
+          <Link
+            href="/reset-password"
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            {t('reset.requestNew')}
+          </Link>
         </div>
       )}
-      <Button
-        type="submit"
-        disabled={pending}
-        className="mt-1 h-12 w-full text-sm font-semibold"
-      >
+      <Button type="submit" disabled={pending} className="mt-1 h-12 w-full text-sm font-semibold">
         {t('reset.submit')}
       </Button>
     </form>
