@@ -1,3 +1,4 @@
+import type {Metadata} from 'next';
 import type {ReactNode} from 'react';
 import {notFound} from 'next/navigation';
 import {hasLocale, NextIntlClientProvider} from 'next-intl';
@@ -7,6 +8,18 @@ import {ThemeProvider} from '@/components/theme-provider';
 import {Toaster} from '@/components/ui/sonner';
 import {baloo, betterlett} from '../fonts';
 import '../globals.css';
+
+// The site shipped with NO metadata at all, so every page rendered without a
+// <title> and browsers fell back to showing the raw URL in the tab, the history
+// and any bookmark.
+//
+// `template` is what makes the pages that DO set a title useful: a product page
+// returns just the product name (see products/[slug]/generateMetadata) and it
+// becomes "Cafetière · Yasmine Shop" rather than either half alone. `default`
+// covers everything that sets none.
+export const metadata: Metadata = {
+  title: {default: 'Yasmine Shop', template: '%s · Yasmine Shop'}
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({locale}));
