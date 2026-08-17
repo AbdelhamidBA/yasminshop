@@ -5,6 +5,11 @@ import {redirect} from '@/i18n/navigation';
 import {AdminHeader} from '@/components/admin/admin-header';
 import {AdminSidebar} from '@/components/admin/admin-sidebar';
 
+import {NO_INDEX} from '@/lib/seo';
+
+// Signed-in / transactional surface: never indexed. See NO_INDEX.
+export const metadata = NO_INDEX;
+
 export default async function AdminLayout({children}: {children: ReactNode}) {
   const session = await auth();
   const locale = await getLocale();

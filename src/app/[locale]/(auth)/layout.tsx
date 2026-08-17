@@ -3,6 +3,11 @@ import { getTranslations } from "next-intl/server";
 import { BrandLockup } from "@/components/storefront/brand";
 import { cn } from "@/lib/utils";
 
+import {NO_INDEX} from '@/lib/seo';
+
+// Signed-in / transactional surface: never indexed. See NO_INDEX.
+export const metadata = NO_INDEX;
+
 // Shared shell for sign-in, registration and the two password-reset steps.
 // These screens used to sit outside the brand entirely — default theme, no
 // logo, no way back to the shop — so arriving from the storefront felt like

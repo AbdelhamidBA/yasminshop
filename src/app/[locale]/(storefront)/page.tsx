@@ -3,8 +3,11 @@ import {ArrowRight} from 'lucide-react';
 import {OrderLifecycle} from '@/components/storefront/order-lifecycle';
 import {ProductCard} from '@/components/storefront/product-card';
 import {SectionHeader} from '@/components/storefront/section-header';
+import {JsonLd} from '@/components/seo/json-ld';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
+import {DEFAULT_DESCRIPTION, organizationJsonLd, webSiteJsonLd} from '@/lib/seo';
+import {siteOrigin} from '@/lib/site-url';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
 import {getHomeSections, listVisibleCategoryTree} from '@/server/storefront';
 
@@ -41,8 +44,29 @@ export default async function HomePage({
   const outOfStockLabel = tStorefront('outOfStock');
   const isAr = locale === 'ar';
 
+  // Brand-level structured data, on the home page only: it describes the SHOP
+  // rather than any one page, so repeating it site-wide would just be noise.
+  // Only the contact details and social profiles the owner actually filled in
+  // are emitted — the settings default to empty precisely so a shop can decline
+  // to publish them, and an invented contact point is worse than none.
+  const origin = siteOrigin();
+  const socials = Object.values(parameters.socialLinks).filter(
+    (url): url is string => typeof url === 'string' && url.length > 0
+  );
+  const structuredData = [
+    organizationJsonLd({
+      origin,
+      description: parameters.siteDescription || DEFAULT_DESCRIPTION,
+      phone: parameters.contactPhone || undefined,
+      email: parameters.contactEmail || undefined,
+      sameAs: socials
+    }),
+    webSiteJsonLd({origin, locale})
+  ];
+
   return (
     <>
+      <JsonLd data={structuredData} />
       {/* STATIC HERO (Phase 8) — a single promotional section, deliberately
           NOT a carousel: no arrows, dots, slides or autoplay. Editorial serif
           headline on the cream token, gold CTA to the catalog, and the brand

@@ -1,5 +1,7 @@
+import type {Metadata} from 'next';
 import {ChevronDown} from 'lucide-react';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
+import {DEFAULT_DESCRIPTION} from '@/lib/seo';
 import {Eyebrow} from '@/components/storefront/brand';
 import {ProductCard} from '@/components/storefront/product-card';
 import {Link} from '@/i18n/navigation';
@@ -15,6 +17,31 @@ import {ActiveFilters} from './active-filters';
 import {Filters} from './filters';
 import {Pagination} from './pagination';
 import {SortSelect} from './sort-select';
+
+// The catalogue is the shop's most valuable indexable page after the home page,
+// so it gets its own title and description rather than inheriting the site
+// default. It canonicalises to the UNFILTERED listing on purpose: /products,
+// /products?sort=priceAsc and /products?page=2 are the same set of goods in a
+// different order, and letting each be indexed separately splits the page's
+// authority across near-duplicates.
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{locale: string}>;
+}): Promise<Metadata> {
+  const {locale} = await params;
+  const t = await getTranslations({locale, namespace: 'catalog'});
+  const title = t('title');
+  const description = t.has('metaDescription')
+    ? t('metaDescription')
+    : DEFAULT_DESCRIPTION;
+  return {
+    title,
+    description,
+    alternates: {canonical: `/${locale}/products`},
+    openGraph: {title, description, url: `/${locale}/products`, type: 'website'}
+  };
+}
 
 const PAGE_SIZE = 12;
 const SORT_VALUES: StorefrontSort[] = ['new', 'priceAsc', 'priceDesc'];

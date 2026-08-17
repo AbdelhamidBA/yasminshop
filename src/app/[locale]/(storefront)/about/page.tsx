@@ -1,8 +1,28 @@
+import type {Metadata} from 'next';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {ArrowRight, HandCoins, Package, Truck} from 'lucide-react';
 import type {LucideIcon} from 'lucide-react';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{locale: string}>;
+}): Promise<Metadata> {
+  const {locale} = await params;
+  const t = await getTranslations({locale, namespace: 'about'});
+  // The page's own lede is already the honest one-line summary of the shop —
+  // reusing it keeps the search snippet and the page from drifting apart.
+  const title = t('title');
+  const description = t('lead');
+  return {
+    title,
+    description,
+    alternates: {canonical: `/${locale}/about`},
+    openGraph: {title, description, url: `/${locale}/about`, type: 'website'}
+  };
+}
 
 // À propos — honest short brand page: the YasmineShop story and the store's
 // three real commitments (imported & local products, cash on delivery,

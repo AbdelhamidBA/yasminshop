@@ -1,6 +1,24 @@
+import type {Metadata} from 'next';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {HandCoins, Mail, Phone} from 'lucide-react';
 import {getParameters} from '@/server/settings';
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{locale: string}>;
+}): Promise<Metadata> {
+  const {locale} = await params;
+  const t = await getTranslations({locale, namespace: 'contact'});
+  const title = t('title');
+  const description = t.has('intro') ? t('intro') : title;
+  return {
+    title,
+    description,
+    alternates: {canonical: `/${locale}/contact`},
+    openGraph: {title, description, url: `/${locale}/contact`, type: 'website'}
+  };
+}
 
 // Contact — renders the owner-configurable contact details (contactPhone /
 // contactEmail Settings, managed in admin Parameters). Empty values hide

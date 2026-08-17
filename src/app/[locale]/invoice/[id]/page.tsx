@@ -2,10 +2,15 @@ import type {CSSProperties} from 'react';
 import {notFound} from 'next/navigation';
 import {getTranslations} from 'next-intl/server';
 import {formatMillimes} from '@/lib/money';
+import {NO_INDEX} from '@/lib/seo';
 import {requirePageStaff} from '@/server/authz';
 import {getOrder} from '@/server/orders';
 import {getParameters} from '@/server/settings';
 import {PrintButton} from './print-button';
+
+// A customer's name, phone and delivery address are on this page. Never
+// indexed, on top of the requirePageStaff gate below.
+export const metadata = NO_INDEX;
 
 // Printable order invoice.
 //

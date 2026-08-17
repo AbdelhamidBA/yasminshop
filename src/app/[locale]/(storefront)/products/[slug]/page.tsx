@@ -12,9 +12,12 @@ import {
 import {Eyebrow, Stamp} from '@/components/storefront/brand';
 import {ProductCard} from '@/components/storefront/product-card';
 import {Price} from '@/components/storefront/price';
+import {JsonLd} from '@/components/seo/json-ld';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {effectivePriceMillimes} from '@/lib/money';
+import {breadcrumbJsonLd, productJsonLd} from '@/lib/seo';
+import {absoluteUrl, siteOrigin} from '@/lib/site-url';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
 import {getRelatedProducts, getStorefrontProduct} from '@/server/storefront';
 import {AddToCart} from './add-to-cart';
@@ -33,7 +36,31 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
   const description = (
     locale === 'ar' ? product.descriptionAr : product.descriptionFr
   ).slice(0, 160);
-  return {title: name, description: description || undefined};
+  const path = `/${locale}/products/${slug}`;
+  // The product's own photo as the share card, not the site-wide hero: a link
+  // to a specific product should preview as THAT product.
+  const image = product.images[0]?.url;
+  return {
+    title: name,
+    description: description || undefined,
+    alternates: {canonical: path},
+    openGraph: {
+      // 'website' rather than the (deprecated, unsupported by Next's typed
+      // openGraph) 'product' type — the Product JSON-LD on the page is what
+      // actually carries price and availability to crawlers.
+      type: 'website',
+      title: name,
+      description: description || undefined,
+      url: path,
+      images: image ? [{url: image, alt: name}] : undefined
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: name,
+      description: description || undefined,
+      images: image ? [image] : undefined
+    }
+  };
 }
 
 export default async function ProductPage({params}: PageProps) {
@@ -106,8 +133,38 @@ export default async function ProductPage({params}: PageProps) {
     </li>
   );
 
+  // Structured data. Built from the SAME values rendered below — the effective
+  // price the shopper sees, the real stock, the actual breadcrumb — so a search
+  // result can never advertise a price or an availability the page contradicts.
+  const origin = siteOrigin();
+  const productUrl = absoluteUrl(`/${locale}/products/${product.slug}`);
+  const structuredData = [
+    productJsonLd({
+      origin,
+      url: productUrl,
+      name,
+      description,
+      images: product.images.map((image) => image.url),
+      reference: product.reference,
+      brand: product.brand,
+      priceMillimes: effective,
+      currency: parameters.currency,
+      inStock: product.quantity > 0,
+      categoryName
+    }),
+    breadcrumbJsonLd([
+      {name: tBreadcrumb('home'), url: absoluteUrl(`/${locale}`)},
+      {name: categoryName, url: absoluteUrl(`/${locale}${categoryHref}`)},
+      ...(subCategoryName && subCategoryHref
+        ? [{name: subCategoryName, url: absoluteUrl(`/${locale}${subCategoryHref}`)}]
+        : []),
+      {name, url: productUrl}
+    ])
+  ];
+
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
+      <JsonLd data={structuredData} />
       {/* Breadcrumb: home / category / [subcategory] / product. Unboxed — it
           is navigation, not a panel competing with the product. */}
       <nav aria-label={tBreadcrumb('label')} className="text-xs text-muted-foreground">

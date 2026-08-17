@@ -5,6 +5,11 @@ import {validatePromoCode} from '@/server/promo';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
 import {CheckoutForm, type CheckoutPrefill} from './checkout-form';
 
+import {NO_INDEX} from '@/lib/seo';
+
+// Signed-in / transactional surface: never indexed. See NO_INDEX.
+export const metadata = NO_INDEX;
+
 type PageProps = {
   params: Promise<{locale: string}>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;

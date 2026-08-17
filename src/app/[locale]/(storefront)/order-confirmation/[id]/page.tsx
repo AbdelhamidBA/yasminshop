@@ -9,6 +9,11 @@ import {formatMillimes} from '@/lib/money';
 import {cn} from '@/lib/utils';
 import {getParameters} from '@/server/settings';
 
+import {NO_INDEX} from '@/lib/seo';
+
+// Signed-in / transactional surface: never indexed. See NO_INDEX.
+export const metadata = NO_INDEX;
+
 // Same charset allowlist as the other public id-shaped inputs: order ids are
 // cuids; the guard kills NUL bytes / junk before any Prisma filter.
 const ORDER_ID_PATTERN = /^[a-z0-9-]{1,40}$/i;

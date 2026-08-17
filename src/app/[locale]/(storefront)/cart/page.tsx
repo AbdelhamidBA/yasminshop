@@ -2,6 +2,11 @@ import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
 import {CartView} from './cart-view';
 
+import {NO_INDEX} from '@/lib/seo';
+
+// Signed-in / transactional surface: never indexed. See NO_INDEX.
+export const metadata = NO_INDEX;
+
 // Server shell: auth-agnostic on purpose (guests build carts too) — it only
 // fetches the settings the client view cannot, then hands off to the client
 // cart (localStorage is the single source of truth for the lines).

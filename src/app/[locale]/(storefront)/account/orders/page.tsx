@@ -7,6 +7,11 @@ import {requirePageUser} from '@/server/authz';
 import {listClientOrders} from '@/server/orders';
 import {getParameters} from '@/server/settings';
 
+import {NO_INDEX} from '@/lib/seo';
+
+// Signed-in / transactional surface: never indexed. See NO_INDEX.
+export const metadata = NO_INDEX;
+
 // My Orders — any signed-in role (anonymous → locale-aware /login redirect).
 // Lists ONLY the session user's orders: clientId is pinned from the session,
 // so one client can never see another's orders (or the guest orders, whose
