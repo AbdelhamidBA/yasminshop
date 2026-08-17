@@ -28,11 +28,15 @@ const NO_SUB_CATEGORY = 'none';
 export function ProductForm({
   product,
   categories,
-  readOnly
+  readOnly,
+  defaultWholesaleMinQty
 }: {
   product: ProductDetail | null;
   categories: CategoryTreeNode[];
   readOnly: boolean;
+  /** Shop-wide bulk threshold, shown as the placeholder when this product
+      does not override it. */
+  defaultWholesaleMinQty: number;
 }) {
   const t = useTranslations('admin.productForm');
   const locale = useLocale();
@@ -204,6 +208,49 @@ export function ProductForm({
               className={adminControl}
               key={`quantity-${entryKey}`}
               defaultValue={initial('quantity', product?.quantity ?? 0)}
+            />
+          </Field>
+          {/* Wholesale. Both fields are optional and travel together: leaving
+              the price blank means this product simply has no gros price, and
+              the action clears the threshold with it. */}
+          <Field
+            label={t('wholesalePrice')}
+            htmlFor="wholesalePrice"
+            hint={t('wholesalePriceHint')}
+            error={errorLine('wholesalePrice')}
+          >
+            <Input
+              id="wholesalePrice"
+              name="wholesalePrice"
+              inputMode="decimal"
+              dir="ltr"
+              placeholder={t('wholesaleNone')}
+              className={adminControl}
+              key={`wholesalePrice-${entryKey}`}
+              defaultValue={initial(
+                'wholesalePrice',
+                product?.wholesalePriceMillimes != null
+                  ? millimesToInput(product.wholesalePriceMillimes)
+                  : ''
+              )}
+            />
+          </Field>
+          <Field
+            label={t('wholesaleMinQty')}
+            htmlFor="wholesaleMinQty"
+            hint={t('wholesaleMinQtyHint', {count: defaultWholesaleMinQty})}
+            error={errorLine('wholesaleMinQty')}
+          >
+            <Input
+              id="wholesaleMinQty"
+              name="wholesaleMinQty"
+              type="number"
+              min={2}
+              max={99}
+              placeholder={String(defaultWholesaleMinQty)}
+              className={adminControl}
+              key={`wholesaleMinQty-${entryKey}`}
+              defaultValue={initial('wholesaleMinQty', product?.wholesaleMinQty ?? '')}
             />
           </Field>
         </FormSection>

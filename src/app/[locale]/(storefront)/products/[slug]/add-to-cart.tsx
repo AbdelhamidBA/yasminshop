@@ -14,6 +14,11 @@ type AddToCartProps = {
   // EFFECTIVE price (mass-discount-aware), computed server-side by the page.
   // DISPLAY ONLY once in the cart — checkout re-prices from the DB.
   unitPriceMillimes: number;
+  // Wholesale, carried into the cart line so the drawer, cart page and
+  // checkout can reprice as the shopper changes the quantity. Display only —
+  // createOrderCore re-reads both from the database.
+  wholesalePriceMillimes: number | null;
+  wholesaleMinQty: number | null;
   imageUrl: string | null;
   // Available stock; the stepper is capped at min(MAX_QTY, quantity).
   quantity: number;
@@ -28,6 +33,8 @@ export function AddToCart({
   nameFr,
   nameAr,
   unitPriceMillimes,
+  wholesalePriceMillimes,
+  wholesaleMinQty,
   imageUrl,
   quantity
 }: AddToCartProps) {
@@ -40,7 +47,19 @@ export function AddToCart({
   const maxQty = Math.min(MAX_QTY, quantity);
 
   function onAdd() {
-    add({productId, slug, nameFr, nameAr, unitPriceMillimes, imageUrl}, qty);
+    add(
+      {
+        productId,
+        slug,
+        nameFr,
+        nameAr,
+        unitPriceMillimes,
+        wholesalePriceMillimes,
+        wholesaleMinQty,
+        imageUrl
+      },
+      qty
+    );
     // The cart drawer replaces the success toast as add feedback (Phase 7):
     // it shows the added line, quantity and the cart/checkout CTAs directly.
     openDrawer();

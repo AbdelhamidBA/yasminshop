@@ -15,7 +15,13 @@ import {Price} from '@/components/storefront/price';
 import {JsonLd} from '@/components/seo/json-ld';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
-import {effectivePriceMillimes} from '@/lib/money';
+import {
+  effectivePriceMillimes,
+  formatMillimes,
+  unitPriceForQty,
+  wholesaleApplies,
+  wholesaleThreshold
+} from '@/lib/money';
 import {breadcrumbJsonLd, productJsonLd} from '@/lib/seo';
 import {absoluteUrl, siteOrigin} from '@/lib/site-url';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
@@ -103,6 +109,26 @@ export default async function ProductPage({params}: PageProps) {
     product.discountPct,
     massDiscountPct
   );
+
+  // The bulk offer, resolved through the same helpers the cart and the server
+  // use. grosThreshold is what this product actually requires (its own
+  // override, else the shop default); grosPrice is null whenever there is
+  // nothing honest to advertise — no gros price set, a threshold that cannot
+  // be reached, or a retail price that already beats it.
+  const grosThreshold = wholesaleThreshold(
+    product.wholesaleMinQty,
+    parameters.wholesaleMinQty
+  );
+  const grosInput = {
+    priceMillimes: product.priceMillimes,
+    discountPct: product.discountPct,
+    massDiscountPct,
+    wholesalePriceMillimes: product.wholesalePriceMillimes,
+    wholesaleMinQty: product.wholesaleMinQty,
+    defaultMinQty: parameters.wholesaleMinQty,
+    qty: Number.isFinite(grosThreshold) ? grosThreshold : 0
+  };
+  const grosPrice = wholesaleApplies(grosInput) ? unitPriceForQty(grosInput) : null;
 
   // Stock is stated from the real quantity against the owner's configured
   // lastChanceThreshold — never a manufactured urgency figure. Brown reads
@@ -229,6 +255,23 @@ export default async function ProductPage({params}: PageProps) {
               size="lg"
             />
           </div>
+          {/* The bulk offer, stated BEFORE the quantity stepper — a shopper
+              cannot choose to buy five to earn a price they were never told
+              about. Absent unless the gros price is real and actually cheaper
+              than what they would pay today (wholesaleApplies at the
+              threshold), so a mass discount that already beats it never
+              produces a hollow promise. */}
+          {grosPrice !== null && (
+            <p className="mt-4 inline-flex flex-wrap items-baseline gap-x-2 rounded-lg bg-(--brand-cream) px-3 py-2 text-sm">
+              <span className="font-semibold text-(--brand-brown)">
+                {t('wholesaleFrom', {count: grosThreshold})}
+              </span>
+              <span className="font-bold tabular-nums">
+                {formatMillimes(grosPrice)} {parameters.currency}
+              </span>
+              <span className="text-muted-foreground">{t('wholesalePerUnit')}</span>
+            </p>
+          )}
           <div className="mt-4">{stockLine}</div>
           <hr className="mt-6 border-dotted" />
           <div className="mt-6">
@@ -238,6 +281,8 @@ export default async function ProductPage({params}: PageProps) {
               nameFr={product.nameFr}
               nameAr={product.nameAr}
               unitPriceMillimes={effective}
+              wholesalePriceMillimes={product.wholesalePriceMillimes}
+              wholesaleMinQty={product.wholesaleMinQty}
               imageUrl={product.images[0]?.url ?? null}
               quantity={product.quantity}
             />

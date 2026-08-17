@@ -14,7 +14,7 @@ import {useRouter} from '@/i18n/navigation';
 import {MAX_QTY} from '@/lib/cart';
 import {computeCartTotals} from '@/lib/checkout';
 import {fieldErrorText} from '@/lib/field-error';
-import {effectivePriceMillimes, formatMillimes} from '@/lib/money';
+import {effectivePriceMillimes, formatMillimes, unitPriceForQty} from '@/lib/money';
 import {cn} from '@/lib/utils';
 import {checkOrderPromo, createManualOrder} from '../actions';
 
@@ -29,6 +29,8 @@ type Suggestion = {
   nameAr: string;
   priceMillimes: number;
   discountPct: number;
+  wholesalePriceMillimes: number | null;
+  wholesaleMinQty: number | null;
   imageUrl: string | null;
 };
 
@@ -36,6 +38,12 @@ type OrderLineDraft = {
   productId: string;
   nameFr: string;
   nameAr: string;
+  // Kept so the line can REPRICE as the admin changes the quantity: the same
+  // wholesale rule the action will apply when it creates the order.
+  priceMillimes: number;
+  discountPct: number;
+  wholesalePriceMillimes: number | null;
+  wholesaleMinQty: number | null;
   // Effective price captured at pick-time for DISPLAY ONLY — the action
   // re-prices every line from the DB (only {productId, qty} is submitted).
   unitPriceMillimes: number;
@@ -47,6 +55,8 @@ type ManualOrderFormProps = {
   freeDeliveryThresholdMillimes: number;
   currencyLabel: string;
   massDiscountPct: number | null;
+  /** Shop-wide bulk threshold, for lines whose product does not override it. */
+  wholesaleMinQty: number;
 };
 
 const DEBOUNCE_MS = 250;
@@ -61,7 +71,8 @@ export function ManualOrderForm({
   deliveryCostMillimes,
   freeDeliveryThresholdMillimes,
   currencyLabel,
-  massDiscountPct
+  massDiscountPct,
+  wholesaleMinQty
 }: ManualOrderFormProps) {
   const t = useTranslations('adminOrders');
   const locale = useLocale();
@@ -70,6 +81,21 @@ export function ManualOrderForm({
   const listboxId = `${id}-listbox`;
 
   const [lines, setLines] = useState<OrderLineDraft[]>([]);
+
+  // What createOrderCore will actually charge for this line at its current
+  // quantity. Computed here rather than frozen at pick-time because the
+  // wholesale price depends on the qty the admin is still editing — without
+  // it the builder's total would disagree with the order it creates.
+  const linePrice = (line: OrderLineDraft) =>
+    unitPriceForQty({
+      priceMillimes: line.priceMillimes,
+      discountPct: line.discountPct,
+      massDiscountPct,
+      wholesalePriceMillimes: line.wholesalePriceMillimes,
+      wholesaleMinQty: line.wholesaleMinQty,
+      defaultMinQty: wholesaleMinQty,
+      qty: line.qty
+    });
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
   const [open, setOpen] = useState(false);
@@ -163,6 +189,10 @@ export function ManualOrderForm({
           productId: suggestion.id,
           nameFr: suggestion.nameFr,
           nameAr: suggestion.nameAr,
+          priceMillimes: suggestion.priceMillimes,
+          discountPct: suggestion.discountPct,
+          wholesalePriceMillimes: suggestion.wholesalePriceMillimes,
+          wholesaleMinQty: suggestion.wholesaleMinQty,
           unitPriceMillimes: effectivePriceMillimes(
             suggestion.priceMillimes,
             suggestion.discountPct,
@@ -271,7 +301,7 @@ export function ManualOrderForm({
   }
 
   const totals = computeCartTotals({
-    items: lines.map(({unitPriceMillimes, qty}) => ({unitPriceMillimes, qty})),
+    items: lines.map((line) => ({unitPriceMillimes: linePrice(line), qty: line.qty})),
     promoPercentOff: appliedPromo?.percentOff ?? null,
     deliveryCostMillimes,
     freeDeliveryThresholdMillimes
@@ -388,7 +418,7 @@ export function ManualOrderForm({
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold">{name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {t('unitPrice')}: {formatMillimes(line.unitPriceMillimes)} {currencyLabel}
+                        {t('unitPrice')}: {formatMillimes(linePrice(line))} {currencyLabel}
                       </p>
                     </div>
                     <div className="flex items-center rounded-lg bg-card">
@@ -421,7 +451,7 @@ export function ManualOrderForm({
                     </div>
                     <p className="w-28 text-end text-sm font-bold tabular-nums whitespace-nowrap">
                       <span className="sr-only">{t('lineTotal')}: </span>
-                      {formatMillimes(line.unitPriceMillimes * line.qty)} {currencyLabel}
+                      {formatMillimes(linePrice(line) * line.qty)} {currencyLabel}
                     </p>
                     <Button
                       type="button"

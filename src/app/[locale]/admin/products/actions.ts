@@ -28,8 +28,23 @@ function parseImages(formData: FormData): RawImages | null {
 function formToInput(formData: FormData) {
   const priceMillimes = parseDinarsToMillimes(String(formData.get('price') ?? ''));
   const images = parseImages(formData);
+
+  // Wholesale is OPTIONAL and its two fields travel together. A blank gros
+  // price means the product has none, and that must also clear the threshold —
+  // otherwise a product could carry a minimum quantity for a price that does
+  // not exist. A blank threshold with a price set falls back to the shop
+  // default, which is why it is null rather than 0.
+  const wholesaleRaw = String(formData.get('wholesalePrice') ?? '').trim();
+  const wholesalePriceMillimes =
+    wholesaleRaw === '' ? null : parseDinarsToMillimes(wholesaleRaw);
+  const minQtyRaw = String(formData.get('wholesaleMinQty') ?? '').trim();
+  const parsedMinQty = minQtyRaw === '' ? null : Number.parseInt(minQtyRaw, 10);
+
   return {
     priceInvalid: priceMillimes === null,
+    // Only a NON-EMPTY value that fails to parse is an error; empty is a valid
+    // "no wholesale".
+    wholesaleInvalid: wholesaleRaw !== '' && wholesalePriceMillimes === null,
     imagesInvalid: images === null,
     input: {
       reference: String(formData.get('reference') ?? ''),
@@ -40,6 +55,17 @@ function formToInput(formData: FormData) {
       brand: String(formData.get('brand') ?? ''),
       priceMillimes: priceMillimes ?? 0,
       discountPct: Number.parseInt(String(formData.get('discountPct') ?? '0'), 10) || 0,
+      wholesalePriceMillimes,
+      // NaN would trip the schema's type check rather than its `min` rule, so a
+      // non-numeric entry is reported as -1 and surfaces as the 'min' key.
+      wholesaleMinQty:
+        wholesalePriceMillimes === null
+          ? null
+          : parsedMinQty === null
+            ? null
+            : Number.isNaN(parsedMinQty)
+              ? -1
+              : parsedMinQty,
       quantity: Number.parseInt(String(formData.get('quantity') ?? '0'), 10) || 0,
       featured: formData.get('featured') === 'on',
       categoryId: String(formData.get('categoryId') ?? ''),
@@ -76,8 +102,9 @@ function generateProductSlug(nameFr: string): Promise<string> {
 export async function createProduct(formData: FormData): Promise<ActionResult<{id: string}>> {
   try {
     await requireAdmin();
-    const {priceInvalid, imagesInvalid, input} = formToInput(formData);
+    const {priceInvalid, wholesaleInvalid, imagesInvalid, input} = formToInput(formData);
     if (priceInvalid) return failure('validation', {price: 'invalidAmount'});
+    if (wholesaleInvalid) return failure('validation', {wholesalePrice: 'invalidAmount'});
     if (imagesInvalid) return failure('validation', {images: 'imagesRequired'});
     const parsed = productSchema.safeParse(input);
     if (!parsed.success) return failure('validation', fieldErrorsFromZod(parsed.error));
@@ -122,8 +149,9 @@ export async function updateProduct(id: string, formData: FormData): Promise<Act
     await requireAdmin();
     const existing = await prisma.product.findUnique({where: {id}});
     if (!existing) return failure('notFound');
-    const {priceInvalid, imagesInvalid, input} = formToInput(formData);
+    const {priceInvalid, wholesaleInvalid, imagesInvalid, input} = formToInput(formData);
     if (priceInvalid) return failure('validation', {price: 'invalidAmount'});
+    if (wholesaleInvalid) return failure('validation', {wholesalePrice: 'invalidAmount'});
     if (imagesInvalid) return failure('validation', {images: 'imagesRequired'});
     const parsed = productSchema.safeParse(input);
     if (!parsed.success) return failure('validation', fieldErrorsFromZod(parsed.error));

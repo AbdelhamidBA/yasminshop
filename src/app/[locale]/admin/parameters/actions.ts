@@ -24,11 +24,15 @@ export async function updateParameters(formData: FormData): Promise<ActionResult
     if (Object.keys(dinarErrors).length > 0) return failure('validation', dinarErrors);
 
     const lastChance = Number.parseInt(String(formData.get('lastChanceThreshold') ?? ''), 10);
+    const wholesaleMinQty = Number.parseInt(String(formData.get('wholesaleMinQty') ?? ''), 10);
     const parsed = parametersSchema.safeParse({
       deliveryCostMillimes,
       freeDeliveryThresholdMillimes,
       currency: String(formData.get('currency') ?? ''),
       lastChanceThreshold: Number.isNaN(lastChance) ? -1 : lastChance,
+      // -1 rather than NaN so the schema reports 'min' on the field instead of
+      // zod's type error, matching how lastChanceThreshold is handled.
+      wholesaleMinQty: Number.isNaN(wholesaleMinQty) ? -1 : wholesaleMinQty,
       copyright: String(formData.get('copyright') ?? ''),
       siteDescription: String(formData.get('siteDescription') ?? ''),
       keywords: String(formData.get('keywords') ?? ''),

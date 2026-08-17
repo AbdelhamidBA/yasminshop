@@ -13,7 +13,7 @@ export default async function StorefrontLayout({children}: {children: ReactNode}
   const role = session?.user.role;
 
   return (
-    <CartProvider>
+    <CartProvider wholesaleMinQty={parameters.wholesaleMinQty}>
       {/* theme-yasmine scopes the champagne-gold brand tokens to the
           storefront (admin/auth keep the default theme); bg/text classes
           repaint this subtree with the redefined tokens. Bottom padding

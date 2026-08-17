@@ -9,7 +9,7 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Link} from '@/i18n/navigation';
-import {cartCount, MAX_QTY} from '@/lib/cart';
+import {MAX_QTY, cartCount, cartLineUnitPrice} from '@/lib/cart';
 import {computeCartTotals} from '@/lib/checkout';
 import {formatMillimes} from '@/lib/money';
 import {cn} from '@/lib/utils';
@@ -48,7 +48,7 @@ export function CartView({
   const tCheckout = useTranslations('checkout');
   const tDrawer = useTranslations('cartDrawer');
   const tProduct = useTranslations('product');
-  const {state, hydrated, setQty, remove} = useCart();
+  const {state, wholesaleMinQty, hydrated, setQty, remove} = useCart();
   const [promoInput, setPromoInput] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
   // null = no error; otherwise the message KEY to show ('promoInvalid' | 'rateLimited').
@@ -81,7 +81,12 @@ export function CartView({
   }
 
   const totals = computeCartTotals({
-    items: state.items.map(({unitPriceMillimes, qty}) => ({unitPriceMillimes, qty})),
+    // Wholesale is resolved per line BEFORE the totals math, so the promo and
+    // the free-delivery threshold both work off the price actually charged.
+    items: state.items.map((line) => ({
+      unitPriceMillimes: cartLineUnitPrice(line, wholesaleMinQty),
+      qty: line.qty
+    })),
     promoPercentOff: appliedPromo?.percentOff ?? null,
     deliveryCostMillimes,
     freeDeliveryThresholdMillimes
@@ -148,7 +153,7 @@ export function CartView({
                         face, brand brown, tabular. */}
                     <p className="shrink-0 text-base font-extrabold whitespace-nowrap tabular-nums text-(--brand-brown) sm:text-lg">
                       <span className="sr-only">{t('lineTotal')}: </span>
-                      {formatMillimes(line.unitPriceMillimes * line.qty)} {currencyLabel}
+                      {formatMillimes(cartLineUnitPrice(line, wholesaleMinQty) * line.qty)} {currencyLabel}
                     </p>
                   </div>
                   {/* Unit price only earns a line once it differs from the
@@ -160,7 +165,7 @@ export function CartView({
                         {t('unitPrice')}
                       </Eyebrow>
                       <span className="text-sm tabular-nums">
-                        {formatMillimes(line.unitPriceMillimes)} {currencyLabel} ×{line.qty}
+                        {formatMillimes(cartLineUnitPrice(line, wholesaleMinQty))} {currencyLabel} ×{line.qty}
                       </span>
                     </p>
                   )}

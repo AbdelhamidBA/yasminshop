@@ -32,6 +32,9 @@ describe('productSchema', () => {
     descriptionAr: 'وصف',
     priceMillimes: 89_000,
     discountPct: 0,
+    // Most products have no gros price; null is the ordinary case, not an edge.
+    wholesalePriceMillimes: null,
+    wholesaleMinQty: null,
     quantity: 5,
     featured: false,
     categoryId: 'c1',
@@ -52,6 +55,24 @@ describe('productSchema', () => {
     expect(productSchema.safeParse({...valid, priceMillimes: MAX_MILLIMES}).success).toBe(true);
     expect(productSchema.safeParse({...valid, priceMillimes: MAX_MILLIMES + 1}).success).toBe(false);
   });
+  test('accepts a wholesale price with or without its own threshold', () => {
+    const withGros = {...valid, wholesalePriceMillimes: 20_000};
+    expect(productSchema.safeParse(withGros).success).toBe(true);
+    expect(productSchema.safeParse({...withGros, wholesaleMinQty: 3}).success).toBe(true);
+  });
+  test('rejects a wholesale threshold that would price every single unit', () => {
+    // 1 or 0 is not a bulk deal, it is the product's price — and almost
+    // certainly a typo the admin should see rather than a silent repricing.
+    const withGros = {...valid, wholesalePriceMillimes: 20_000};
+    expect(productSchema.safeParse({...withGros, wholesaleMinQty: 1}).success).toBe(false);
+    expect(productSchema.safeParse({...withGros, wholesaleMinQty: 0}).success).toBe(false);
+    expect(productSchema.safeParse({...withGros, wholesaleMinQty: 2}).success).toBe(true);
+  });
+  test('rejects a threshold the cart could never reach', () => {
+    const withGros = {...valid, wholesalePriceMillimes: 20_000};
+    expect(productSchema.safeParse({...withGros, wholesaleMinQty: 100}).success).toBe(false);
+    expect(productSchema.safeParse({...withGros, wholesaleMinQty: 99}).success).toBe(true);
+  });
 });
 
 describe('parametersSchema', () => {
@@ -60,6 +81,7 @@ describe('parametersSchema', () => {
     freeDeliveryThresholdMillimes: 100_000,
     currency: 'TND',
     lastChanceThreshold: 5,
+    wholesaleMinQty: 5,
     copyright: '',
     siteDescription: '',
     keywords: '',
@@ -67,6 +89,10 @@ describe('parametersSchema', () => {
     contactEmail: '',
     socialLinks: {facebook: '', instagram: '', tiktok: ''}
   };
+  test('rejects a shop-wide wholesale threshold below 2', () => {
+    expect(parametersSchema.safeParse({...valid, wholesaleMinQty: 1}).success).toBe(false);
+    expect(parametersSchema.safeParse({...valid, wholesaleMinQty: 2}).success).toBe(true);
+  });
   test('accepts empty contact details (both optional) and trims provided values', () => {
     expect(parametersSchema.safeParse(valid).success).toBe(true);
     const parsed = parametersSchema.parse({

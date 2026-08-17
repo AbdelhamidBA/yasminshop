@@ -78,6 +78,13 @@ model Product {
   brand         String?
   priceMillimes Int
   discountPct   Int            @default(0)
+  // Wholesale ("prix de gros"): a flat unit price once a single line reaches
+  // wholesaleMinQty. NULL price means this product has no gros price at all —
+  // the common case — which is why both are nullable rather than 0-defaulted:
+  // "no wholesale" and "wholesale at 0 millimes" must not be the same state.
+  // NULL qty falls back to the shop-wide default in Settings.
+  wholesalePriceMillimes Int?
+  wholesaleMinQty        Int?
   quantity      Int            @default(0)
   featured      Boolean        @default(false)
   searchHits    Int            @default(0)

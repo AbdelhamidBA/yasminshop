@@ -1,5 +1,9 @@
 import {z} from 'zod';
-import {MAX_MILLIMES} from '../money';
+import {MAX_MILLIMES, MIN_WHOLESALE_QTY} from '../money';
+
+// A wholesale threshold above the cart's own per-line cap could never be
+// reached, so the form rejects it rather than silently accepting dead config.
+const MAX_QTY_PER_LINE = 99;
 
 const optionalId = z
   .string()
@@ -55,6 +59,23 @@ export const productSchema = z.object({
   brand: optionalText(80),
   priceMillimes: z.number().int().min(0, {message: 'min'}).max(MAX_MILLIMES, {message: 'max'}),
   discountPct: z.number().int().min(0, {message: 'min'}).max(100, {message: 'max'}),
+  // Wholesale. NULLABLE, not 0-defaulted: a blank field means "this product has
+  // no gros price", which is a different thing from "its gros price is zero".
+  wholesalePriceMillimes: z
+    .number()
+    .int()
+    .min(0, {message: 'min'})
+    .max(MAX_MILLIMES, {message: 'max'})
+    .nullable(),
+  // MIN_WHOLESALE_QTY is the floor: a threshold of 0 or 1 would make the gros
+  // price the only price the product has, which is a mistake rather than a
+  // deal. Blank falls back to the shop-wide default.
+  wholesaleMinQty: z
+    .number()
+    .int()
+    .min(MIN_WHOLESALE_QTY, {message: 'min'})
+    .max(MAX_QTY_PER_LINE, {message: 'max'})
+    .nullable(),
   quantity: z.number().int().min(0, {message: 'min'}),
   featured: z.boolean(),
   categoryId: z.string().min(1, {message: 'required'}),
@@ -80,6 +101,13 @@ export const parametersSchema = z.object({
     .max(MAX_MILLIMES, {message: 'max'}),
   currency: z.string().trim().min(1, {message: 'required'}).max(8, {message: 'tooLong'}),
   lastChanceThreshold: z.number().int().min(0, {message: 'min'}),
+  // Shop-wide default quantity at which a line switches to its wholesale
+  // price. A product may override it; a product with no gros price ignores it.
+  wholesaleMinQty: z
+    .number()
+    .int()
+    .min(MIN_WHOLESALE_QTY, {message: 'min'})
+    .max(MAX_QTY_PER_LINE, {message: 'max'}),
   copyright: z.string().trim(),
   siteDescription: z.string().trim(),
   keywords: z.string().trim(),

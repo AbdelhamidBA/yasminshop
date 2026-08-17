@@ -7,7 +7,7 @@ import {Eyebrow, SlipRow} from '@/components/storefront/brand';
 import {Button} from '@/components/ui/button';
 import {Sheet, SheetClose, SheetContent} from '@/components/ui/sheet';
 import {Link} from '@/i18n/navigation';
-import {cartCount, cartSubtotal, MAX_QTY} from '@/lib/cart';
+import {MAX_QTY, cartCount, cartLineUnitPrice, cartSubtotal} from '@/lib/cart';
 import {formatMillimes} from '@/lib/money';
 
 type CartDrawerProps = {
@@ -30,7 +30,8 @@ export function CartDrawer({currencyLabel}: CartDrawerProps) {
   const t = useTranslations();
   const locale = useLocale();
   const isAr = locale === 'ar';
-  const {state, hydrated, setQty, remove, drawerOpen, setDrawerOpen} = useCart();
+  const {state, wholesaleMinQty, hydrated, setQty, remove, drawerOpen, setDrawerOpen} =
+    useCart();
 
   const close = () => setDrawerOpen(false);
   // Before hydration the provider still holds the empty server cart; the
@@ -105,14 +106,14 @@ export function CartDrawer({currencyLabel}: CartDrawerProps) {
                         {/* Line total: the figure the customer is actually
                             weighing, so it gets the display face + brown. */}
                         <span className="shrink-0 text-sm font-extrabold whitespace-nowrap tabular-nums text-(--brand-brown)">
-                          {formatMillimes(line.unitPriceMillimes * line.qty)} {currencyLabel}
+                          {formatMillimes(cartLineUnitPrice(line, wholesaleMinQty) * line.qty)} {currencyLabel}
                         </span>
                       </div>
                       {/* At qty 1 the unit price and the line total are the
                           same figure — print it once. */}
                       {line.qty > 1 && (
                         <p className="mt-1 text-xs tabular-nums text-muted-foreground">
-                          {formatMillimes(line.unitPriceMillimes)} {currencyLabel} ×{line.qty}
+                          {formatMillimes(cartLineUnitPrice(line, wholesaleMinQty))} {currencyLabel} ×{line.qty}
                         </p>
                       )}
                       <div className="mt-2.5 flex items-center gap-2">
@@ -164,7 +165,7 @@ export function CartDrawer({currencyLabel}: CartDrawerProps) {
             <div className="border-t bg-secondary/40 px-5 py-4">
               <SlipRow
                 label={t('cart.subtotal')}
-                value={`${formatMillimes(cartSubtotal(state))} ${currencyLabel}`}
+                value={`${formatMillimes(cartSubtotal(state, wholesaleMinQty))} ${currencyLabel}`}
                 emphasis
               />
               {/* Honest scope note: delivery + promo math live on /cart and at

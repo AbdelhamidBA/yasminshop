@@ -4,7 +4,7 @@ import {routing} from '@/i18n/routing';
 import {failure, success, type ActionResult} from '@/lib/action-result';
 import {computeCartTotals} from '@/lib/checkout';
 import {prisma} from '@/lib/db';
-import {effectivePriceMillimes, formatMillimes, MAX_MILLIMES} from '@/lib/money';
+import {formatMillimes, MAX_MILLIMES, unitPriceForQty} from '@/lib/money';
 import {validatePromoCode} from '@/server/promo';
 import {sendPushToAllStaff} from '@/server/push';
 import {getMassDiscountPct, getParameters} from '@/server/settings';
@@ -94,6 +94,8 @@ export async function createOrderCore(
       nameAr: true,
       priceMillimes: true,
       discountPct: true,
+      wholesalePriceMillimes: true,
+      wholesaleMinQty: true,
       quantity: true
     }
   });
@@ -110,16 +112,24 @@ export async function createOrderCore(
     return failure('cartChanged');
   }
 
-  // ── Step 4: server-side effective pricing (mass-discount-aware). Client
-  // prices are IGNORED by construction — they were never submitted. ──
+  // ── Step 4: server-side effective pricing (mass-discount- AND
+  // wholesale-aware). Client prices are IGNORED by construction — they were
+  // never submitted. This is the ONLY price that reaches the database, so a
+  // tampered cart claiming a gros price it has not earned changes nothing: the
+  // threshold is re-tested here against the line qty the server accepted. ──
   const massDiscountPct = await getMassDiscountPct();
+  const wholesaleParameters = await getParameters();
   const pricedLines = lines.map((line) => {
     const product = productById.get(line.productId)!;
-    const unitPriceMillimes = effectivePriceMillimes(
-      product.priceMillimes,
-      product.discountPct,
-      massDiscountPct
-    );
+    const unitPriceMillimes = unitPriceForQty({
+      priceMillimes: product.priceMillimes,
+      discountPct: product.discountPct,
+      massDiscountPct,
+      wholesalePriceMillimes: product.wholesalePriceMillimes,
+      wholesaleMinQty: product.wholesaleMinQty,
+      defaultMinQty: wholesaleParameters.wholesaleMinQty,
+      qty: line.qty
+    });
     return {
       productId: line.productId,
       qty: line.qty,

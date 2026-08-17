@@ -51,6 +51,11 @@ type SeedData = {
     descriptionAr: string;
     priceMillimes: number;
     discountPct: number;
+    // Optional in the dump: a file exported before wholesale existed has
+    // neither key, and replaying it must mean "no gros price" rather than
+    // failing to parse.
+    wholesalePriceMillimes?: number | null;
+    wholesaleMinQty?: number | null;
     quantity: number;
     featured: boolean;
     archived: boolean;
@@ -178,6 +183,8 @@ async function main() {
       descriptionAr: p.descriptionAr,
       priceMillimes: p.priceMillimes,
       discountPct: p.discountPct,
+      wholesalePriceMillimes: p.wholesalePriceMillimes ?? null,
+      wholesaleMinQty: p.wholesaleMinQty ?? null,
       quantity: p.quantity,
       featured: p.featured,
       categoryId,

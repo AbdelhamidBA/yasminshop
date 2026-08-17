@@ -5,6 +5,7 @@ import {StatusLabel} from '@/components/admin/ui';
 import {requirePageStaff} from '@/server/authz';
 import {listCategoryTree} from '@/server/categories';
 import {getProduct} from '@/server/products';
+import {getParameters} from '@/server/settings';
 import {ProductForm} from '../../product-form';
 
 export default async function EditProductPage({
@@ -15,7 +16,11 @@ export default async function EditProductPage({
   const session = await requirePageStaff();
   const {id} = await params;
   const t = await getTranslations('admin.productForm');
-  const [product, categories] = await Promise.all([getProduct(id), listCategoryTree()]);
+  const [product, categories, parameters] = await Promise.all([
+    getProduct(id),
+    listCategoryTree(),
+    getParameters()
+  ]);
   if (!product) notFound();
 
   return (
@@ -32,6 +37,7 @@ export default async function EditProductPage({
         product={product}
         categories={categories}
         readOnly={session.user.role !== 'ADMIN'}
+        defaultWholesaleMinQty={parameters.wholesaleMinQty}
       />
     </div>
   );

@@ -51,6 +51,11 @@ export async function GET(request: Request) {
         nameAr: true,
         priceMillimes: true,
         discountPct: true,
+        // The admin's manual-order builder prices its lines from these
+        // suggestions; without the gros fields its displayed total would
+        // disagree with what createOrderCore actually charges.
+        wholesalePriceMillimes: true,
+        wholesaleMinQty: true,
         images: {
           select: {url: true},
           orderBy: [{sortOrder: 'asc'}, {id: 'asc'}],

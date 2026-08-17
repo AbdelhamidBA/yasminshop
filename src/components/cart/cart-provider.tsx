@@ -24,6 +24,11 @@ const MAX_REVIVED_ITEMS = 200;
 
 type CartContextValue = {
   state: CartState;
+  /** Shop-wide bulk threshold, from the server. On the CONTEXT rather than
+      threaded as a prop through the drawer, the cart page and the checkout:
+      four components need the same number to price the same lines, and four
+      copies of it is four chances for one screen to disagree with another. */
+  wholesaleMinQty: number;
   // False until the localStorage read has run on the client; consumers that
   // render count-dependent UI wait for it to avoid a hydration mismatch.
   hydrated: boolean;
@@ -89,6 +94,21 @@ function reviveStoredState(raw: string): CartState {
       nameFr: line.nameFr,
       nameAr: line.nameAr,
       unitPriceMillimes: line.unitPriceMillimes,
+      // Absent (a cart persisted before wholesale existed) or malformed both
+      // become null, which reads as "no wholesale" — the safe direction, since
+      // the server re-prices from the database anyway.
+      wholesalePriceMillimes:
+        typeof line.wholesalePriceMillimes === 'number' &&
+        Number.isInteger(line.wholesalePriceMillimes) &&
+        line.wholesalePriceMillimes >= 0
+          ? line.wholesalePriceMillimes
+          : null,
+      wholesaleMinQty:
+        typeof line.wholesaleMinQty === 'number' &&
+        Number.isInteger(line.wholesaleMinQty) &&
+        line.wholesaleMinQty >= 2
+          ? line.wholesaleMinQty
+          : null,
       imageUrl: line.imageUrl,
       qty: Math.min(line.qty, MAX_QTY)
     });
@@ -96,7 +116,13 @@ function reviveStoredState(raw: string): CartState {
   return {items: revived};
 }
 
-export function CartProvider({children}: {children: ReactNode}) {
+export function CartProvider({
+  children,
+  wholesaleMinQty
+}: {
+  children: ReactNode;
+  wholesaleMinQty: number;
+}) {
   const [state, dispatch] = useReducer(providerReducer, {items: []});
   const [hydrated, setHydrated] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -139,8 +165,19 @@ export function CartProvider({children}: {children: ReactNode}) {
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
 
   const value = useMemo(
-    () => ({state, hydrated, add, setQty, remove, clear, drawerOpen, openDrawer, setDrawerOpen}),
-    [state, hydrated, add, setQty, remove, clear, drawerOpen, openDrawer]
+    () => ({
+      state,
+      wholesaleMinQty,
+      hydrated,
+      add,
+      setQty,
+      remove,
+      clear,
+      drawerOpen,
+      openDrawer,
+      setDrawerOpen
+    }),
+    [state, wholesaleMinQty, hydrated, add, setQty, remove, clear, drawerOpen, openDrawer]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

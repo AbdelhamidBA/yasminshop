@@ -10,6 +10,8 @@ export const DEFAULT_PARAMETERS: AppParameters = {
   freeDeliveryThresholdMillimes: 100_000,
   currency: 'TND',
   lastChanceThreshold: 5,
+  // Default bulk threshold. Only products that HAVE a gros price are affected.
+  wholesaleMinQty: 5,
   copyright: '© 2026 Ma Boutique',
   siteDescription: '',
   keywords: '',

@@ -1,5 +1,12 @@
 import {describe, expect, test} from 'vitest';
-import {cartCount, cartReducer, cartSubtotal, type CartItem, type CartState} from './cart';
+import {
+  cartCount,
+  cartLineUnitPrice,
+  cartReducer,
+  cartSubtotal,
+  type CartItem,
+  type CartState
+} from './cart';
 
 function baseItem(overrides: Partial<Omit<CartItem, 'qty'>> = {}): Omit<CartItem, 'qty'> {
   return {
@@ -75,8 +82,51 @@ describe('cartCount / cartSubtotal', () => {
       {...baseItem({productId: 'p2', unitPriceMillimes: 25_000}), qty: 3}
     );
     expect(cartCount(state)).toBe(5);
-    expect(cartSubtotal(state)).toBe(2 * 9_990 + 3 * 25_000);
+    expect(cartSubtotal(state, 5)).toBe(2 * 9_990 + 3 * 25_000);
     expect(cartCount({items: []})).toBe(0);
-    expect(cartSubtotal({items: []})).toBe(0);
+    expect(cartSubtotal({items: []}, 5)).toBe(0);
+  });
+});
+
+describe('cartLineUnitPrice', () => {
+  const line = (overrides: Partial<CartItem>): CartItem => ({
+    ...baseItem({unitPriceMillimes: 25_000}),
+    qty: 1,
+    wholesalePriceMillimes: 20_000,
+    wholesaleMinQty: null,
+    ...overrides
+  });
+
+  test('switches to the gros price once the line reaches the threshold', () => {
+    expect(cartLineUnitPrice(line({qty: 4}), 5)).toBe(25_000);
+    expect(cartLineUnitPrice(line({qty: 5}), 5)).toBe(20_000);
+  });
+
+  test('a per-product threshold beats the shop default', () => {
+    expect(cartLineUnitPrice(line({qty: 3, wholesaleMinQty: 3}), 5)).toBe(20_000);
+    expect(cartLineUnitPrice(line({qty: 5, wholesaleMinQty: 10}), 5)).toBe(25_000);
+  });
+
+  test('a cart persisted BEFORE wholesale existed still prices correctly', () => {
+    // Real browsers hold carts written by the previous release; an absent field
+    // must read as "no wholesale", not as a crash or a free discount.
+    const legacy = {...baseItem({unitPriceMillimes: 25_000}), qty: 9} as CartItem;
+    delete (legacy as Partial<CartItem>).wholesalePriceMillimes;
+    delete (legacy as Partial<CartItem>).wholesaleMinQty;
+    expect(cartLineUnitPrice(legacy, 5)).toBe(25_000);
+  });
+
+  test('never charges more than the price already displayed', () => {
+    expect(cartLineUnitPrice(line({qty: 9, wholesalePriceMillimes: 30_000}), 5)).toBe(25_000);
+  });
+
+  test('a nonsensical threshold disables wholesale rather than applying it always', () => {
+    expect(cartLineUnitPrice(line({qty: 1, wholesaleMinQty: 1}), 5)).toBe(25_000);
+    expect(cartLineUnitPrice(line({qty: 1}), 0)).toBe(25_000);
+  });
+
+  test('the subtotal reflects the bulk price', () => {
+    const state = stateWith(line({qty: 5}));
+    expect(cartSubtotal(state, 5)).toBe(5 * 20_000);
   });
 });

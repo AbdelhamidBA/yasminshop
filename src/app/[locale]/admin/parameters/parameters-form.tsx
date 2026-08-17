@@ -132,6 +132,26 @@ export function ParametersForm({
               defaultValue={initial('lastChanceThreshold', parameters.lastChanceThreshold)}
             />
           </Field>
+          {/* Shop-wide bulk threshold. It only does anything for products that
+              have a gros price set on them, which is why the hint says so —
+              raising it here does not create wholesale pricing on its own. */}
+          <Field
+            label={t('wholesaleMinQty')}
+            htmlFor="wholesaleMinQty"
+            hint={t('wholesaleMinQtyHint')}
+            error={errorLine('wholesaleMinQty')}
+          >
+            <Input
+              id="wholesaleMinQty"
+              name="wholesaleMinQty"
+              type="number"
+              min={2}
+              max={99}
+              className={adminControl}
+              key={`wholesaleMinQty-${entryKey}`}
+              defaultValue={initial('wholesaleMinQty', parameters.wholesaleMinQty)}
+            />
+          </Field>
         </FormSection>
 
         <FormSection title={t('site')}>

@@ -10,6 +10,7 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Textarea} from '@/components/ui/textarea';
 import {Link, useRouter} from '@/i18n/navigation';
+import {cartLineUnitPrice} from '@/lib/cart';
 import {computeCartTotals} from '@/lib/checkout';
 import {fieldErrorText} from '@/lib/field-error';
 import {formatMillimes} from '@/lib/money';
@@ -53,7 +54,7 @@ export function CheckoutForm({
   const tCart = useTranslations('cart');
   const tProduct = useTranslations('product');
   const router = useRouter();
-  const {state, hydrated, clear} = useCart();
+  const {state, wholesaleMinQty, hydrated, clear} = useCart();
   const [pending, startTransition] = useTransition();
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   // Set before clear() so the just-emptied cart does not flash the empty
@@ -164,7 +165,12 @@ export function CheckoutForm({
   }
 
   const totals = computeCartTotals({
-    items: state.items.map(({unitPriceMillimes, qty}) => ({unitPriceMillimes, qty})),
+    // Same per-line wholesale resolution as the cart page — the two summaries
+    // must never show different totals for the same basket.
+    items: state.items.map((line) => ({
+      unitPriceMillimes: cartLineUnitPrice(line, wholesaleMinQty),
+      qty: line.qty
+    })),
     promoPercentOff: promo?.percentOff ?? null,
     deliveryCostMillimes,
     freeDeliveryThresholdMillimes
@@ -302,7 +308,7 @@ export function CheckoutForm({
                     {name} <span className="text-muted-foreground tabular-nums">×{line.qty}</span>
                   </span>
                   <span className="shrink-0 text-sm font-semibold whitespace-nowrap tabular-nums">
-                    {formatMillimes(line.unitPriceMillimes * line.qty)} {currencyLabel}
+                    {formatMillimes(cartLineUnitPrice(line, wholesaleMinQty) * line.qty)} {currencyLabel}
                   </span>
                 </li>
               );

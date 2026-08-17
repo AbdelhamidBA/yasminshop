@@ -113,7 +113,9 @@
     "description": "Description",
     "galleryLabel": "Images du produit {name}",
     "galleryThumb": "{name} — image {index} sur {count}",
-    "codStamp": "Payez à la réception"
+    "codStamp": "Payez à la réception",
+    "wholesaleFrom": "À partir de {count} unités",
+    "wholesalePerUnit": "l’unité"
   },
   "breadcrumb": {
     "home": "Accueil",
@@ -445,7 +447,12 @@
         "invalidSubCategory": "Sous-catégorie invalide.",
         "notFound": "Produit introuvable.",
         "forbidden": "Action non autorisée."
-      }
+      },
+      "wholesalePrice": "Prix de gros (optionnel)",
+      "wholesalePriceHint": "Prix à l’unité appliqué à partir de la quantité ci-dessous. Laissez vide : pas de prix de gros.",
+      "wholesaleNone": "Aucun",
+      "wholesaleMinQty": "Quantité minimale (gros)",
+      "wholesaleMinQtyHint": "Laissez vide pour utiliser le réglage de la boutique ({count})."
     },
     "promoCodesPage": {
       "title": "Codes promo",
@@ -524,7 +531,9 @@
         "invalid": "Valeur invalide.",
         "min": "Valeur trop petite.",
         "max": "Valeur trop grande."
-      }
+      },
+      "wholesaleMinQty": "Quantité minimale pour le prix de gros",
+      "wholesaleMinQtyHint": "S’applique uniquement aux produits qui ont un prix de gros."
     },
     "massDiscount": {
       "title": "Remise globale",

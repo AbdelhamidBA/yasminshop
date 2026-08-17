@@ -41,6 +41,7 @@ export default async function NewOrderPage() {
         freeDeliveryThresholdMillimes={parameters.freeDeliveryThresholdMillimes}
         currencyLabel={parameters.currency}
         massDiscountPct={massDiscountPct}
+        wholesaleMinQty={parameters.wholesaleMinQty}
       />
     </div>
   );
